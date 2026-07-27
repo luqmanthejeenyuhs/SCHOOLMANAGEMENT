@@ -1,0 +1,358 @@
+<?php $__env->startSection('title', 'Teacher Profile'); ?>
+<?php $__env->startSection('content'); ?>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <a href="<?php echo e(route('admin.teachers.index')); ?>" class="text-decoration-none small text-muted"><i class="bi bi-arrow-left"></i> Back to Teachers</a>
+        <h3 class="mb-0 mt-1"><?php echo e($teacher->user->name); ?></h3>
+        <span class="text-muted">Employee ID: <strong><?php echo e($teacher->employee_id); ?></strong></span>
+    </div>
+    <a href="<?php echo e(route('admin.teachers.edit', $teacher)); ?>" class="btn btn-outline-secondary"><i class="bi bi-pencil"></i> Edit</a>
+</div>
+
+<ul class="nav nav-tabs mb-3" id="teacherTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="tab">
+            <i class="bi bi-person-vcard"></i> Overview
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="classes-tab" data-bs-toggle="tab" data-bs-target="#classes" type="button" role="tab">
+            <i class="bi bi-easel"></i> Classes &amp; Subjects
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="attendance-tab" data-bs-toggle="tab" data-bs-target="#attendance" type="button" role="tab">
+            <i class="bi bi-calendar-check"></i> Attendance
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="payroll-tab" data-bs-toggle="tab" data-bs-target="#payroll" type="button" role="tab">
+            <i class="bi bi-cash-coin"></i> Payroll
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="performance-tab" data-bs-toggle="tab" data-bs-target="#performance" type="button" role="tab">
+            <i class="bi bi-graph-up"></i> Performance
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="documents-tab" data-bs-toggle="tab" data-bs-target="#documents" type="button" role="tab">
+            <i class="bi bi-file-earmark-text"></i> Documents
+        </button>
+    </li>
+</ul>
+
+<div class="tab-content" id="teacherTabsContent">
+
+    
+    <div class="tab-pane fade show active" id="overview" role="tabpanel">
+        <div class="card p-4">
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="text-muted small">Full Name</div>
+                    <div class="fw-semibold"><?php echo e($teacher->user->name); ?></div>
+                </div>
+                <div class="col-md-6">
+                    <div class="text-muted small">Employee / Staff Number</div>
+                    <div class="fw-semibold"><?php echo e($teacher->employee_id); ?></div>
+                </div>
+                <div class="col-md-6">
+                    <div class="text-muted small">Email</div>
+                    <div class="fw-semibold"><?php echo e($teacher->user->email); ?></div>
+                </div>
+                <div class="col-md-6">
+                    <div class="text-muted small">Phone</div>
+                    <div class="fw-semibold"><?php echo e($teacher->user->phone ?? '—'); ?></div>
+                </div>
+                <div class="col-md-6">
+                    <div class="text-muted small">Qualification</div>
+                    <div class="fw-semibold"><?php echo e($teacher->qualification ?? '—'); ?></div>
+                </div>
+                <div class="col-md-6">
+                    <div class="text-muted small">Joined</div>
+                    <div class="fw-semibold"><?php echo e($teacher->joining_date?->format('d M Y') ?? '—'); ?></div>
+                </div>
+                <div class="col-md-6">
+                    <div class="text-muted small">National ID / Passport Number</div>
+                    <div class="fw-semibold"><?php echo e($teacher->id_number ?? '—'); ?></div>
+                </div>
+                <div class="col-md-6">
+                    <div class="text-muted small">TSC Number</div>
+                    <div class="fw-semibold"><?php echo e($teacher->tsc_number ?? '—'); ?></div>
+                </div>
+                <div class="col-12">
+                    <div class="text-muted small">Address</div>
+                    <div class="fw-semibold"><?php echo e($teacher->address ?? '—'); ?></div>
+                </div>
+                <div class="col-12"><hr></div>
+                <div class="col-12 text-muted small text-uppercase">Next of Kin</div>
+                <div class="col-md-5">
+                    <div class="text-muted small">Full Name</div>
+                    <div class="fw-semibold"><?php echo e($teacher->next_of_kin_name ?? '—'); ?></div>
+                </div>
+                <div class="col-md-4">
+                    <div class="text-muted small">Phone</div>
+                    <div class="fw-semibold"><?php echo e($teacher->next_of_kin_phone ?? '—'); ?></div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-muted small">Relationship</div>
+                    <div class="fw-semibold"><?php echo e($teacher->next_of_kin_relationship ?? '—'); ?></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+    <div class="tab-pane fade" id="documents" role="tabpanel">
+        <div class="card">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0 align-middle">
+                    <thead class="table-light">
+                        <tr><th>Document</th><th>File</th><th></th></tr>
+                    </thead>
+                    <tbody>
+                        <?php $__empty_1 = true; $__currentLoopData = $teacher->documents; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $document): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                        <tr>
+                            <td><?php echo e($document->label()); ?></td>
+                            <td class="text-muted small"><?php echo e($document->original_name); ?></td>
+                            <td class="text-end">
+                                <a href="<?php echo e(route('admin.teachers.documents.download', [$teacher, $document])); ?>" class="btn btn-sm btn-outline-secondary"><i class="bi bi-download"></i> Download</a>
+                            </td>
+                        </tr>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
+                        <tr><td colspan="3" class="text-center text-muted py-4">No documents uploaded yet. <a href="<?php echo e(route('admin.teachers.edit', $teacher)); ?>">Add some</a>.</td></tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    
+    <div class="tab-pane fade" id="classes" role="tabpanel">
+        <div class="card mb-3">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0 align-middle">
+                    <thead class="table-light">
+                        <tr><th>Subject</th><th>Class</th><th>Section</th><th></th></tr>
+                    </thead>
+                    <tbody>
+                        <?php $__empty_1 = true; $__currentLoopData = $teacher->assignments; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $a): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                        <tr>
+                            <td><?php echo e($a->subject->name ?? '—'); ?></td>
+                            <td><?php echo e($a->schoolClass->name ?? '—'); ?></td>
+                            <td><?php echo e($a->section->name ?? 'All sections'); ?></td>
+                            <td class="text-end">
+                                <form action="<?php echo e(route('admin.teachers.assignments.destroy', [$teacher, $a])); ?>" method="POST" onsubmit="return confirm('Remove this assignment?');">
+                                    <?php echo csrf_field(); ?> <?php echo method_field('DELETE'); ?>
+                                    <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                                </form>
+                            </td>
+                        </tr>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
+                        <tr><td colspan="4" class="text-center text-muted py-4">No classes or subjects assigned yet.</td></tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card p-3">
+            <h6 class="text-uppercase text-muted small mb-3">Assign a Subject</h6>
+            <form method="POST" action="<?php echo e(route('admin.teachers.assignments.store', $teacher)); ?>" class="row g-2 align-items-end">
+                <?php echo csrf_field(); ?>
+                <div class="col-md-4">
+                    <label class="form-label small">Class</label>
+                    <select name="school_class_id" id="assignClass" class="form-select" required>
+                        <option value="">Select class</option>
+                        <?php $__currentLoopData = $classes; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $class): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <option value="<?php echo e($class->id); ?>"><?php echo e($class->name); ?></option>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label small">Subject</label>
+                    <select name="subject_id" id="assignSubject" class="form-select" required>
+                        <option value="">Select class first</option>
+                        <?php $__currentLoopData = $subjectsAll; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $subject): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <option value="<?php echo e($subject->id); ?>" data-class="<?php echo e($subject->school_class_id); ?>" class="d-none"><?php echo e($subject->name); ?></option>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small">Section (optional)</label>
+                    <select name="section_id" id="assignSection" class="form-select">
+                        <option value="">All sections</option>
+                        <?php $__currentLoopData = $sectionsAll; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $section): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <option value="<?php echo e($section->id); ?>" data-class="<?php echo e($section->school_class_id); ?>" class="d-none"><?php echo e($section->name); ?></option>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                    </select>
+                </div>
+                <div class="col-md-1">
+                    <button class="btn btn-dark w-100"><i class="bi bi-plus-lg"></i></button>
+                </div>
+            </form>
+        </div>
+
+        <script>
+            (function () {
+                const classSelect = document.getElementById('assignClass');
+                const subjectSelect = document.getElementById('assignSubject');
+                const sectionSelect = document.getElementById('assignSection');
+
+                function filterByClass(select) {
+                    const classId = classSelect.value;
+                    Array.from(select.options).forEach(opt => {
+                        if (!opt.dataset.class) return; // keep the placeholder option
+                        opt.classList.toggle('d-none', opt.dataset.class !== classId);
+                    });
+                    select.value = '';
+                }
+
+                classSelect.addEventListener('change', function () {
+                    subjectSelect.options[0].textContent = classSelect.value ? 'Select subject' : 'Select class first';
+                    filterByClass(subjectSelect);
+                    filterByClass(sectionSelect);
+                });
+            })();
+        </script>
+    </div>
+
+    
+    <div class="tab-pane fade" id="attendance" role="tabpanel">
+        <div class="card">
+            <div class="card-header">Attendance records marked by this teacher (latest 15)</div>
+            <div class="table-responsive">
+                <table class="table table-hover mb-0 align-middle">
+                    <thead class="table-light">
+                        <tr><th>Date</th><th>Student</th><th>Status</th><th>Remarks</th></tr>
+                    </thead>
+                    <tbody>
+                        <?php $__empty_1 = true; $__currentLoopData = $attendanceMarked; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $rec): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                        <tr>
+                            <td><?php echo e($rec->date?->format('d M Y')); ?></td>
+                            <td><?php echo e($rec->student->user->name ?? '—'); ?></td>
+                            <td>
+                                <span class="badge <?php echo e($rec->status === 'present' ? 'bg-success' : ($rec->status === 'late' ? 'bg-warning text-dark' : 'bg-danger')); ?>">
+                                    <?php echo e(ucfirst($rec->status)); ?>
+
+                                </span>
+                            </td>
+                            <td><?php echo e($rec->remarks ?? '—'); ?></td>
+                        </tr>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
+                        <tr><td colspan="4" class="text-center text-muted py-4">No attendance records marked by this teacher yet.</td></tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    
+    <div class="tab-pane fade" id="payroll" role="tabpanel">
+        <?php if($employee): ?>
+        <div class="card p-4 mb-3">
+            <div class="row g-4">
+                <div class="col-md-3">
+                    <div class="text-muted small">Basic Salary</div>
+                    <div class="fw-semibold"><?php echo e(number_format($employee->basic_salary, 2)); ?></div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-muted small">House Allowance</div>
+                    <div class="fw-semibold"><?php echo e(number_format($employee->house_allowance, 2)); ?></div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-muted small">Transport Allowance</div>
+                    <div class="fw-semibold"><?php echo e(number_format($employee->transport_allowance, 2)); ?></div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-muted small">Gross Pay</div>
+                    <div class="fw-semibold"><?php echo e(number_format($employee->grossPay(), 2)); ?></div>
+                </div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header">Recent Payslips</div>
+            <div class="table-responsive">
+                <table class="table table-hover mb-0 align-middle">
+                    <thead class="table-light">
+                        <tr><th>Period</th><th>Gross Pay</th><th>Deductions</th><th>Net Pay</th><th></th></tr>
+                    </thead>
+                    <tbody>
+                        <?php $__empty_1 = true; $__currentLoopData = $employee->payslips; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $slip): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                        <tr>
+                            <td><?php echo e($slip->periodLabel()); ?></td>
+                            <td><?php echo e(number_format($slip->gross_pay, 2)); ?></td>
+                            <td><?php echo e(number_format($slip->total_deductions, 2)); ?></td>
+                            <td class="fw-semibold"><?php echo e(number_format($slip->net_pay, 2)); ?></td>
+                            <td class="text-end"><a href="<?php echo e(route('admin.payslips.show', $slip)); ?>" class="btn btn-sm btn-outline-primary">View</a></td>
+                        </tr>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
+                        <tr><td colspan="5" class="text-center text-muted py-4">No payslips generated yet.</td></tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <?php else: ?>
+        <div class="card p-4 text-center text-muted">
+            <i class="bi bi-cash-coin fs-2 mb-2"></i>
+            <p class="mb-1">This teacher isn't linked to a payroll record yet.</p>
+            <a href="<?php echo e(route('admin.employees.create')); ?>" class="btn btn-sm btn-primary mt-2">Add to Payroll</a>
+        </div>
+        <?php endif; ?>
+    </div>
+
+    
+    <div class="tab-pane fade" id="performance" role="tabpanel">
+        <div class="card mb-3">
+            <div class="card-header">Average performance by subject taught</div>
+            <div class="table-responsive">
+                <table class="table table-hover mb-0 align-middle">
+                    <thead class="table-light">
+                        <tr><th>Subject</th><th>Results Recorded</th><th>Average Score</th></tr>
+                    </thead>
+                    <tbody>
+                        <?php $__empty_1 = true; $__currentLoopData = $performanceBySubject; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $row): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                        <tr>
+                            <td><?php echo e($row->subject->name ?? '—'); ?></td>
+                            <td><?php echo e($row->total); ?></td>
+                            <td class="fw-semibold"><?php echo e(number_format($row->avg_pct, 1)); ?>%</td>
+                        </tr>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
+                        <tr><td colspan="3" class="text-center text-muted py-4">No exam results recorded for this teacher's subjects yet.</td></tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header">Recent exam results in this teacher's subjects</div>
+            <div class="table-responsive">
+                <table class="table table-hover mb-0 align-middle">
+                    <thead class="table-light">
+                        <tr><th>Exam</th><th>Subject</th><th>Student</th><th>Marks</th></tr>
+                    </thead>
+                    <tbody>
+                        <?php $__empty_1 = true; $__currentLoopData = $recentResults; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $res): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                        <tr>
+                            <td><?php echo e($res->exam->name ?? '—'); ?></td>
+                            <td><?php echo e($res->subject->name ?? '—'); ?></td>
+                            <td><?php echo e($res->student->user->name ?? '—'); ?></td>
+                            <td><?php echo e($res->marks_obtained); ?>/<?php echo e($res->max_marks); ?></td>
+                        </tr>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
+                        <tr><td colspan="4" class="text-center text-muted py-4">No results recorded yet.</td></tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('layouts.app', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH C:\Users\luqman\Desktop\SCHOOLMANAGEMENT\sms\resources\views/admin/teachers/show.blade.php ENDPATH**/ ?>
