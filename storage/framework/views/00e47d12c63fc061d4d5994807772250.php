@@ -1,0 +1,199 @@
+<?php $__env->startSection('title', 'Invoices & Payments'); ?>
+<?php $__env->startSection('content'); ?>
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <h3 class="mb-0">Invoices &amp; Payments</h3>
+    <button type="button" class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#bulkInvoiceModal">
+        <i class="bi bi-lightning-charge"></i> Bulk Generate (Term Billing)
+    </button>
+</div>
+
+<div class="card p-3 mb-4">
+    <h6>Generate Single Invoice</h6>
+    <form method="POST" action="<?php echo e(route('admin.invoices.store')); ?>" class="row g-2 align-items-end">
+        <?php echo csrf_field(); ?>
+        <div class="col-md-3">
+            <label class="form-label small">Student</label>
+            <select name="student_id" class="form-select" required>
+                <option value="">Select student</option>
+                <?php $__currentLoopData = $students; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $student): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                    <option value="<?php echo e($student->id); ?>"><?php echo e($student->user->name); ?> (<?php echo e($student->admission_no); ?>)</option>
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label small">Fee Type</label>
+            <select name="fee_type_id" id="feeTypeSelect" class="form-select" required>
+                <option value="">Select fee type</option>
+                <?php $__currentLoopData = $feeTypes; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $feeType): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                    <option value="<?php echo e($feeType->id); ?>" data-amount="<?php echo e($feeType->amount); ?>"><?php echo e($feeType->name); ?></option>
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label small">Amount</label>
+            <input type="number" step="0.01" name="amount" id="amountInput" class="form-control" required>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label small">Due Date</label>
+            <input type="date" name="due_date" class="form-control">
+        </div>
+        <div class="col-md-2">
+            <button class="btn btn-dark w-100">Generate</button>
+        </div>
+    </form>
+</div>
+
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0 align-middle">
+            <thead class="table-light">
+                <tr><th>Student</th><th>Fee Type</th><th>Amount</th><th>Paid</th><th>Balance</th><th>Status</th><th></th></tr>
+            </thead>
+            <tbody>
+            <?php $__empty_1 = true; $__currentLoopData = $invoices; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $invoice): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                <tr>
+                    <td><?php echo e($invoice->student->user->name); ?></td>
+                    <td><?php echo e($invoice->feeType->name); ?></td>
+                    <td>KES <?php echo e(number_format($invoice->amount, 2)); ?></td>
+                    <td>KES <?php echo e(number_format($invoice->totalPaid(), 2)); ?></td>
+                    <td>KES <?php echo e(number_format($invoice->balance(), 2)); ?></td>
+                    <td>
+                        <?php if($invoice->status === 'paid'): ?>
+                            <span class="badge bg-success">Paid</span>
+                        <?php elseif($invoice->status === 'partially_paid'): ?>
+                            <span class="badge bg-warning text-dark">Partial</span>
+                        <?php else: ?>
+                            <span class="badge bg-danger">Unpaid</span>
+                        <?php endif; ?>
+                    </td>
+                    <td class="text-end">
+                        <?php if($invoice->status !== 'paid'): ?>
+                        <button class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#mpesaModal<?php echo e($invoice->id); ?>"><i class="bi bi-phone"></i> M-Pesa</button>
+                        <div class="modal fade" id="mpesaModal<?php echo e($invoice->id); ?>" tabindex="-1">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <form method="POST" action="<?php echo e(route('admin.invoices.mpesa_push', $invoice)); ?>">
+                                        <?php echo csrf_field(); ?>
+                                        <div class="modal-header"><h6 class="modal-title">Send M-Pesa STK Push — <?php echo e($invoice->student->user->name); ?></h6></div>
+                                        <div class="modal-body">
+                                            <p class="small text-muted">Balance due: KES <?php echo e(number_format($invoice->balance(), 2)); ?>. The payer's phone will receive a prompt to enter their M-Pesa PIN.</p>
+                                            <label class="form-label small">Phone Number (format 2547XXXXXXXX)</label>
+                                            <input type="text" name="phone" class="form-control" placeholder="254712345678" pattern="2547[0-9]{8}" value="<?php echo e($invoice->student->guardian_phone); ?>" required>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                                            <button class="btn btn-success">Send STK Push</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#payModal<?php echo e($invoice->id); ?>">Record Payment</button>
+                        <div class="modal fade" id="payModal<?php echo e($invoice->id); ?>" tabindex="-1">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <form method="POST" action="<?php echo e(route('admin.invoices.payments.store', $invoice)); ?>">
+                                        <?php echo csrf_field(); ?>
+                                        <div class="modal-header"><h6 class="modal-title">Record Payment — <?php echo e($invoice->student->user->name); ?></h6></div>
+                                        <div class="modal-body">
+                                            <div class="mb-2">
+                                                <label class="form-label small">Amount Paid (balance: KES <?php echo e(number_format($invoice->balance(),2)); ?>)</label>
+                                                <input type="number" step="0.01" name="amount_paid" class="form-control" required>
+                                            </div>
+                                            <div class="mb-2">
+                                                <label class="form-label small">Payment Date</label>
+                                                <input type="date" name="payment_date" class="form-control" value="<?php echo e(now()->toDateString()); ?>" required>
+                                            </div>
+                                            <div class="mb-2">
+                                                <label class="form-label small">Method</label>
+                                                <select name="method" class="form-select">
+                                                    <option value="cash">Cash</option>
+                                                    <option value="mpesa">M-Pesa</option>
+                                                    <option value="bank">Bank Transfer</option>
+                                                    <option value="card">Card</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                                            <button class="btn btn-dark">Save Payment</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        <?php endif; ?>
+                    </td>
+                </tr>
+            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
+                <tr><td colspan="7" class="text-center text-muted py-4">No invoices yet.</td></tr>
+            <?php endif; ?>
+            </tbody>
+        </table>
+    </div>
+</div>
+<div class="mt-3"><?php echo e($invoices->links()); ?></div>
+
+<!-- Bulk Generate Invoices Modal (automated term billing) -->
+<div class="modal fade" id="bulkInvoiceModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="<?php echo e(route('admin.invoices.bulk_store')); ?>">
+                <?php echo csrf_field(); ?>
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-lightning-charge"></i> Bulk Generate Invoices</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted small">Apply a fee (e.g. Term 2 Tuition) to a whole class or the entire school at once, instead of one student at a time. Students who already have this exact invoice are skipped automatically, so it's safe to re-run.</p>
+                    <div class="mb-2">
+                        <label class="form-label">Fee Type</label>
+                        <select name="fee_type_id" class="form-select" required>
+                            <option value="">Select fee type</option>
+                            <?php $__currentLoopData = $feeTypes; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $feeType): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <option value="<?php echo e($feeType->id); ?>"><?php echo e($feeType->name); ?> — KES <?php echo e(number_format($feeType->amount, 2)); ?> (<?php echo e($feeType->frequency); ?>)</option>
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                        </select>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Apply to</label>
+                        <select name="scope" id="bulkScope" class="form-select" required>
+                            <option value="all">All students in the school</option>
+                            <option value="class">A specific class only</option>
+                        </select>
+                    </div>
+                    <div class="mb-2" id="bulkClassWrap" style="display:none;">
+                        <label class="form-label">Class</label>
+                        <select name="school_class_id" class="form-select">
+                            <option value="">Select class</option>
+                            <?php $__currentLoopData = $classes; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $class): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <option value="<?php echo e($class->id); ?>"><?php echo e($class->name); ?></option>
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                        </select>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Due Date</label>
+                        <input type="date" name="due_date" class="form-control">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button class="btn btn-dark">Generate Invoices</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('feeTypeSelect').addEventListener('change', function () {
+    const opt = this.options[this.selectedIndex];
+    document.getElementById('amountInput').value = opt.dataset.amount || '';
+});
+document.getElementById('bulkScope').addEventListener('change', function () {
+    document.getElementById('bulkClassWrap').style.display = this.value === 'class' ? 'block' : 'none';
+});
+</script>
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('layouts.app', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH C:\Users\luqman\Desktop\SCHOOLMANAGEMENT\sms\resources\views/admin/payments/index.blade.php ENDPATH**/ ?>
