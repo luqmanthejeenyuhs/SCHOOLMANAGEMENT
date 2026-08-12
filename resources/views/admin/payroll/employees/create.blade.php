@@ -15,6 +15,11 @@
                 <input type="text" name="job_title" class="form-control" value="{{ old('job_title') }}" placeholder="e.g. Bursar, Cook, Driver, Teacher" required>
             </div>
             <div class="col-md-6">
+                <label class="form-label">Staff Number</label>
+                <input type="text" class="form-control" value="Assigned automatically as EMPL001, EMPL002, etc." disabled>
+                <div class="form-text">No need to type one in — it's generated after you save.</div>
+            </div>
+            <div class="col-md-6">
                 <label class="form-label">Link to User Account (for self clock-in)</label>
                 <select name="user_id" class="form-select">
                     <option value="">— Not linked —</option>

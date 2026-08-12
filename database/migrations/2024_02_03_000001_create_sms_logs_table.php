@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::create("sms_logs", function (Blueprint $table) {
             $table->id();
+            $table->foreignId("school_id")->constrained()->cascadeOnDelete();
             $table->foreignId("student_id")->nullable()->constrained()->nullOnDelete();
             $table->string("recipient_phone");
             $table->text("message");

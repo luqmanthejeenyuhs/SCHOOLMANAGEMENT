@@ -2,15 +2,16 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToTenant;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Payslip extends Model
 {
-    use HasFactory;
+    use HasFactory, BelongsToTenant;
 
     protected $fillable = [
-        "employee_id", "month", "year", "basic_salary", "allowances_total", "gross_pay",
+        "school_id", "employee_id", "month", "year", "basic_salary", "allowances_total", "gross_pay",
         "paye", "personal_relief", "shif", "nssf", "housing_levy", "other_deductions", "unpaid_leave_days",
         "total_deductions", "net_pay",
     ];

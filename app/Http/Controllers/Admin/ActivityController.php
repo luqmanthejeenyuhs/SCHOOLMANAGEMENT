@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Activity;
 use App\Models\Student;
 use App\Models\Teacher;
+use App\Support\Facades\Tenant;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class ActivityController extends Controller
 {
@@ -80,7 +82,7 @@ class ActivityController extends Controller
     public function enroll(Request $request, Activity $activity)
     {
         $data = $request->validate([
-            "student_id" => "required|exists:students,id",
+            "student_id" => ["required", Rule::exists("students", "id")->where("school_id", Tenant::id())],
         ]);
 
         $activity->students()->syncWithoutDetaching([
@@ -104,7 +106,7 @@ class ActivityController extends Controller
     {
         return $request->validate([
             "name" => "required|string|max:255",
-            "patron_id" => "nullable|exists:teachers,id",
+            "patron_id" => ["nullable", Rule::exists("teachers", "id")->where("school_id", Tenant::id())],
             "day_of_week" => "nullable|string|max:20",
             "start_time" => "nullable|date_format:H:i",
             "end_time" => "nullable|date_format:H:i|after:start_time",

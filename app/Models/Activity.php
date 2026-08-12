@@ -2,16 +2,17 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToTenant;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Activity extends Model
 {
-    use HasFactory;
+    use HasFactory, BelongsToTenant;
 
     protected $fillable = [
-        "name", "description", "patron_id", "day_of_week", "start_time", "end_time", "venue",
+        "school_id", "name", "description", "patron_id", "day_of_week", "start_time", "end_time", "venue",
     ];
 
     /**

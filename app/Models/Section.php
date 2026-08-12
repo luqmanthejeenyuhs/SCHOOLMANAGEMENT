@@ -2,14 +2,15 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToTenant;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Section extends Model
 {
-    use HasFactory;
+    use HasFactory, BelongsToTenant;
 
-    protected $fillable = ["school_class_id", "name", "class_teacher_id"];
+    protected $fillable = ["school_id", "school_class_id", "name", "class_teacher_id"];
 
     public function schoolClass()
     {
@@ -27,10 +28,5 @@ class Section extends Model
     public function classTeacher()
     {
         return $this->belongsTo(Teacher::class, "class_teacher_id");
-    }
-
-    public function timetableSlots()
-    {
-        return $this->hasMany(TimetableSlot::class);
     }
 }

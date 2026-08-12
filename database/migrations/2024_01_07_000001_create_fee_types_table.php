@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::create("fee_types", function (Blueprint $table) {
             $table->id();
+            $table->foreignId("school_id")->constrained()->cascadeOnDelete();
             $table->string("name");
             $table->decimal("amount", 10, 2);
             $table->string("frequency")->default("term");

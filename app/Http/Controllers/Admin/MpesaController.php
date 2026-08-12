@@ -100,7 +100,7 @@ class MpesaController extends Controller
                 $studentName = $invoice->student->name ?? "your child";
                 $message = "Payment received: KES ".number_format((float) $amount, 2).
                     " for {$studentName} (Invoice #{$invoice->id}). Receipt: {$receipt}. ".
-                    "Balance: KES ".number_format($balance, 2).". - School Management System";
+                    "Balance: KES ".number_format($balance, 2).". - Taaluma SMS";
 
                 $this->sms->send(
                     phone: $transaction->phone,

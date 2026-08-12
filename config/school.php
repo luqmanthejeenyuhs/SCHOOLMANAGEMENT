@@ -2,15 +2,15 @@
 
 /*
 |--------------------------------------------------------------------------
-| School Location & Attendance Policy
+| School Location & Attendance Policy (fallback defaults)
 |--------------------------------------------------------------------------
-| Used by the teacher self-clock-in page to confirm a staff member is
-| physically on the compound before accepting their check-in (a lightweight
-| software equivalent of a biometric gate terminal), and to flag late
-| arrivals on the admin attendance dashboard.
-|
-| Set SCHOOL_LATITUDE / SCHOOL_LONGITUDE to your compound's coordinates
-| (e.g. from Google Maps: right-click the location → the numbers shown).
+| NOTE: now that the app is multi-tenant, each school's compound location
+| and clock-in policy lives on its own `schools` row (see
+| App\Models\School: latitude, longitude, geofence_radius_meters,
+| expected_clock_in, expected_clock_out) rather than here. Use
+| Tenant::current() to read a school's own values; these config values are
+| only a fallback for a school that hasn't set its own yet, or for
+| single-tenant/local testing.
 */
 
 return [

@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::create("sections", function (Blueprint $table) {
             $table->id();
+            $table->foreignId("school_id")->constrained()->cascadeOnDelete();
             $table->foreignId("school_class_id")->constrained()->cascadeOnDelete();
             $table->string("name");
             $table->timestamps();

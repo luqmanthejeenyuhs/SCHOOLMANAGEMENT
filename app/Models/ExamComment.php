@@ -2,14 +2,15 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToTenant;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class ExamComment extends Model
 {
-    use HasFactory;
+    use HasFactory, BelongsToTenant;
 
-    protected $fillable = ["exam_id", "student_id", "class_teacher_comment", "principal_comment", "recorded_by"];
+    protected $fillable = ["school_id", "exam_id", "student_id", "class_teacher_comment", "principal_comment", "recorded_by"];
 
     public function exam()
     {

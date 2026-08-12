@@ -7,7 +7,9 @@ use App\Models\SchoolClass;
 use App\Models\SmsLog;
 use App\Models\Student;
 use App\Services\SmsService;
+use App\Support\Facades\Tenant;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Auth;
 
 class SmsController extends Controller
@@ -28,7 +30,7 @@ class SmsController extends Controller
     {
         $data = $request->validate([
             "audience" => "required|in:all,class,unpaid_balance",
-            "school_class_id" => "nullable|exists:school_classes,id",
+            "school_class_id" => ["nullable", Rule::exists("school_classes", "id")->where("school_id", Tenant::id())],
             "message" => "required|string|max:480",
             "category" => "required|in:announcement,fee_reminder,closure,general",
         ]);

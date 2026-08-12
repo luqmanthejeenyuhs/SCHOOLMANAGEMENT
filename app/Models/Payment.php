@@ -2,14 +2,15 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToTenant;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Payment extends Model
 {
-    use HasFactory;
+    use HasFactory, BelongsToTenant;
 
-    protected $fillable = ["fee_invoice_id", "amount_paid", "payment_date", "method", "received_by"];
+    protected $fillable = ["school_id", "fee_invoice_id", "amount_paid", "payment_date", "method", "received_by"];
 
     protected $casts = ["payment_date" => "date"];
 

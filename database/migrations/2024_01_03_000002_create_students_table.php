@@ -10,8 +10,9 @@ return new class extends Migration
     {
         Schema::create("students", function (Blueprint $table) {
             $table->id();
+            $table->foreignId("school_id")->constrained()->cascadeOnDelete();
             $table->foreignId("user_id")->constrained()->cascadeOnDelete();
-            $table->string("admission_no")->unique();
+            $table->string("admission_no");
             $table->foreignId("school_class_id")->nullable()->constrained()->nullOnDelete();
             $table->foreignId("section_id")->nullable()->constrained()->nullOnDelete();
             $table->string("guardian_name")->nullable();
@@ -19,6 +20,8 @@ return new class extends Migration
             $table->date("dob")->nullable();
             $table->string("address")->nullable();
             $table->timestamps();
+
+            $table->unique(["school_id", "admission_no"]);
         });
     }
 

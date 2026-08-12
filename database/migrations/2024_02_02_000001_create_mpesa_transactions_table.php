@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::create("mpesa_transactions", function (Blueprint $table) {
             $table->id();
+            $table->foreignId("school_id")->constrained()->cascadeOnDelete();
             $table->foreignId("fee_invoice_id")->constrained()->cascadeOnDelete();
             $table->string("phone");
             $table->decimal("amount", 10, 2);

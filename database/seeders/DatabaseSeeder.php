@@ -14,12 +14,14 @@ use App\Models\ExamResult;
 use App\Models\FeeInvoice;
 use App\Models\FeeType;
 use App\Models\Payment;
+use App\Models\School;
 use App\Models\SchoolClass;
 use App\Models\Section;
 use App\Models\Student;
 use App\Models\Subject;
 use App\Models\Teacher;
 use App\Models\User;
+use App\Support\Facades\Tenant;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -27,12 +29,36 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // --- Admin ---
+        // --- Platform-level super admin (belongs to no school) ---
+        User::create([
+            'name' => 'Platform Super Admin',
+            'email' => 'superadmin@platform.test',
+            'password' => Hash::make('password'),
+            'role' => 'super_admin',
+        ]);
+
+        // --- The tenant itself ---
+        $school = School::create([
+            'name' => 'Greenwood Academy',
+            'slug' => 'greenwood',
+            'email' => 'info@greenwood.test',
+            'phone' => '254700000000',
+            'address' => 'Nairobi, Kenya',
+        ]);
+        // School::created() (see App\Observers\SchoolObserver) already seeded
+        // this school's default A-E grading scale.
+
+        // Everything below runs "as" Greenwood Academy: BelongsToTenant
+        // auto-stamps school_id on every record created inside this closure,
+        // so none of the individual ->create() calls below need to change.
+        Tenant::runFor($school->id, function () {
+            // --- Admin ---
         $admin = User::create([
             'name' => 'System Admin',
             'email' => 'admin@school.test',
             'password' => Hash::make('password'),
             'role' => 'admin',
+            'is_super_admin' => true,
         ]);
 
         // --- Classes & sections & subjects ---
@@ -300,6 +326,50 @@ class DatabaseSeeder extends Seeder
             'employment_date' => now()->subYears(2),
         ]);
 
-        $this->command->info('Demo data seeded. Login as admin@school.test / teacher1@school.test / student1@school.test — password for all: "password"');
+        $this->command->info('Demo data seeded for Greenwood Academy. Login as admin@school.test / teacher1@school.test / student1@school.test — password for all: "password"');
+        });
+
+        // --- A second school, to prove data doesn't cross tenants ---
+        $sunrise = School::create([
+            'name' => 'Sunrise Junior School',
+            'slug' => 'sunrise',
+            'email' => 'info@sunrise.test',
+            'phone' => '254700000001',
+            'address' => 'Kisumu, Kenya',
+        ]);
+
+        Tenant::runFor($sunrise->id, function () {
+            $admin = User::create([
+                'name' => 'Sunrise Admin',
+                'email' => 'admin@sunrise.test',
+                'password' => Hash::make('password'),
+                'role' => 'admin',
+                'is_super_admin' => true,
+            ]);
+
+            $grade1 = SchoolClass::create(['name' => 'Grade 1']);
+            $g1A = Section::create(['school_class_id' => $grade1->id, 'name' => 'A']);
+
+            $studentUser = User::create([
+                'name' => 'Kevin Otieno',
+                'email' => 'student1@sunrise.test',
+                'password' => Hash::make('password'),
+                'role' => 'student',
+            ]);
+            Student::create([
+                'user_id' => $studentUser->id,
+                'admission_no' => 'ADM-0001', // same admission_no as Greenwood's first student — fine, unique is per-school now
+                'school_class_id' => $grade1->id,
+                'section_id' => $g1A->id,
+                'guardian_name' => 'Guardian of Kevin Otieno',
+                'guardian_phone' => '254711000200',
+                'dob' => now()->subYears(7),
+                'address' => 'Kisumu, Kenya',
+            ]);
+
+            $this->command->info('Demo data seeded for Sunrise Junior School. Login as admin@sunrise.test — password: "password"');
+        });
+
+        $this->command->info('Platform super admin: superadmin@platform.test / password: "password"');
     }
 }

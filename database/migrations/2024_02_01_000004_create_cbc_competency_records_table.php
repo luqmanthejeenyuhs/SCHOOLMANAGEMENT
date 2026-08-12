@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::create("cbc_competency_records", function (Blueprint $table) {
             $table->id();
+            $table->foreignId("school_id")->constrained()->cascadeOnDelete();
             $table->foreignId("student_id")->constrained()->cascadeOnDelete();
             $table->foreignId("cbc_sub_strand_id")->constrained()->cascadeOnDelete();
             $table->string("term"); // e.g. "Term 1 2026"

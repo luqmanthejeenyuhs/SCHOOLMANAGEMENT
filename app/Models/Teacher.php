@@ -2,17 +2,15 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToTenant;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Teacher extends Model
 {
-    use HasFactory;
+    use HasFactory, BelongsToTenant;
 
-    protected $fillable = [
-        "user_id", "employee_id", "id_number", "tsc_number", "qualification", "address",
-        "joining_date", "next_of_kin_name", "next_of_kin_phone", "next_of_kin_relationship",
-    ];
+    protected $fillable = ["school_id", "user_id", "employee_id", "qualification", "address", "joining_date"];
 
     protected $casts = [
         "joining_date" => "date",
@@ -21,11 +19,6 @@ class Teacher extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
-    }
-
-    public function documents()
-    {
-        return $this->hasMany(TeacherDocument::class);
     }
 
     public function assignments()
@@ -41,8 +34,8 @@ class Teacher extends Model
         return $this->hasMany(Activity::class, "patron_id");
     }
 
-    public function timetableSlots()
+    public function documents()
     {
-        return $this->hasMany(TimetableSlot::class);
+        return $this->hasMany(TeacherDocument::class);
     }
 }

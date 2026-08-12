@@ -7,7 +7,9 @@ use App\Models\FeeInvoice;
 use App\Models\FeeType;
 use App\Models\SchoolClass;
 use App\Models\Student;
+use App\Support\Facades\Tenant;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class FeeInvoiceController extends Controller
 {
@@ -16,7 +18,7 @@ class FeeInvoiceController extends Controller
         $invoices = FeeInvoice::with(["student.user", "feeType", "payments"])->latest()->paginate(15);
         $students = Student::with("user")->get();
         $feeTypes = FeeType::all();
-        $classes = SchoolClass::orderBy("name")->get();
+        $classes = SchoolClass::all();
 
         return view("admin.payments.index", compact("invoices", "students", "feeTypes", "classes"));
     }
@@ -24,8 +26,8 @@ class FeeInvoiceController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            "student_id" => "required|exists:students,id",
-            "fee_type_id" => "required|exists:fee_types,id",
+            "student_id" => ["required", Rule::exists("students", "id")->where("school_id", Tenant::id())],
+            "fee_type_id" => ["required", Rule::exists("fee_types", "id")->where("school_id", Tenant::id())],
             "amount" => "required|numeric|min:0",
             "due_date" => "nullable|date",
         ]);
@@ -36,18 +38,16 @@ class FeeInvoiceController extends Controller
         return back()->with("success", "Invoice generated.");
     }
 
-    /**
-     * Automated term billing: apply a fee type to every student (or every
-     * student in one class) in a single click instead of one invoice at a
-     * time. Skips anyone who already has an invoice for this fee type and
-     * due date so re-running it is safe.
-     */
     public function bulkStore(Request $request)
     {
         $data = $request->validate([
-            "fee_type_id" => "required|exists:fee_types,id",
+            "fee_type_id" => ["required", Rule::exists("fee_types", "id")->where("school_id", Tenant::id())],
             "scope" => "required|in:all,class",
-            "school_class_id" => "required_if:scope,class|nullable|exists:school_classes,id",
+            "school_class_id" => [
+                "nullable",
+                "required_if:scope,class",
+                Rule::exists("school_classes", "id")->where("school_id", Tenant::id()),
+            ],
             "due_date" => "nullable|date",
         ]);
 
@@ -57,31 +57,29 @@ class FeeInvoiceController extends Controller
             ->when($data["scope"] === "class", fn ($q) => $q->where("school_class_id", $data["school_class_id"]))
             ->get();
 
-        $existingStudentIds = FeeInvoice::where("fee_type_id", $feeType->id)
-            ->where("due_date", $data["due_date"] ?? null)
-            ->pluck("student_id");
+        $created = 0;
 
-        $toInvoice = $students->whereNotIn("id", $existingStudentIds);
+        foreach ($students as $student) {
+            // "Already have this exact invoice" = same student + fee type + due date,
+            // so re-running for a different term (different due date) is still safe.
+            $invoice = FeeInvoice::firstOrNew([
+                "student_id" => $student->id,
+                "fee_type_id" => $feeType->id,
+                "due_date" => $data["due_date"] ?? null,
+            ]);
 
-        $now = now();
-        $rows = $toInvoice->map(fn ($student) => [
-            "student_id" => $student->id,
-            "fee_type_id" => $feeType->id,
-            "amount" => $feeType->amount,
-            "due_date" => $data["due_date"] ?? null,
-            "status" => "unpaid",
-            "created_at" => $now,
-            "updated_at" => $now,
-        ])->values();
-
-        if ($rows->isNotEmpty()) {
-            FeeInvoice::insert($rows->toArray());
+            if (! $invoice->exists) {
+                $invoice->amount = $feeType->amount;
+                $invoice->status = "unpaid";
+                $invoice->save();
+                $created++;
+            }
         }
 
-        $skipped = $students->count() - $rows->count();
-        $message = "Generated {$rows->count()} invoice(s) for {$feeType->name}.";
+        $skipped = $students->count() - $created;
+        $message = "Generated {$created} invoice(s).";
         if ($skipped > 0) {
-            $message .= " Skipped {$skipped} student(s) who already had this invoice.";
+            $message .= " {$skipped} student(s) already had this invoice and were skipped.";
         }
 
         return back()->with("success", $message);

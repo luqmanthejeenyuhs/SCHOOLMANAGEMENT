@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::create("payslips", function (Blueprint $table) {
             $table->id();
+            $table->foreignId("school_id")->constrained()->cascadeOnDelete();
             $table->foreignId("employee_id")->constrained()->cascadeOnDelete();
             $table->unsignedTinyInteger("month");
             $table->unsignedSmallInteger("year");

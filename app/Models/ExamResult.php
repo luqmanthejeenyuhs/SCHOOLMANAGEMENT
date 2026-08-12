@@ -2,14 +2,15 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToTenant;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class ExamResult extends Model
 {
-    use HasFactory;
+    use HasFactory, BelongsToTenant;
 
-    protected $fillable = ["exam_id", "student_id", "subject_id", "marks_obtained", "max_marks", "grade"];
+    protected $fillable = ["school_id", "exam_id", "student_id", "subject_id", "marks_obtained", "max_marks", "grade"];
 
     public function exam()
     {

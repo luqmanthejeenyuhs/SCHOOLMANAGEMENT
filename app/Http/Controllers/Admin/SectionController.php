@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Section;
 use App\Models\SchoolClass;
 use App\Models\Teacher;
+use App\Support\Facades\Tenant;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class SectionController extends Controller
 {
@@ -21,9 +23,9 @@ class SectionController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            "school_class_id" => "required|exists:school_classes,id",
+            "school_class_id" => ["required", Rule::exists("school_classes", "id")->where("school_id", Tenant::id())],
             "name" => "required|string|max:255",
-            "class_teacher_id" => "nullable|exists:teachers,id",
+            "class_teacher_id" => ["nullable", Rule::exists("teachers", "id")->where("school_id", Tenant::id())],
         ]);
         Section::create($data);
 
@@ -36,7 +38,7 @@ class SectionController extends Controller
     public function update(Request $request, Section $section)
     {
         $data = $request->validate([
-            "class_teacher_id" => "nullable|exists:teachers,id",
+            "class_teacher_id" => ["nullable", Rule::exists("teachers", "id")->where("school_id", Tenant::id())],
         ]);
         $section->update($data);
 

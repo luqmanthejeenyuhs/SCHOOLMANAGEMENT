@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::create("exam_results", function (Blueprint $table) {
             $table->id();
+            $table->foreignId("school_id")->constrained()->cascadeOnDelete();
             $table->foreignId("exam_id")->constrained()->cascadeOnDelete();
             $table->foreignId("student_id")->constrained()->cascadeOnDelete();
             $table->foreignId("subject_id")->constrained()->cascadeOnDelete();

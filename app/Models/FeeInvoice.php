@@ -2,14 +2,15 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToTenant;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class FeeInvoice extends Model
 {
-    use HasFactory;
+    use HasFactory, BelongsToTenant;
 
-    protected $fillable = ["student_id", "fee_type_id", "amount", "due_date", "status"];
+    protected $fillable = ["school_id", "student_id", "fee_type_id", "amount", "due_date", "status"];
 
     protected $casts = ["due_date" => "date"];
 

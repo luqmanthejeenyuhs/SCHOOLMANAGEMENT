@@ -22,12 +22,22 @@ class Kernel extends HttpKernel
             \Illuminate\Session\Middleware\StartSession::class,
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
             \App\Http\Middleware\VerifyCsrfToken::class,
+            // Must run after StartSession (needs it for impersonation) and
+            // after the session has been used to resolve the auth user
+            // (needs $request->user()), and BEFORE SubstituteBindings —
+            // implicit route-model binding queries tenant-scoped models
+            // directly, so if this ran after, every {student}/{teacher}/etc
+            // binding would always fail to find a record (see TenantScope's
+            // fail-closed behavior) even for valid, correctly-scoped data.
+            \App\Http\Middleware\IdentifyTenant::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
         ],
 
         'api' => [
             \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
             \Illuminate\Routing\Middleware\ThrottleRequests::class.':api',
+            // Same ordering requirement as the 'web' group above.
+            \App\Http\Middleware\IdentifyTenant::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
         ],
     ];
@@ -43,5 +53,7 @@ class Kernel extends HttpKernel
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'role' => \App\Http\Middleware\RoleMiddleware::class,
+        'super_admin' => \App\Http\Middleware\EnsureSuperAdmin::class,
+        'permission' => \App\Http\Middleware\PermissionMiddleware::class,
     ];
 }

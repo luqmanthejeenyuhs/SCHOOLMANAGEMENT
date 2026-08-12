@@ -2,14 +2,15 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToTenant;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class CbcCompetencyRecord extends Model
 {
-    use HasFactory;
+    use HasFactory, BelongsToTenant;
 
-    protected $fillable = ["student_id", "cbc_sub_strand_id", "term", "performance_level", "remarks", "recorded_by"];
+    protected $fillable = ["school_id", "student_id", "cbc_sub_strand_id", "term", "performance_level", "remarks", "recorded_by"];
 
     public const LEVELS = [
         "EE" => "Exceeding Expectation",

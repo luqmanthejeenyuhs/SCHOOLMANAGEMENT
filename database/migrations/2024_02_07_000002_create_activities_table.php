@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::create("activities", function (Blueprint $table) {
             $table->id();
+            $table->foreignId("school_id")->constrained()->cascadeOnDelete();
             $table->string("name");
             $table->text("description")->nullable();
             // Teacher in charge of the activity (e.g. the swimming coach).

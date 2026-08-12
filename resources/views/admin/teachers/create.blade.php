@@ -39,7 +39,7 @@
             <div class="col-md-4">
                 <label class="form-label">Employee / Staff Number</label>
                 <input type="text" class="form-control" value="Auto-generated on save" disabled>
-                <div class="form-text">Assigned automatically as <code>EMPLOYEE-&lt;id&gt;</code> — no need to type one in.</div>
+                <div class="form-text">Assigned automatically as <code>EMPL001</code>, <code>EMPL002</code>, etc. — no need to type one in.</div>
             </div>
             <div class="col-md-4">
                 <label class="form-label">National ID / Passport Number</label>

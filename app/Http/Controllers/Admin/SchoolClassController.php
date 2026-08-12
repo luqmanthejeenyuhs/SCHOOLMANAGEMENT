@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\SchoolClass;
 use App\Models\Section;
 use App\Models\Teacher;
+use App\Support\Facades\Tenant;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class SchoolClassController extends Controller
 {
@@ -52,7 +54,9 @@ class SchoolClassController extends Controller
 
     public function store(Request $request)
     {
-        $data = $request->validate(["name" => "required|string|max:255|unique:school_classes,name"]);
+        $data = $request->validate([
+            "name" => ["required", "string", "max:255", Rule::unique("school_classes", "name")->where("school_id", Tenant::id())],
+        ]);
         SchoolClass::create($data);
 
         return back()->with("success", "Class created.");
@@ -60,7 +64,9 @@ class SchoolClassController extends Controller
 
     public function update(Request $request, SchoolClass $class)
     {
-        $data = $request->validate(["name" => "required|string|max:255|unique:school_classes,name,".$class->id]);
+        $data = $request->validate([
+            "name" => ["required", "string", "max:255", Rule::unique("school_classes", "name")->where("school_id", Tenant::id())->ignore($class->id)],
+        ]);
         $class->update($data);
 
         return back()->with("success", "Class updated.");

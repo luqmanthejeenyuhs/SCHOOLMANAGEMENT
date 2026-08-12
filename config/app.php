@@ -40,9 +40,10 @@ return [
         App\Providers\AuthServiceProvider::class,
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
+        App\Providers\TenantServiceProvider::class,
     ],
 
     "aliases" => Illuminate\Support\Facades\Facade::defaultAliases()->merge([
-        //
+        "Tenant" => App\Support\Facades\Tenant::class,
     ])->toArray(),
 ];

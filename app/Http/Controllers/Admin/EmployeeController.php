@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Employee;
 use App\Models\User;
+use App\Support\Facades\Tenant;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class EmployeeController extends Controller
 {
@@ -33,7 +35,7 @@ class EmployeeController extends Controller
             "name" => "required|string|max:255",
             "job_title" => "required|string|max:255",
             "is_teaching_staff" => "nullable|boolean",
-            "user_id" => "nullable|exists:users,id",
+            "user_id" => ["nullable", Rule::exists("users", "id")->where("school_id", Tenant::id())],
             "id_number" => "nullable|string|max:50",
             "kra_pin" => "nullable|string|max:50",
             "nssf_number" => "nullable|string|max:50",

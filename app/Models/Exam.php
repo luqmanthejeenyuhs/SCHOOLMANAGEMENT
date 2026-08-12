@@ -2,14 +2,15 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToTenant;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Exam extends Model
 {
-    use HasFactory;
+    use HasFactory, BelongsToTenant;
 
-    protected $fillable = ["name", "school_class_id", "term", "exam_date"];
+    protected $fillable = ["school_id", "name", "school_class_id", "term", "exam_date"];
 
     protected $casts = ["exam_date" => "date"];
 

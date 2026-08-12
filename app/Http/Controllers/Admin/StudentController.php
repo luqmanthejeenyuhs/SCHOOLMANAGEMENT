@@ -9,8 +9,10 @@ use App\Models\SchoolClass;
 use App\Models\Section;
 use App\Models\Student;
 use App\Models\User;
+use App\Support\Facades\Tenant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 
 class StudentController extends Controller
 {
@@ -34,9 +36,9 @@ class StudentController extends Controller
             "name" => "required|string|max:255",
             "email" => "required|email|unique:users,email",
             "password" => "required|min:6",
-            "admission_no" => "required|string|unique:students,admission_no",
-            "school_class_id" => "required|exists:school_classes,id",
-            "section_id" => "nullable|exists:sections,id",
+            "admission_no" => ["required", "string", Rule::unique("students", "admission_no")->where("school_id", Tenant::id())],
+            "school_class_id" => ["required", Rule::exists("school_classes", "id")->where("school_id", Tenant::id())],
+            "section_id" => ["nullable", Rule::exists("sections", "id")->where("school_id", Tenant::id())],
             "guardian_name" => "nullable|string",
             "guardian_phone" => "nullable|string",
             "dob" => "nullable|date",
@@ -131,9 +133,9 @@ class StudentController extends Controller
         $data = $request->validate([
             "name" => "required|string|max:255",
             "email" => "required|email|unique:users,email,".$student->user_id,
-            "admission_no" => "required|string|unique:students,admission_no,".$student->id,
-            "school_class_id" => "required|exists:school_classes,id",
-            "section_id" => "nullable|exists:sections,id",
+            "admission_no" => ["required", "string", Rule::unique("students", "admission_no")->where("school_id", Tenant::id())->ignore($student->id)],
+            "school_class_id" => ["required", Rule::exists("school_classes", "id")->where("school_id", Tenant::id())],
+            "section_id" => ["nullable", Rule::exists("sections", "id")->where("school_id", Tenant::id())],
             "guardian_name" => "nullable|string",
             "guardian_phone" => "nullable|string",
             "dob" => "nullable|date",
