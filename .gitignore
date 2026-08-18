@@ -23,3 +23,10 @@ yarn-error.log
 *.log
 .DS_Store
 Thumbs.db
+/storage/*.key
+/storage/logs/
+/storage/framework/cache/
+/storage/framework/sessions/
+/storage/framework/testing/
+/storage/framework/views/
+/storage/framework/
