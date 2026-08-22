@@ -98,6 +98,10 @@
                                         <div class="modal-header"><h6 class="modal-title">Record Payment — {{ $invoice->student->user->name }}</h6></div>
                                         <div class="modal-body">
                                             <div class="mb-2">
+                                                <span class="text-muted small">Fee Type</span>
+                                                <div class="fw-semibold">{{ $invoice->feeType->name }}</div>
+                                            </div>
+                                            <div class="mb-2">
                                                 <label class="form-label small">Amount Paid (balance: KES {{ number_format($invoice->balance(),2) }})</label>
                                                 <div class="input-group">
                                                     <span class="input-group-text">KES</span>

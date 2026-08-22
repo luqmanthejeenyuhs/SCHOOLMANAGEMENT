@@ -96,7 +96,7 @@ class FeeInvoiceController extends Controller
         ]);
         $data["received_by"] = $request->user()->id;
 
-        $invoice->payments()->create($data);
+        $payment = $invoice->payments()->create($data);
 
         $invoice->refresh();
         $balance = $invoice->balance();
@@ -104,6 +104,10 @@ class FeeInvoiceController extends Controller
             "status" => $balance <= 0 ? "paid" : ($balance < $invoice->amount ? "partially_paid" : "unpaid"),
         ]);
 
-        return back()->with("success", "Payment recorded.");
+        // PaymentObserver::created() runs synchronously during the create()
+        // call above, so the receipt already exists by the time we get here.
+        $receiptUrl = $payment->receipt ? route("admin.receipts.show", $payment->receipt) : null;
+
+        return back()->with("success", "Payment recorded.")->with("receipt_url", $receiptUrl);
     }
 }

@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\GradingScaleController;
 use App\Http\Controllers\Admin\InventoryController;
 use App\Http\Controllers\Admin\MpesaController;
 use App\Http\Controllers\Admin\PayslipController;
+use App\Http\Controllers\Admin\ReceiptController;
 use App\Http\Controllers\Admin\SchoolClassController;
 use App\Http\Controllers\Admin\SectionController;
 use App\Http\Controllers\Admin\SmsController;
@@ -181,6 +182,9 @@ Route::middleware('auth')->group(function () {
             Route::post('invoices/{invoice}/payments', [FeeInvoiceController::class, 'recordPayment'])->name('invoices.payments.store');
             Route::post('invoices/{invoice}/mpesa-push', [MpesaController::class, 'push'])->name('invoices.mpesa_push');
             Route::get('mpesa/transactions/{transaction}/status', [MpesaController::class, 'status'])->name('mpesa.status');
+
+            Route::get('receipts', [ReceiptController::class, 'index'])->name('receipts.index');
+            Route::get('receipts/{receipt}', [ReceiptController::class, 'show'])->name('receipts.show');
         });
 
         // CBC (Competency Based Curriculum)
