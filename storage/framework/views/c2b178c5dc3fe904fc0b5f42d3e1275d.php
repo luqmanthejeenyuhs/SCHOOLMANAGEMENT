@@ -227,14 +227,12 @@
                 <?php
                     $financeActive = request()->routeIs('admin.fee_types.*')
                         || request()->routeIs('admin.invoices.*')
-                        || request()->routeIs('admin.receipts.*')
                         || request()->routeIs('admin.finance.*')
                         || request()->routeIs('admin.accounting.*');
                     $financeLinks = [
                         ['perm' => 'manage_accounting', 'route' => 'admin.accounting.overview', 'routeIs' => 'admin.accounting.overview', 'icon' => 'bi-graph-up-arrow', 'label' => 'Finance Overview'],
                         ['perm' => 'manage_fee_types', 'route' => 'admin.fee_types.index', 'routeIs' => 'admin.fee_types.*', 'icon' => 'bi-cash-coin', 'label' => 'Fee Types'],
                         ['perm' => 'manage_invoices', 'route' => 'admin.invoices.index', 'routeIs' => 'admin.invoices.*', 'icon' => 'bi-receipt', 'label' => 'Invoices &amp; Payments'],
-                        ['perm' => 'record_payments', 'route' => 'admin.receipts.index', 'routeIs' => 'admin.receipts.*', 'icon' => 'bi-receipt-cutoff', 'label' => 'Receipts'],
                         ['perm' => 'manage_finance_ledger', 'route' => 'admin.finance.ledger.index', 'routeIs' => 'admin.finance.*', 'icon' => 'bi-bank', 'label' => 'Bank &amp; M-Pesa Ledger'],
                         ['perm' => 'manage_accounting', 'route' => 'admin.accounting.chart_of_accounts', 'routeIs' => 'admin.accounting.chart_of_accounts', 'icon' => 'bi-diagram-3', 'label' => 'Chart of Accounts'],
                         ['perm' => 'manage_accounting', 'route' => 'admin.accounting.journal_entries', 'routeIs' => 'admin.accounting.journal_entries', 'icon' => 'bi-journal-text', 'label' => 'Journal Entries'],
@@ -364,14 +362,9 @@
 
     <div class="main-content p-4">
         <?php if(session('success')): ?>
-            <div class="alert alert-success alert-dismissible fade show d-flex justify-content-between align-items-center">
-                <span><?php echo e(session('success')); ?></span>
-                <div class="d-flex align-items-center gap-2">
-                    <?php if(session('receipt_url')): ?>
-                        <a href="<?php echo e(session('receipt_url')); ?>" class="btn btn-sm btn-success">View Receipt</a>
-                    <?php endif; ?>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
+            <div class="alert alert-success alert-dismissible fade show"><?php echo e(session('success')); ?>
+
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         <?php endif; ?>
         <?php if($errors->any()): ?>

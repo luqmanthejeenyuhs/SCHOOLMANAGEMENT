@@ -3,7 +3,7 @@
 namespace App\Observers;
 
 use App\Models\Payment;
-use App\Models\Receipt;
+use App\Models\StudentCredit;
 use App\Services\AccountingService;
 
 class PaymentObserver
@@ -16,21 +16,30 @@ class PaymentObserver
      * Every Payment — whether created via the admin "Record Payment" form
      * (FeeInvoiceController@recordPayment) or via bank/M-Pesa webhook
      * reconciliation (FinancePostingService@postDeposit) — ends up here,
-     * so this is the single place a fee payment turns into both a real
-     * double-entry journal entry AND an official receipt. Neither call
-     * site needs to know accounting or receipts exist.
+     * so this is the single place a fee payment turns into a real
+     * double-entry journal entry. Neither of those two call sites needs to
+     * know accounting exists.
      */
     public function created(Payment $payment): void
     {
         $this->accounting->postFeePayment($payment);
 
-        // school_id is taken from the payment directly (not ambient tenant
-        // context) for the same reason AccountingService does this: this can
-        // run from a webhook request where no tenant has been resolved.
-        Receipt::create([
-            "school_id" => $payment->school_id,
-            "payment_id" => $payment->id,
-            "issued_by" => $payment->received_by,
-        ]);
+        // method="credit_balance" means this payment was funded from a
+        // student's previously-held overpayment credit (see
+        // FeeInvoiceController@recordPayment and
+        // AccountingService::holdAsCredit) rather than new cash — the
+        // journal entry above already correctly debits the liability
+        // account, but the fast per-student balance also needs decrementing
+        // so it doesn't drift from what the ledger says.
+        if ($payment->method === "credit_balance") {
+            $studentId = optional($payment->invoice)->student_id;
+            if ($studentId) {
+                StudentCredit::allSchools()
+                    ->where("school_id", $payment->school_id)
+                    ->where("student_id", $studentId)
+                    ->first()
+                    ?->decrement("balance", (float) $payment->amount_paid);
+            }
+        }
     }
 }

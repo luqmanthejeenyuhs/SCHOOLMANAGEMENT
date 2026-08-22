@@ -31,6 +31,7 @@ class Account extends Model
             ["code" => "1020", "name" => "M-Pesa", "type" => "asset", "is_system" => true],
             ["code" => "1030", "name" => "Other Receipts (Card/Unmapped)", "type" => "asset", "is_system" => true],
             ["code" => "1100", "name" => "Accounts Receivable — Fees", "type" => "asset", "is_system" => false],
+            ["code" => "2000", "name" => "Student Deposits / Prepaid Fees", "type" => "liability", "is_system" => true],
             ["code" => "3000", "name" => "Opening Balance Equity", "type" => "equity", "is_system" => false],
             ["code" => "4000", "name" => "Fees Income", "type" => "income", "is_system" => true],
             ["code" => "4900", "name" => "Other Income", "type" => "income", "is_system" => false],
