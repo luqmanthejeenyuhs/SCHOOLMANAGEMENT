@@ -91,6 +91,8 @@ class FeeInvoiceController extends Controller
             "amount_paid" => "required|numeric|min:0.01",
             "payment_date" => "required|date",
             "method" => "required|string|max:50",
+            "bank_name" => "nullable|required_if:method,bank|string|max:100",
+            "reference" => "nullable|string|max:100",
         ]);
         $data["received_by"] = $request->user()->id;
 

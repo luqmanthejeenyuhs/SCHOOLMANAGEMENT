@@ -2,6 +2,7 @@
 
 namespace App\Observers;
 
+use App\Models\Account;
 use App\Models\GradingScale;
 use App\Models\School;
 
@@ -26,5 +27,10 @@ class SchoolObserver
         foreach ($defaults as $row) {
             GradingScale::create($row + ["school_id" => $school->id]);
         }
+
+        // Same idea for accounting: a school can't record a single payment
+        // meaningfully without at least Cash/Bank/M-Pesa + Fees Income to
+        // post against, so the starting Chart of Accounts is seeded here too.
+        Account::seedDefaultChart($school);
     }
 }

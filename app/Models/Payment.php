@@ -10,7 +10,10 @@ class Payment extends Model
 {
     use HasFactory, BelongsToTenant;
 
-    protected $fillable = ["school_id", "fee_invoice_id", "amount_paid", "payment_date", "method", "received_by"];
+    protected $fillable = [
+        "school_id", "fee_invoice_id", "amount_paid", "payment_date",
+        "method", "bank_name", "reference", "received_by",
+    ];
 
     protected $casts = ["payment_date" => "date"];
 

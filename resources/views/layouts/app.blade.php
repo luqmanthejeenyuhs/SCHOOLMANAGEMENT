@@ -34,7 +34,7 @@
             position: fixed;
             border-radius: 50%;
             filter: blur(60px);
-            z-index: 0;
+            z-index: -1;
             pointer-events: none;
             opacity: .3;
         }
@@ -75,7 +75,7 @@
         .navbar .btn-outline-light:hover { background: #fff; color: var(--brand-green-dark); }
 
         /* Layout shell */
-        .app-shell { position: relative; z-index: 1; }
+        .app-shell { position: relative; }
 
         /* Sidebar — fixed width always, never shrinks, own scroll if content is tall */
         .sidebar {
@@ -132,6 +132,10 @@
         .sidebar .collapse .nav-link.active { background: linear-gradient(90deg, var(--brand-green), var(--brand-green-dark)); color: var(--brand-gold-light); box-shadow: none; }
         .sidebar [data-bs-toggle="collapse"] .bi-chevron-down { transition: transform .2s ease; color: var(--brand-green-dark); }
         .sidebar [aria-expanded="true"] .bi-chevron-down { transform: rotate(180deg); }
+        /* Nested sub-menu (e.g. Finance > Accounting) — slightly indented and
+           a touch dimmer so the hierarchy is visually obvious at a glance. */
+        .sidebar .nav-subgroup { margin-left: .5rem; border-left: 2px solid rgba(1, 38, 34, .18); padding-left: .5rem; }
+        .sidebar .nav-subgroup .nav-link { font-size: .82rem; padding: .4rem .7rem; }
 
         /* Cards */
         .stat-card { border: none; border-radius: .9rem; box-shadow: 0 4px 16px rgba(1, 38, 34, .08); border-top: 3px solid var(--brand-gold); transition: transform .15s ease; }
@@ -224,26 +228,52 @@
                     $financeActive = request()->routeIs('admin.fee_types.*')
                         || request()->routeIs('admin.invoices.*')
                         || request()->routeIs('admin.finance.*')
-                        || request()->routeIs('admin.inventory.*')
-                        || request()->routeIs('admin.textbooks.*');
+                        || request()->routeIs('admin.accounting.*');
                     $financeLinks = [
+                        ['perm' => 'manage_accounting', 'route' => 'admin.accounting.overview', 'routeIs' => 'admin.accounting.overview', 'icon' => 'bi-graph-up-arrow', 'label' => 'Finance Overview'],
                         ['perm' => 'manage_fee_types', 'route' => 'admin.fee_types.index', 'routeIs' => 'admin.fee_types.*', 'icon' => 'bi-cash-coin', 'label' => 'Fee Types'],
                         ['perm' => 'manage_invoices', 'route' => 'admin.invoices.index', 'routeIs' => 'admin.invoices.*', 'icon' => 'bi-receipt', 'label' => 'Invoices &amp; Payments'],
                         ['perm' => 'manage_finance_ledger', 'route' => 'admin.finance.ledger.index', 'routeIs' => 'admin.finance.*', 'icon' => 'bi-bank', 'label' => 'Bank &amp; M-Pesa Ledger'],
-                        ['perm' => 'manage_inventory', 'route' => 'admin.inventory.index', 'routeIs' => 'admin.inventory.*', 'icon' => 'bi-box-seam', 'label' => 'Inventory &amp; Store'],
-                        ['perm' => 'manage_textbooks', 'route' => 'admin.textbooks.index', 'routeIs' => 'admin.textbooks.*', 'icon' => 'bi-journal-bookmark', 'label' => 'Textbooks'],
+                        ['perm' => 'manage_accounting', 'route' => 'admin.accounting.chart_of_accounts', 'routeIs' => 'admin.accounting.chart_of_accounts', 'icon' => 'bi-diagram-3', 'label' => 'Chart of Accounts'],
+                        ['perm' => 'manage_accounting', 'route' => 'admin.accounting.journal_entries', 'routeIs' => 'admin.accounting.journal_entries', 'icon' => 'bi-journal-text', 'label' => 'Journal Entries'],
+                        ['perm' => 'manage_accounting', 'route' => 'admin.accounting.ledger', 'routeIs' => 'admin.accounting.ledger', 'icon' => 'bi-list-columns-reverse', 'label' => 'General Ledger'],
+                        ['perm' => 'manage_accounting', 'route' => 'admin.accounting.trial_balance', 'routeIs' => 'admin.accounting.trial_balance', 'icon' => 'bi-clipboard-check', 'label' => 'Trial Balance'],
                     ];
                     $visibleFinanceLinks = collect($financeLinks)->filter(fn ($l) => $u->hasPermission($l['perm']));
                 @endphp
                 @if($visibleFinanceLinks->isNotEmpty())
                 <li class="nav-item">
                     <a class="nav-link d-flex justify-content-between align-items-center {{ $financeActive ? 'active' : '' }}" data-bs-toggle="collapse" href="#financeMenu" role="button" aria-expanded="{{ $financeActive ? 'true' : 'false' }}">
-                        <span><i class="bi bi-cash-stack"></i> Finance</span>
+                        <span><i class="bi bi-cash-stack"></i> Accounting &amp; Finance</span>
                         <i class="bi bi-chevron-down small"></i>
                     </a>
                     <div class="collapse {{ $financeActive ? 'show' : '' }}" id="financeMenu">
                         <ul class="nav nav-pills flex-column gap-1 ms-3 mt-1">
                             @foreach($visibleFinanceLinks as $link)
+                                <li class="nav-item"><a class="nav-link py-1 {{ request()->routeIs($link['routeIs']) ? 'active' : '' }}" href="{{ route($link['route']) }}"><i class="bi {{ $link['icon'] }}"></i> {!! $link['label'] !!}</a></li>
+                            @endforeach
+                        </ul>
+                    </div>
+                </li>
+                @endif
+
+                @php
+                    $inventoryActive = request()->routeIs('admin.inventory.*') || request()->routeIs('admin.textbooks.*');
+                    $inventoryLinks = [
+                        ['perm' => 'manage_inventory', 'route' => 'admin.inventory.index', 'routeIs' => 'admin.inventory.*', 'icon' => 'bi-box-seam', 'label' => 'Store &amp; Assets'],
+                        ['perm' => 'manage_textbooks', 'route' => 'admin.textbooks.index', 'routeIs' => 'admin.textbooks.*', 'icon' => 'bi-journal-bookmark', 'label' => 'Textbooks'],
+                    ];
+                    $visibleInventoryLinks = collect($inventoryLinks)->filter(fn ($l) => $u->hasPermission($l['perm']));
+                @endphp
+                @if($visibleInventoryLinks->isNotEmpty())
+                <li class="nav-item">
+                    <a class="nav-link d-flex justify-content-between align-items-center {{ $inventoryActive ? 'active' : '' }}" data-bs-toggle="collapse" href="#inventoryMenu" role="button" aria-expanded="{{ $inventoryActive ? 'true' : 'false' }}">
+                        <span><i class="bi bi-box-seam"></i> Inventory &amp; Logistics</span>
+                        <i class="bi bi-chevron-down small"></i>
+                    </a>
+                    <div class="collapse {{ $inventoryActive ? 'show' : '' }}" id="inventoryMenu">
+                        <ul class="nav nav-pills flex-column gap-1 ms-3 mt-1">
+                            @foreach($visibleInventoryLinks as $link)
                                 <li class="nav-item"><a class="nav-link py-1 {{ request()->routeIs($link['routeIs']) ? 'active' : '' }}" href="{{ route($link['route']) }}"><i class="bi {{ $link['icon'] }}"></i> {!! $link['label'] !!}</a></li>
                             @endforeach
                         </ul>

@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\ExamController;
 use App\Http\Controllers\Admin\ExamResultController as AdminExamResultController;
 use App\Http\Controllers\Admin\FeeInvoiceController;
 use App\Http\Controllers\Admin\FeeTypeController;
+use App\Http\Controllers\Admin\AccountingController;
 use App\Http\Controllers\Admin\FinanceLedgerController;
 use App\Http\Controllers\Admin\GradingScaleController;
 use App\Http\Controllers\Admin\InventoryController;
@@ -235,6 +236,22 @@ Route::middleware('auth')->group(function () {
             Route::get('finance/ledger', [FinanceLedgerController::class, 'index'])->name('finance.ledger.index');
             Route::post('finance/ledger/bank/{bankTransaction}/reconcile', [FinanceLedgerController::class, 'reconcileBank'])->name('finance.ledger.bank.reconcile');
             Route::post('finance/ledger/mpesa/{mpesaC2bTransaction}/reconcile', [FinanceLedgerController::class, 'reconcileMpesa'])->name('finance.ledger.mpesa.reconcile');
+        });
+
+        // Finance: full accounting — Chart of Accounts, Journal Entries, General
+        // Ledger, Trial Balance. Fee payments auto-post here via
+        // App\Observers\PaymentObserver, no extra wiring needed at the call site.
+        Route::middleware('permission:manage_accounting')->prefix('accounting')->name('accounting.')->group(function () {
+            Route::get('overview', [AccountingController::class, 'overview'])->name('overview');
+
+            Route::get('chart-of-accounts', [AccountingController::class, 'chartOfAccounts'])->name('chart_of_accounts');
+            Route::post('chart-of-accounts', [AccountingController::class, 'storeAccount'])->name('accounts.store');
+
+            Route::get('journal-entries', [AccountingController::class, 'journalEntries'])->name('journal_entries');
+            Route::post('journal-entries', [AccountingController::class, 'storeJournalEntry'])->name('journal_entries.store');
+
+            Route::get('ledger', [AccountingController::class, 'ledger'])->name('ledger');
+            Route::get('trial-balance', [AccountingController::class, 'trialBalance'])->name('trial_balance');
         });
 
         // Inventory: stationery/consumables POS-style issuing

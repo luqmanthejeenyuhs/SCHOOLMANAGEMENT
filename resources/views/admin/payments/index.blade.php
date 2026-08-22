@@ -71,7 +71,7 @@
                         @if($invoice->status !== 'paid')
                         <button class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#mpesaModal{{ $invoice->id }}"><i class="bi bi-phone"></i> M-Pesa</button>
                         <div class="modal fade" id="mpesaModal{{ $invoice->id }}" tabindex="-1">
-                            <div class="modal-dialog">
+                            <div class="modal-dialog modal-dialog-centered">
                                 <div class="modal-content">
                                     <form method="POST" action="{{ route('admin.invoices.mpesa_push', $invoice) }}">
                                         @csrf
@@ -91,7 +91,7 @@
                         </div>
                         <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#payModal{{ $invoice->id }}">Record Payment</button>
                         <div class="modal fade" id="payModal{{ $invoice->id }}" tabindex="-1">
-                            <div class="modal-dialog">
+                            <div class="modal-dialog modal-dialog-centered">
                                 <div class="modal-content">
                                     <form method="POST" action="{{ route('admin.invoices.payments.store', $invoice) }}">
                                         @csrf
@@ -99,7 +99,10 @@
                                         <div class="modal-body">
                                             <div class="mb-2">
                                                 <label class="form-label small">Amount Paid (balance: KES {{ number_format($invoice->balance(),2) }})</label>
-                                                <input type="number" step="0.01" name="amount_paid" class="form-control" required>
+                                                <div class="input-group">
+                                                    <span class="input-group-text">KES</span>
+                                                    <input type="number" step="0.01" min="0.01" name="amount_paid" class="form-control payment-amount-input" placeholder="0.00" required>
+                                                </div>
                                             </div>
                                             <div class="mb-2">
                                                 <label class="form-label small">Payment Date</label>
@@ -107,12 +110,24 @@
                                             </div>
                                             <div class="mb-2">
                                                 <label class="form-label small">Method</label>
-                                                <select name="method" class="form-select">
+                                                <select name="method" class="form-select payment-method-select">
                                                     <option value="cash">Cash</option>
                                                     <option value="mpesa">M-Pesa</option>
                                                     <option value="bank">Bank Transfer</option>
                                                     <option value="card">Card</option>
                                                 </select>
+                                            </div>
+
+                                            {{-- Only shown for Bank Transfer --}}
+                                            <div class="mb-2 payment-method-fields d-none" data-method-fields="bank">
+                                                <label class="form-label small">Bank Name</label>
+                                                <input type="text" name="bank_name" class="form-control" placeholder="e.g. KCB, Equity, Co-operative">
+                                            </div>
+
+                                            {{-- Shown for Bank Transfer, M-Pesa, and Card — label changes per method --}}
+                                            <div class="mb-2 payment-method-fields d-none" data-method-fields="bank,mpesa,card">
+                                                <label class="form-label small payment-reference-label">Reference Number</label>
+                                                <input type="text" name="reference" class="form-control" placeholder="Transaction / cheque / reference code">
                                             </div>
                                         </div>
                                         <div class="modal-footer">
@@ -194,5 +209,45 @@ document.getElementById('feeTypeSelect').addEventListener('change', function () 
 document.getElementById('bulkScope').addEventListener('change', function () {
     document.getElementById('bulkClassWrap').style.display = this.value === 'class' ? 'block' : 'none';
 });
+
+// Record Payment modal: there's one of these per invoice row, so this uses
+// delegated listeners scoped to the closest form rather than hardcoded IDs
+// — works correctly no matter how many invoices are on the page.
+const REFERENCE_LABELS = {
+    bank: 'Bank Reference / Cheque No.',
+    mpesa: 'M-Pesa Transaction Code',
+    card: 'Card Reference / Last 4 Digits',
+};
+
+document.addEventListener('change', function (e) {
+    if (!e.target.matches('.payment-method-select')) return;
+
+    const form = e.target.closest('form');
+    const method = e.target.value;
+
+    form.querySelectorAll('.payment-method-fields').forEach(function (el) {
+        const methods = el.dataset.methodFields.split(',');
+        const show = methods.includes(method);
+        el.classList.toggle('d-none', !show);
+        el.querySelectorAll('input').forEach(function (input) {
+            input.required = show && el.dataset.methodFields === 'bank'; // only Bank Name is strictly required
+        });
+    });
+
+    const label = form.querySelector('.payment-reference-label');
+    if (label) {
+        label.textContent = REFERENCE_LABELS[method] || 'Reference Number';
+    }
+});
+
+// Currency-style formatting: round to 2 decimals once the person leaves the field.
+document.addEventListener('blur', function (e) {
+    if (e.target.matches('.payment-amount-input') && e.target.value !== '') {
+        const value = parseFloat(e.target.value);
+        if (!isNaN(value)) {
+            e.target.value = value.toFixed(2);
+        }
+    }
+}, true);
 </script>
 @endsection
