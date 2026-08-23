@@ -92,6 +92,7 @@ class TeacherController extends Controller
             "qualification" => "nullable|string",
             "address" => "nullable|string",
             "joining_date" => "nullable|date",
+            "employment_type" => "required|in:full_time,part_time,contract,intern,volunteer",
         ]);
 
         $user = User::create([
@@ -114,6 +115,24 @@ class TeacherController extends Controller
         ]);
 
         $teacher->update(["employee_id" => "EMPL".str_pad((string) $teacher->id, 3, "0", STR_PAD_LEFT)]);
+
+        // Every teacher is also staff — link a payroll/HR record now so
+        // Clock In/Out and payroll work immediately, instead of leaving
+        // admins to remember a separate manual step in Payroll > Employees.
+        // basic_salary defaults to 0 and is set properly later from there;
+        // employment_type is asked up front so interns/volunteers are
+        // never silently mixed in with paid staff.
+        Employee::create([
+            "user_id" => $user->id,
+            "teacher_id" => $teacher->id,
+            "name" => $data["name"],
+            "job_title" => "Teacher",
+            "employment_type" => $data["employment_type"],
+            "is_teaching_staff" => true,
+            "phone" => $data["phone"] ?? null,
+            "employment_date" => $data["joining_date"] ?? null,
+            "basic_salary" => 0,
+        ]);
 
         return redirect()->route("admin.teachers.index")->with("success", "Teacher added successfully.");
     }

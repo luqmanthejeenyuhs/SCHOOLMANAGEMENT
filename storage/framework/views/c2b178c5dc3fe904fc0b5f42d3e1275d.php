@@ -313,18 +313,24 @@
                 <?php
                     $staffActive = request()->routeIs('admin.employees.*')
                         || request()->routeIs('admin.payslips.*')
-                        || request()->routeIs('admin.staff_attendance.*');
+                        || request()->routeIs('admin.staff_attendance.*')
+                        || request()->routeIs('admin.leave_requests.*')
+                        || request()->routeIs('admin.loan_requests.*')
+                        || request()->routeIs('admin.settings.school_profile.*');
                     $staffLinks = [
                         ['perm' => 'manage_employees', 'route' => 'admin.employees.index', 'routeIs' => 'admin.employees.*', 'icon' => 'bi-person-lines-fill', 'label' => 'Employees'],
                         ['perm' => 'generate_payslips', 'route' => 'admin.payslips.index', 'routeIs' => 'admin.payslips.*', 'icon' => 'bi-wallet2', 'label' => 'Payroll &amp; Payslips'],
                         ['perm' => 'view_staff_attendance', 'route' => 'admin.staff_attendance.index', 'routeIs' => 'admin.staff_attendance.*', 'icon' => 'bi-fingerprint', 'label' => 'Staff Attendance'],
+                        ['perm' => 'manage_leave_requests', 'route' => 'admin.leave_requests.index', 'routeIs' => 'admin.leave_requests.*', 'icon' => 'bi-calendar-x', 'label' => 'Leave Requests'],
+                        ['perm' => 'manage_loan_requests', 'route' => 'admin.loan_requests.index', 'routeIs' => 'admin.loan_requests.*', 'icon' => 'bi-cash-stack', 'label' => 'Loans &amp; Advances'],
+                        ['perm' => 'manage_settings', 'route' => 'admin.settings.school_profile.edit', 'routeIs' => 'admin.settings.school_profile.*', 'icon' => 'bi-geo-alt', 'label' => 'School Location &amp; Hours'],
                     ];
                     $visibleStaffLinks = collect($staffLinks)->filter(fn ($l) => $u->hasPermission($l['perm']));
                 ?>
                 <?php if($visibleStaffLinks->isNotEmpty()): ?>
                 <li class="nav-item">
                     <a class="nav-link d-flex justify-content-between align-items-center <?php echo e($staffActive ? 'active' : ''); ?>" data-bs-toggle="collapse" href="#staffMenu" role="button" aria-expanded="<?php echo e($staffActive ? 'true' : 'false'); ?>">
-                        <span><i class="bi bi-briefcase-fill"></i> Staff &amp; Payroll</span>
+                        <span><i class="bi bi-briefcase-fill"></i> Staff Management</span>
                         <i class="bi bi-chevron-down small"></i>
                     </a>
                     <div class="collapse <?php echo e($staffActive ? 'show' : ''); ?>" id="staffMenu">
@@ -343,10 +349,19 @@
                 <?php if($u->hasPermission('manage_settings') || $u->hasPermission('manage_rights')): ?>
                     <li class="nav-item"><a class="nav-link <?php echo e(request()->routeIs('admin.settings.*') ? 'active' : ''); ?>" href="<?php echo e(route('admin.settings.index')); ?>"><i class="bi bi-gear-fill"></i> Settings</a></li>
                 <?php endif; ?>
+                <?php if(\App\Models\Employee::where('user_id', $u->id)->exists()): ?>
+                    <li class="nav-item"><a class="nav-link <?php echo e(request()->routeIs('staff.clock.*') ? 'active' : ''); ?>" href="<?php echo e(route('staff.clock.index')); ?>"><i class="bi bi-fingerprint"></i> Clock In/Out</a></li>
+                    <li class="nav-item"><a class="nav-link <?php echo e(request()->routeIs('staff.leave.*') ? 'active' : ''); ?>" href="<?php echo e(route('staff.leave.index')); ?>"><i class="bi bi-calendar-x"></i> Request Leave</a></li>
+                    <li class="nav-item"><a class="nav-link <?php echo e(request()->routeIs('staff.loans.*') ? 'active' : ''); ?>" href="<?php echo e(route('staff.loans.index')); ?>"><i class="bi bi-cash-stack"></i> Loans &amp; Advances</a></li>
+                    <li class="nav-item"><a class="nav-link <?php echo e(request()->routeIs('staff.payslips.*') ? 'active' : ''); ?>" href="<?php echo e(route('staff.payslips.index')); ?>"><i class="bi bi-wallet2"></i> My Payslips</a></li>
+                <?php endif; ?>
             <?php elseif(auth()->user()->role === 'teacher'): ?>
                 <li class="nav-item"><a class="nav-link <?php echo e(request()->routeIs('teacher.dashboard') ? 'active' : ''); ?>" href="<?php echo e(route('teacher.dashboard')); ?>"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
                 <li class="nav-item"><a class="nav-link <?php echo e(request()->routeIs('teacher.attendance.*') ? 'active' : ''); ?>" href="<?php echo e(route('teacher.attendance.index')); ?>"><i class="bi bi-calendar-check"></i> Attendance</a></li>
                 <li class="nav-item"><a class="nav-link <?php echo e(request()->routeIs('teacher.clock.*') ? 'active' : ''); ?>" href="<?php echo e(route('teacher.clock.index')); ?>"><i class="bi bi-fingerprint"></i> Clock In/Out</a></li>
+                <li class="nav-item"><a class="nav-link <?php echo e(request()->routeIs('staff.leave.*') ? 'active' : ''); ?>" href="<?php echo e(route('staff.leave.index')); ?>"><i class="bi bi-calendar-x"></i> Request Leave</a></li>
+                <li class="nav-item"><a class="nav-link <?php echo e(request()->routeIs('staff.loans.*') ? 'active' : ''); ?>" href="<?php echo e(route('staff.loans.index')); ?>"><i class="bi bi-cash-stack"></i> Loans &amp; Advances</a></li>
+                <li class="nav-item"><a class="nav-link <?php echo e(request()->routeIs('staff.payslips.*') ? 'active' : ''); ?>" href="<?php echo e(route('staff.payslips.index')); ?>"><i class="bi bi-wallet2"></i> My Payslips</a></li>
                 <li class="nav-item"><a class="nav-link <?php echo e(request()->routeIs('teacher.timetable.*') ? 'active' : ''); ?>" href="<?php echo e(route('teacher.timetable.index')); ?>"><i class="bi bi-calendar-week"></i> My Timetable</a></li>
                 <li class="nav-item"><a class="nav-link <?php echo e(request()->routeIs('teacher.results.*') ? 'active' : ''); ?>" href="<?php echo e(route('teacher.results.index')); ?>"><i class="bi bi-clipboard-data"></i> Enter Results</a></li>
                 <li class="nav-item"><a class="nav-link <?php echo e(request()->routeIs('teacher.cbc.*') ? 'active' : ''); ?>" href="<?php echo e(route('teacher.cbc.index')); ?>"><i class="bi bi-award"></i> CBC Assessment</a></li>
@@ -363,6 +378,12 @@
     <div class="main-content p-4">
         <?php if(session('success')): ?>
             <div class="alert alert-success alert-dismissible fade show"><?php echo e(session('success')); ?>
+
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <?php endif; ?>
+        <?php if(session('error')): ?>
+            <div class="alert alert-danger alert-dismissible fade show"><?php echo e(session('error')); ?>
 
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>

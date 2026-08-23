@@ -34,6 +34,7 @@ class EmployeeController extends Controller
         $data = $request->validate([
             "name" => "required|string|max:255",
             "job_title" => "required|string|max:255",
+            "employment_type" => "required|in:full_time,part_time,contract,intern,volunteer",
             "is_teaching_staff" => "nullable|boolean",
             "user_id" => ["nullable", Rule::exists("users", "id")->where("school_id", Tenant::id())],
             "id_number" => "nullable|string|max:50",

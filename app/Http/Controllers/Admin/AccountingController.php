@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Account;
 use App\Models\FeeInvoice;
 use App\Models\JournalEntry;
-use App\Models\StudentCredit;
 use App\Services\AccountingService;
 use App\Support\Facades\Tenant;
 use Illuminate\Http\Request;
@@ -35,16 +34,6 @@ class AccountingController extends Controller
         ];
 
         return view("admin.accounting.overview", compact("stats"));
-    }
-
-    public function studentCredits()
-    {
-        $credits = StudentCredit::with("student.user")
-            ->where("balance", ">", 0)
-            ->orderByDesc("balance")
-            ->get();
-
-        return view("admin.accounting.student_credits", compact("credits"));
     }
 
     // ---------- Chart of Accounts ----------

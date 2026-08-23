@@ -50,6 +50,15 @@
                 <input type="text" name="tsc_number" class="form-control" value="{{ old('tsc_number') }}">
             </div>
             <div class="col-md-6">
+                <label class="form-label">Employment Type</label>
+                <select name="employment_type" class="form-select" required>
+                    @foreach(\App\Models\Employee::EMPLOYMENT_TYPES as $value => $label)
+                        <option value="{{ $value }}" @selected(old('employment_type') === $value)>{{ $label }}</option>
+                    @endforeach
+                </select>
+                <div class="form-text">Interns/volunteers still get full attendance tracking — this just keeps them separate from payroll.</div>
+            </div>
+            <div class="col-md-6">
                 <label class="form-label">Qualification</label>
                 <input type="text" name="qualification" class="form-control" value="{{ old('qualification') }}" placeholder="e.g. B.Ed Mathematics">
             </div>

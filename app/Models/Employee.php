@@ -11,10 +11,18 @@ class Employee extends Model
     use HasFactory, BelongsToTenant;
 
     protected $fillable = [
-        "school_id", "user_id", "teacher_id", "staff_number", "name", "job_title", "is_teaching_staff",
+        "school_id", "user_id", "teacher_id", "staff_number", "name", "job_title", "employment_type", "is_teaching_staff",
         "id_number", "kra_pin", "nssf_number", "shif_number", "phone",
         "basic_salary", "house_allowance", "transport_allowance", "other_allowances",
         "employment_date", "is_active",
+    ];
+
+    public const EMPLOYMENT_TYPES = [
+        "full_time" => "Full-time",
+        "part_time" => "Part-time",
+        "contract" => "Contract",
+        "intern" => "Intern",
+        "volunteer" => "Volunteer",
     ];
 
     protected $casts = [
@@ -66,8 +74,29 @@ class Employee extends Model
         return $this->hasMany(StaffAttendance::class);
     }
 
+    public function leaveRequests()
+    {
+        return $this->hasMany(LeaveRequest::class);
+    }
+
+    public function loanRequests()
+    {
+        return $this->hasMany(LoanRequest::class);
+    }
+
     public function grossPay(): float
     {
         return (float) $this->basic_salary + $this->house_allowance + $this->transport_allowance + $this->other_allowances;
+    }
+
+    /**
+     * Interns/volunteers are still full Employee records (attendance,
+     * Clock In/Out, leave tracking all work the same for them) — this is
+     * just for screens that want to separate "on payroll" staff from
+     * unpaid ones, e.g. flagging a payslip generated for someone unpaid.
+     */
+    public function isUnpaid(): bool
+    {
+        return in_array($this->employment_type, ["intern", "volunteer"], true);
     }
 }

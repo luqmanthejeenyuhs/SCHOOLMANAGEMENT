@@ -8,6 +8,19 @@
 
 <div class="row g-3">
     <div class="col-md-4">
+        <a href="{{ route('admin.settings.school_profile.edit') }}" class="text-decoration-none text-dark">
+            <div class="card stat-card h-100 p-3">
+                <div class="d-flex align-items-center gap-3">
+                    <i class="bi bi-building"></i>
+                    <div>
+                        <h6 class="mb-1">School Profile</h6>
+                        <small class="text-muted">Compound location, geofence radius, and expected clock-in/out times.</small>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-4">
         <a href="{{ route('admin.settings.rights.index') }}" class="text-decoration-none text-dark">
             <div class="card stat-card h-100 p-3">
                 <div class="d-flex align-items-center gap-3">

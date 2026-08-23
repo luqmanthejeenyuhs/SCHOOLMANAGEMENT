@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Models\Account;
 use App\Models\JournalEntry;
 use App\Models\Payment;
-use App\Models\StudentCredit;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
@@ -39,7 +38,6 @@ class AccountingService
         // — doesn't affect the posted amounts/accounts, which are correct
         // either way since those come from $schoolId directly.
         $studentLabel = optional(optional($payment->invoice)->student)->admission_no;
-        $feeTypeLabel = optional(optional($payment->invoice)->feeType)->name;
         $methodDetail = $payment->method;
         if ($payment->bank_name) {
             $methodDetail .= " — {$payment->bank_name}";
@@ -47,10 +45,7 @@ class AccountingService
         if ($payment->reference) {
             $methodDetail .= " ref: {$payment->reference}";
         }
-        $memo = "Fee payment"
-            .($studentLabel ? " — {$studentLabel}" : "")
-            .($feeTypeLabel ? " [{$feeTypeLabel}]" : "")
-            ." ({$methodDetail})";
+        $memo = "Fee payment".($studentLabel ? " — {$studentLabel}" : "")." ({$methodDetail})";
 
         return $this->postEntry(
             schoolId: $schoolId,
@@ -67,62 +62,12 @@ class AccountingService
         );
     }
 
-    /**
-     * Overpayment excess that couldn't be applied to any invoice (the
-     * student has none outstanding right now) — held as a genuine liability
-     * (money received but not yet earned as fee revenue), not credited to
-     * Fees Income. Debits the real cash-type account (how the money
-     * actually arrived), credits "2000 Student Deposits / Prepaid Fees".
-     *
-     * The credit gets consumed later via a normal Payment with
-     * method="credit_balance" (see accountForPaymentMethod below) — that
-     * flips the direction: debits 2000, credits Fees Income, with no new
-     * cash involved since it was already received here.
-     */
-    public function holdAsCredit(int $schoolId, int $studentId, float $amount, string $method, ?string $bankName, ?string $reference, ?int $userId, ?string $studentLabel = null): JournalEntry
-    {
-        $debitAccount = $this->accountForPaymentMethod($schoolId, $method);
-        $creditAccount = $this->systemAccount($schoolId, "2000"); // Student Deposits / Prepaid Fees
-
-        $methodDetail = $method;
-        if ($bankName) {
-            $methodDetail .= " — {$bankName}";
-        }
-        if ($reference) {
-            $methodDetail .= " ref: {$reference}";
-        }
-
-        $memo = "Overpayment held as student credit".($studentLabel ? " — {$studentLabel}" : "")." ({$methodDetail})";
-
-        $entry = $this->postEntry(
-            schoolId: $schoolId,
-            date: now()->toDateString(),
-            memo: $memo,
-            lines: [
-                ["account_id" => $debitAccount->id, "debit" => $amount, "credit" => 0],
-                ["account_id" => $creditAccount->id, "debit" => 0, "credit" => $amount],
-            ],
-            sourceType: "student_credit",
-            reference: "CREDIT-STU-{$studentId}",
-            userId: $userId,
-        );
-
-        $credit = StudentCredit::allSchools()->firstOrCreate(
-            ["school_id" => $schoolId, "student_id" => $studentId],
-            ["balance" => 0]
-        );
-        $credit->increment("balance", $amount);
-
-        return $entry;
-    }
-
     protected function accountForPaymentMethod(int $schoolId, string $method): Account
     {
         $code = match ($method) {
             "cash" => "1000",
             "bank" => "1010",
             "mpesa", "mpesa_c2b" => "1020",
-            "credit_balance" => "2000", // applying a student's held credit to an invoice — not new cash
             default => "1030", // card / anything not otherwise mapped
         };
 

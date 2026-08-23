@@ -5,10 +5,15 @@ namespace App\Http\Controllers\Teacher;
 use App\Http\Controllers\Controller;
 use App\Models\Employee;
 use App\Models\StaffAttendance;
+use App\Services\StaffAttendanceService;
 use Illuminate\Http\Request;
 
 class ClockController extends Controller
 {
+    public function __construct(protected StaffAttendanceService $attendance)
+    {
+    }
+
     public function index()
     {
         $employee = Employee::where('user_id', auth()->id())->first();
@@ -19,7 +24,9 @@ class ClockController extends Controller
                 ->first()
             : null;
 
-        return view('teacher.clock.index', compact('employee', 'today'));
+        $school = $employee?->school;
+
+        return view('teacher.clock.index', compact('employee', 'today', 'school'));
     }
 
     public function store(Request $request)
@@ -28,24 +35,24 @@ class ClockController extends Controller
 
         abort_unless($employee, 404, 'No staff record is linked to your account yet. Ask an admin to link it.');
 
-        $record = StaffAttendance::firstOrNew([
-            'employee_id' => $employee->id,
-            'date' => today()->toDateString(),
+        $data = $request->validate([
+            'action' => 'required|in:clock_in,clock_out',
+            'lat' => 'nullable|numeric|between:-90,90',
+            'lng' => 'nullable|numeric|between:-180,180',
         ]);
 
-        if (! $record->exists) {
-            $record->clock_in = now()->format('H:i:s');
-            $record->status = 'present';
-            $record->save();
-            $message = 'Clocked in at ' . now()->format('g:i A') . '.';
-        } elseif (! $record->clock_out) {
-            $record->clock_out = now()->format('H:i:s');
-            $record->save();
-            $message = 'Clocked out at ' . now()->format('g:i A') . '.';
-        } else {
-            $message = 'You have already clocked in and out today.';
+        try {
+            $record = $data['action'] === 'clock_in'
+                ? $this->attendance->clockIn($employee, $data['lat'] ?? null, $data['lng'] ?? null)
+                : $this->attendance->clockOut($employee, $data['lat'] ?? null, $data['lng'] ?? null);
+        } catch (\RuntimeException $e) {
+            return back()->with('error', $e->getMessage());
         }
 
-        return back()->with('success', $message);
+        $action = $data['action'] === 'clock_in' ? 'Clocked in' : 'Clocked out';
+        $time = $data['action'] === 'clock_in' ? $record->clock_in : $record->clock_out;
+        $suffix = $record->status === 'late' ? ' (marked late)' : '';
+
+        return back()->with('success', "{$action} at {$time->format('g:i A')}{$suffix}.");
     }
 }

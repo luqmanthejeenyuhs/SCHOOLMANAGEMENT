@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Permission;
 use App\Models\User;
+use App\Support\Facades\Tenant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -14,6 +15,34 @@ class SettingsController extends Controller
     public function index()
     {
         return view("admin.settings.index");
+    }
+
+    public function schoolProfile()
+    {
+        $school = Tenant::current();
+
+        return view("admin.settings.school_profile", compact("school"));
+    }
+
+    public function schoolProfileUpdate(Request $request)
+    {
+        $school = Tenant::current();
+
+        $data = $request->validate([
+            "name" => "required|string|max:255",
+            "email" => "nullable|email|max:255",
+            "phone" => "nullable|string|max:50",
+            "address" => "nullable|string|max:500",
+            "latitude" => "nullable|numeric|between:-90,90",
+            "longitude" => "nullable|numeric|between:-180,180",
+            "geofence_radius_meters" => "nullable|integer|min:20|max:5000",
+            "expected_clock_in" => "required|date_format:H:i",
+            "expected_clock_out" => "required|date_format:H:i",
+        ]);
+
+        $school->update($data);
+
+        return back()->with("success", "School profile updated.");
     }
 
     public function rightsIndex(Request $request)

@@ -12,6 +12,8 @@ use App\Http\Controllers\Admin\FinanceLedgerController;
 use App\Http\Controllers\Admin\GradingScaleController;
 use App\Http\Controllers\Admin\InventoryController;
 use App\Http\Controllers\Admin\MpesaController;
+use App\Http\Controllers\Admin\LeaveRequestController;
+use App\Http\Controllers\Admin\LoanRequestController;
 use App\Http\Controllers\Admin\PayslipController;
 use App\Http\Controllers\Admin\SchoolClassController;
 use App\Http\Controllers\Admin\SectionController;
@@ -27,6 +29,9 @@ use App\Http\Controllers\Student\DashboardController as StudentDashboardControll
 use App\Http\Controllers\Teacher\AttendanceController;
 use App\Http\Controllers\Teacher\CbcAssessmentController;
 use App\Http\Controllers\Teacher\ClockController;
+use App\Http\Controllers\Teacher\LeaveController;
+use App\Http\Controllers\Teacher\LoanController;
+use App\Http\Controllers\Teacher\PayslipController as StaffPayslipController;
 use App\Http\Controllers\Teacher\DashboardController as TeacherDashboardController;
 use App\Http\Controllers\Teacher\ExamResultController as TeacherExamResultController;
 use App\Http\Controllers\Webhooks\BankWebhookController;
@@ -59,6 +64,23 @@ Route::post('/logout', [LoginController::class, 'logout'])->middleware('auth')->
 
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    // Self clock-in, open to anyone with a linked Employee record —
+    // teachers already have /teacher/clock; this is the same controller so
+    // non-teaching staff who log in with an admin-role account (bursar,
+    // front office, etc.) can clock themselves in too.
+    Route::prefix('staff')->name('staff.')->middleware('role:admin,teacher')->group(function () {
+        Route::get('/clock', [ClockController::class, 'index'])->name('clock.index');
+        Route::post('/clock', [ClockController::class, 'store'])->name('clock.store');
+
+        Route::get('/leave', [LeaveController::class, 'index'])->name('leave.index');
+        Route::post('/leave', [LeaveController::class, 'store'])->name('leave.store');
+
+        Route::get('/loans', [LoanController::class, 'index'])->name('loans.index');
+        Route::post('/loans', [LoanController::class, 'store'])->name('loans.store');
+
+        Route::get('/payslips', [StaffPayslipController::class, 'index'])->name('payslips.index');
+    });
 
     // ADMIN
     Route::prefix('admin')->name('admin.')->middleware('role:admin')->group(function () {
@@ -230,6 +252,23 @@ Route::middleware('auth')->group(function () {
 
         // Staff Attendance
         Route::get('staff-attendance', [StaffAttendanceController::class, 'index'])->name('staff_attendance.index')->middleware('permission:view_staff_attendance');
+        Route::middleware('permission:manage_staff_attendance')->group(function () {
+            Route::post('staff-attendance', [StaffAttendanceController::class, 'store'])->name('staff_attendance.store');
+            Route::put('staff-attendance/{staffAttendance}', [StaffAttendanceController::class, 'update'])->name('staff_attendance.update');
+        });
+
+        Route::middleware('permission:manage_leave_requests')->group(function () {
+            Route::get('leave-requests', [LeaveRequestController::class, 'index'])->name('leave_requests.index');
+            Route::post('leave-requests/{leaveRequest}/approve', [LeaveRequestController::class, 'approve'])->name('leave_requests.approve');
+            Route::post('leave-requests/{leaveRequest}/reject', [LeaveRequestController::class, 'reject'])->name('leave_requests.reject');
+        });
+
+        Route::middleware('permission:manage_loan_requests')->group(function () {
+            Route::get('loan-requests', [LoanRequestController::class, 'index'])->name('loan_requests.index');
+            Route::post('loan-requests/{loanRequest}/approve', [LoanRequestController::class, 'approve'])->name('loan_requests.approve');
+            Route::post('loan-requests/{loanRequest}/reject', [LoanRequestController::class, 'reject'])->name('loan_requests.reject');
+            Route::post('loan-requests/{loanRequest}/disburse', [LoanRequestController::class, 'markDisbursed'])->name('loan_requests.disburse');
+        });
 
         // Finance: Bank + M-Pesa C2B ledger (paperless deposit reconciliation)
         Route::middleware('permission:manage_finance_ledger')->group(function () {
@@ -243,7 +282,6 @@ Route::middleware('auth')->group(function () {
         // App\Observers\PaymentObserver, no extra wiring needed at the call site.
         Route::middleware('permission:manage_accounting')->prefix('accounting')->name('accounting.')->group(function () {
             Route::get('overview', [AccountingController::class, 'overview'])->name('overview');
-            Route::get('student-credits', [AccountingController::class, 'studentCredits'])->name('student_credits');
 
             Route::get('chart-of-accounts', [AccountingController::class, 'chartOfAccounts'])->name('chart_of_accounts');
             Route::post('chart-of-accounts', [AccountingController::class, 'storeAccount'])->name('accounts.store');
@@ -273,6 +311,10 @@ Route::middleware('auth')->group(function () {
 
         // Settings: user rights (permissions) and password resets
         Route::get('settings', [SettingsController::class, 'index'])->name('settings.index')->middleware('permission:manage_settings');
+        Route::middleware('permission:manage_settings')->group(function () {
+            Route::get('settings/school-profile', [SettingsController::class, 'schoolProfile'])->name('settings.school_profile.edit');
+            Route::put('settings/school-profile', [SettingsController::class, 'schoolProfileUpdate'])->name('settings.school_profile.update');
+        });
         Route::middleware('permission:manage_rights')->group(function () {
             Route::get('settings/rights', [SettingsController::class, 'rightsIndex'])->name('settings.rights.index');
             Route::get('settings/rights/{user}', [SettingsController::class, 'rightsEdit'])->name('settings.rights.edit');

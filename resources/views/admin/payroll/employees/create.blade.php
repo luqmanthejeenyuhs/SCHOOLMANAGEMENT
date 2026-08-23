@@ -15,6 +15,15 @@
                 <input type="text" name="job_title" class="form-control" value="{{ old('job_title') }}" placeholder="e.g. Bursar, Cook, Driver, Teacher" required>
             </div>
             <div class="col-md-6">
+                <label class="form-label">Employment Type</label>
+                <select name="employment_type" class="form-select" required>
+                    @foreach(\App\Models\Employee::EMPLOYMENT_TYPES as $value => $label)
+                        <option value="{{ $value }}" @selected(old('employment_type') === $value)>{{ $label }}</option>
+                    @endforeach
+                </select>
+                <div class="form-text">Interns/volunteers still get full attendance tracking — this just keeps them separate from payroll.</div>
+            </div>
+            <div class="col-md-6">
                 <label class="form-label">Staff Number</label>
                 <input type="text" class="form-control" value="Assigned automatically as EMPL001, EMPL002, etc." disabled>
                 <div class="form-text">No need to type one in — it's generated after you save.</div>
