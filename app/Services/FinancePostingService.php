@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\DB;
 
 class FinancePostingService
 {
-    public function __construct(protected SmsService $sms)
+    public function __construct(protected SmsService $sms, protected PaymentAllocationService $allocation)
     {
     }
 
@@ -26,17 +26,23 @@ class FinancePostingService
     }
 
     /**
-     * Credit the student's oldest outstanding invoice with this amount (or roll the
-     * remainder onto the next one if it overpays the first), returning the invoice
-     * touched (or null if the student has no outstanding invoices at all) and the
-     * Payment record created against it.
+     * Credit the student's oldest outstanding invoice with this amount, cascading any
+     * excess onto their next outstanding invoice(s) via PaymentAllocationService (or
+     * applying it as a credit to the last invoice touched if none remain). Returns
+     * the first invoice touched (or null if the student has no invoices at all) and
+     * the first Payment record created against it — matching the shape every caller
+     * (FinanceLedgerController, the bank/M-Pesa webhooks) already expects, since a
+     * BankTransaction/MpesaC2bTransaction row only has a single payment_id column.
+     * If the amount cascaded into more than one Payment, the rest are still created
+     * and posted/receipted normally (via PaymentObserver) — they're just not the one
+     * returned here.
      *
      * Wrapped in a DB transaction plus a unique bank/M-Pesa reference upstream, so a
      * webhook retry can't double-credit the same deposit.
      */
     public function postDeposit(Student $student, float $amount, string $method, ?string $note = null): array
     {
-        return DB::transaction(function () use ($student, $amount, $method, $note) {
+        return DB::transaction(function () use ($student, $amount, $method) {
             $invoice = FeeInvoice::where('student_id', $student->id)
                 ->where('status', '!=', 'paid')
                 ->oldest('due_date')
@@ -51,19 +57,14 @@ class FinancePostingService
             $payment = null;
 
             if ($invoice) {
-                $payment = $invoice->payments()->create([
-                    'amount_paid' => $amount,
+                $payments = $this->allocation->apply($invoice, $amount, [
                     'payment_date' => now()->toDateString(),
                     'method' => $method,
                 ]);
+                $payment = $payments[0] ?? null;
 
-                $invoice->refresh();
-                $balance = $invoice->balance();
-                $invoice->update([
-                    'status' => $balance <= 0 ? 'paid' : 'partially_paid',
-                ]);
-
-                $this->sendReceipt($student, $amount, $invoice->balance(), $method);
+                $lastInvoice = ! empty($payments) ? end($payments)->invoice : $invoice;
+                $this->sendReceipt($student, $amount, $lastInvoice->balance(), $method);
             }
 
             return [$invoice, $payment];

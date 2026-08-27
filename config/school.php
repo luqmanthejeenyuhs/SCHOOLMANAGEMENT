@@ -23,4 +23,11 @@ return [
     // Clocking in after this time (24hr, school timezone) is marked "late".
     'expected_clock_in' => env('SCHOOL_EXPECTED_CLOCK_IN', '08:00'),
     'expected_clock_out' => env('SCHOOL_EXPECTED_CLOCK_OUT', '16:00'),
+
+    // The platform's own root domain, e.g. "taalumasms.co.ke" — used to
+    // detect a school subdomain like "littleheaven.taalumasms.co.ke" by
+    // stripping this off the request host. Set via .env; leave unset (null)
+    // locally / on the default *.laravel.cloud host, where there's no real
+    // subdomain-per-school routing to do.
+    'platform_domain' => env('PLATFORM_DOMAIN'),
 ];

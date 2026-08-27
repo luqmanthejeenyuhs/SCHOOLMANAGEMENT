@@ -42,7 +42,7 @@ class SchoolController extends Controller
             "address" => "nullable|string",
             "admin_name" => "required|string|max:255",
             "admin_email" => ["required", "email", Rule::unique("users", "email")],
-            "admin_password" => "required|min:6",
+            "admin_password" => "required|min:10",
         ]);
 
         $school = School::create([

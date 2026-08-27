@@ -7,10 +7,26 @@
 </div>
 
 <div class="card p-4" style="max-width:700px;">
-    <form method="POST" action="{{ route('admin.settings.school_profile.update') }}">
+    <form method="POST" action="{{ route('admin.settings.school_profile.update') }}" enctype="multipart/form-data">
         @csrf @method('PUT')
 
-        <h6 class="text-uppercase text-muted small mb-3">Basic Details</h6>
+        <h6 class="text-uppercase text-muted small mb-3">Branding</h6>
+        <div class="row g-3 align-items-center">
+            <div class="col-auto">
+                @if($school->logo_path)
+                    <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($school->logo_path) }}" alt="{{ $school->name }} logo" style="width:64px;height:64px;object-fit:cover;border-radius:50%;border:2px solid #dbe9df;">
+                @else
+                    <div class="d-flex align-items-center justify-content-center" style="width:64px;height:64px;border-radius:50%;background:#E8F5EC;color:#0A5A33;font-size:1.5rem;"><i class="bi bi-mortarboard-fill"></i></div>
+                @endif
+            </div>
+            <div class="col">
+                <label class="form-label">School Logo</label>
+                <input type="file" name="logo" accept="image/*" class="form-control">
+                <div class="form-text">Shown on your school's login page (instead of the generic Taaluma SMS branding) and around the app. PNG or JPG, up to 2MB.</div>
+            </div>
+        </div>
+
+        <h6 class="text-uppercase text-muted small mb-3 mt-4">Basic Details</h6>
         <div class="row g-3">
             <div class="col-md-6">
                 <label class="form-label">School Name</label>

@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Student;
 use App\Models\User;
+use App\Services\AccountProvisioningService;
+use App\Support\Facades\Tenant;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 
 class ParentController extends Controller
 {
@@ -27,22 +29,24 @@ class ParentController extends Controller
         return view("admin.parents.create", compact("students"));
     }
 
-    public function store(Request $request)
+    public function store(Request $request, AccountProvisioningService $accounts)
     {
         $data = $request->validate([
             "name" => "required|string|max:255",
             "email" => "required|email|unique:users,email",
-            "password" => "required|min:6",
+            "username" => ["required", "string", "max:50", "alpha_dash", Rule::unique("users", "username")->where("school_id", Tenant::id())],
             "phone" => "nullable|string",
             "children" => "array",
             "children.*" => "exists:students,id",
             "relationship" => "nullable|string|max:50",
         ]);
 
-        $parent = User::create([
+        // Password is generated and emailed, not chosen here — see
+        // AccountProvisioningService. The admin never sees it.
+        $parent = $accounts->createUserAccount([
             "name" => $data["name"],
             "email" => $data["email"],
-            "password" => Hash::make($data["password"]),
+            "username" => $data["username"],
             "role" => "parent",
             "phone" => $data["phone"] ?? null,
         ]);

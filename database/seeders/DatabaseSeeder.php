@@ -29,6 +29,17 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
+        // This seeder creates every account (including a platform-wide
+        // super_admin) with the password "password" — perfectly fine for
+        // local development, catastrophic on a real production database.
+        // Use `php artisan admin:create-super` and `php artisan demo:reset`
+        // instead, both of which prompt for a real password interactively.
+        if (app()->environment('production')) {
+            $this->command->error('DatabaseSeeder is blocked in production (weak demo passwords). Use admin:create-super and demo:reset instead.');
+
+            return;
+        }
+
         // --- Platform-level super admin (belongs to no school) ---
         User::create([
             'name' => 'Platform Super Admin',

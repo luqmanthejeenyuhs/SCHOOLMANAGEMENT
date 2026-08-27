@@ -124,10 +124,17 @@
     <div class="login-card">
         <div class="text-center mb-4">
             <span class="brand-badge"><i class="bi bi-shield-check"></i> Trusted School Platform</span>
-            <h3 class="mb-0" style="font-weight:800;color:var(--brand-green-dark);">
-                <i class="bi bi-mortarboard-fill" style="color:var(--brand-gold);"></i> Taaluma SMS
-            </h3>
-            <small class="text-muted">Sign in to your account to continue</small>
+            @if($school ?? null)
+                <h3 class="mb-0" style="font-weight:800;color:var(--brand-green-dark);">
+                    <i class="bi bi-mortarboard-fill" style="color:var(--brand-gold);"></i> {{ $school->name }}
+                </h3>
+                <small class="text-muted">Powered by Taaluma SMS — sign in to your account</small>
+            @else
+                <h3 class="mb-0" style="font-weight:800;color:var(--brand-green-dark);">
+                    <i class="bi bi-mortarboard-fill" style="color:var(--brand-gold);"></i> Taaluma SMS
+                </h3>
+                <small class="text-muted">Sign in to your account to continue</small>
+            @endif
         </div>
 
         @if($errors->any())

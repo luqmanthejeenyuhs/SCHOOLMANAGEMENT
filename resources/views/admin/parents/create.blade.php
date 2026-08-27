@@ -16,12 +16,13 @@
                 <input type="text" name="phone" class="form-control" value="{{ old('phone') }}">
             </div>
             <div class="col-md-6">
-                <label class="form-label">Email</label>
+                <label class="form-label">Email (for account notifications)</label>
                 <input type="email" name="email" class="form-control" value="{{ old('email') }}" required>
             </div>
             <div class="col-md-6">
-                <label class="form-label">Password</label>
-                <input type="password" name="password" class="form-control" required>
+                <label class="form-label">Username (used to log in)</label>
+                <input type="text" name="username" class="form-control" value="{{ old('username') }}" required pattern="[A-Za-z0-9_\-]+" autocapitalize="none" autocorrect="off">
+                <div class="form-text">A temporary password is generated automatically and emailed to them.</div>
             </div>
             <div class="col-md-6">
                 <label class="form-label">Relationship</label>

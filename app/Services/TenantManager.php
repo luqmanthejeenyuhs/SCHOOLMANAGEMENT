@@ -55,6 +55,40 @@ class TenantManager
         $this->forget();
     }
 
+    /**
+     * Resolve a school from the request's subdomain alone, with no user
+     * required — e.g. https://littleheaven.taalumasms.co.ke. Used by the
+     * login page (before anyone is authenticated) both to brand the page
+     * with that school's name/logo and to enforce that whoever logs in
+     * there actually belongs to that school. Returns null on the bare
+     * platform domain, an unrecognised subdomain, or when PLATFORM_DOMAIN
+     * isn't configured (e.g. still on the default *.laravel.cloud host).
+     */
+    public function resolveFromSubdomain(Request $request): ?School
+    {
+        $platformDomain = config("school.platform_domain");
+
+        if (! $platformDomain) {
+            return null;
+        }
+
+        $host = $request->getHost();
+
+        if (! str_ends_with($host, ".{$platformDomain}")) {
+            return null;
+        }
+
+        $subdomain = substr($host, 0, -strlen(".{$platformDomain}"));
+
+        // "www" and "app" are reserved for the marketing site / plain login,
+        // not a real school slug.
+        if ($subdomain === "" || in_array($subdomain, ["www", "app"])) {
+            return null;
+        }
+
+        return School::where("slug", $subdomain)->where("is_active", true)->first();
+    }
+
     public function set(int $schoolId): void
     {
         if ($this->schoolId !== $schoolId) {

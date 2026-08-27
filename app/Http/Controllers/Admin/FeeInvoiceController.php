@@ -7,12 +7,17 @@ use App\Models\FeeInvoice;
 use App\Models\FeeType;
 use App\Models\SchoolClass;
 use App\Models\Student;
+use App\Services\PaymentAllocationService;
 use App\Support\Facades\Tenant;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 class FeeInvoiceController extends Controller
 {
+    public function __construct(protected PaymentAllocationService $allocation)
+    {
+    }
+
     public function index()
     {
         $invoices = FeeInvoice::with(["student.user", "feeType", "payments"])->latest()->paginate(15);
@@ -94,16 +99,28 @@ class FeeInvoiceController extends Controller
             "bank_name" => "nullable|required_if:method,bank|string|max:100",
             "reference" => "nullable|string|max:100",
         ]);
+
+        $amountPaid = (float) $data["amount_paid"];
+        unset($data["amount_paid"]);
         $data["received_by"] = $request->user()->id;
 
-        $invoice->payments()->create($data);
+        // Caps the payment at this invoice's balance; any excess is applied
+        // automatically to the student's next outstanding invoice(s), and
+        // if none remain, to this invoice as a visible credit. May create
+        // more than one Payment row (and so more than one receipt) if the
+        // amount was split across invoices — see PaymentAllocationService.
+        $payments = $this->allocation->apply($invoice, $amountPaid, $data);
 
-        $invoice->refresh();
-        $balance = $invoice->balance();
-        $invoice->update([
-            "status" => $balance <= 0 ? "paid" : ($balance < $invoice->amount ? "partially_paid" : "unpaid"),
-        ]);
+        $receiptUrls = collect($payments)
+            ->map(fn ($payment) => $payment->receipt ? route("admin.receipts.show", $payment->receipt) : null)
+            ->filter()
+            ->values()
+            ->all();
 
-        return back()->with("success", "Payment recorded.");
+        $message = count($payments) > 1
+            ? "Payment recorded across ".count($payments)." invoices (the excess was applied to the next outstanding fee)."
+            : "Payment recorded.";
+
+        return back()->with("success", $message)->with("receipt_urls", $receiptUrls);
     }
 }

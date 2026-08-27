@@ -81,18 +81,10 @@
             <div class="card-body">
                 <form method="POST" action="{{ route('admin.settings.rights.reset_password', $user) }}">
                     @csrf
-                    <div class="mb-2">
-                        <label class="form-label small">New password</label>
-                        <input type="password" name="password" class="form-control" placeholder="Leave blank to auto-generate" minlength="6">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label small">Confirm password</label>
-                        <input type="password" name="password_confirmation" class="form-control" placeholder="Confirm new password" minlength="6">
-                    </div>
-                    <button type="submit" class="btn btn-outline-dark w-100" onclick="return confirm('Reset the password for {{ $user->name }}?');">
+                    <p class="small text-muted">A new temporary password is generated automatically and emailed straight to {{ $user->name }} at {{ $user->email }} — you won't see it. They can change it themselves afterwards from the Password button in the top bar.</p>
+                    <button type="submit" class="btn btn-outline-dark w-100" onclick="return confirm('Reset the password for {{ $user->name }}? A new temporary password will be emailed to them.');">
                         <i class="bi bi-arrow-repeat"></i> Reset Password
                     </button>
-                    <small class="text-muted d-block mt-2">Leave both fields blank to auto-generate a random temporary password — it will be shown once after resetting.</small>
                 </form>
             </div>
         </div>

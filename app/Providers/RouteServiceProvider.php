@@ -36,6 +36,15 @@ class RouteServiceProvider extends ServiceProvider
             return "/login";
         }
 
+        // A super_admin's own role never changes while impersonating — the
+        // impersonated school lives only in the session (see TenantManager)
+        // — so check that first, or they'd be bounced straight back to the
+        // platform schools list instead of the school's own dashboard.
+        if (method_exists($user, "isSuperAdmin") && $user->isSuperAdmin()
+            && session()->has("impersonating_school_id")) {
+            return "/admin/dashboard";
+        }
+
         return match ($user->role) {
             "super_admin" => "/superadmin/schools",
             "admin" => "/admin/dashboard",

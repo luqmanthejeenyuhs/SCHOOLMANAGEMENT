@@ -9,9 +9,9 @@ use App\Models\SchoolClass;
 use App\Models\Section;
 use App\Models\Student;
 use App\Models\User;
+use App\Services\AccountProvisioningService;
 use App\Support\Facades\Tenant;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 
 class StudentController extends Controller
@@ -30,12 +30,12 @@ class StudentController extends Controller
         return view("admin.students.create", compact("classes"));
     }
 
-    public function store(Request $request)
+    public function store(Request $request, AccountProvisioningService $accounts)
     {
         $data = $request->validate([
             "name" => "required|string|max:255",
             "email" => "required|email|unique:users,email",
-            "password" => "required|min:6",
+            "username" => ["required", "string", "max:50", "alpha_dash", Rule::unique("users", "username")->where("school_id", Tenant::id())],
             "admission_no" => ["required", "string", Rule::unique("students", "admission_no")->where("school_id", Tenant::id())],
             "school_class_id" => ["required", Rule::exists("school_classes", "id")->where("school_id", Tenant::id())],
             "section_id" => ["nullable", Rule::exists("sections", "id")->where("school_id", Tenant::id())],
@@ -45,10 +45,12 @@ class StudentController extends Controller
             "address" => "nullable|string",
         ]);
 
-        $user = User::create([
+        // Password is generated and emailed, not chosen here — see
+        // AccountProvisioningService. The admin never sees it.
+        $user = $accounts->createUserAccount([
             "name" => $data["name"],
             "email" => $data["email"],
-            "password" => Hash::make($data["password"]),
+            "username" => $data["username"],
             "role" => "student",
         ]);
 

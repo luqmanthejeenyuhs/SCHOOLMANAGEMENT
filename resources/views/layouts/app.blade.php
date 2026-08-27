@@ -227,12 +227,14 @@
                 @php
                     $financeActive = request()->routeIs('admin.fee_types.*')
                         || request()->routeIs('admin.invoices.*')
+                        || request()->routeIs('admin.receipts.*')
                         || request()->routeIs('admin.finance.*')
                         || request()->routeIs('admin.accounting.*');
                     $financeLinks = [
                         ['perm' => 'manage_accounting', 'route' => 'admin.accounting.overview', 'routeIs' => 'admin.accounting.overview', 'icon' => 'bi-graph-up-arrow', 'label' => 'Finance Overview'],
                         ['perm' => 'manage_fee_types', 'route' => 'admin.fee_types.index', 'routeIs' => 'admin.fee_types.*', 'icon' => 'bi-cash-coin', 'label' => 'Fee Types'],
                         ['perm' => 'manage_invoices', 'route' => 'admin.invoices.index', 'routeIs' => 'admin.invoices.*', 'icon' => 'bi-receipt', 'label' => 'Invoices &amp; Payments'],
+                        ['perm' => 'record_payments', 'route' => 'admin.receipts.index', 'routeIs' => 'admin.receipts.*', 'icon' => 'bi-receipt-cutoff', 'label' => 'Receipts'],
                         ['perm' => 'manage_finance_ledger', 'route' => 'admin.finance.ledger.index', 'routeIs' => 'admin.finance.*', 'icon' => 'bi-bank', 'label' => 'Bank &amp; M-Pesa Ledger'],
                         ['perm' => 'manage_accounting', 'route' => 'admin.accounting.chart_of_accounts', 'routeIs' => 'admin.accounting.chart_of_accounts', 'icon' => 'bi-diagram-3', 'label' => 'Chart of Accounts'],
                         ['perm' => 'manage_accounting', 'route' => 'admin.accounting.journal_entries', 'routeIs' => 'admin.accounting.journal_entries', 'icon' => 'bi-journal-text', 'label' => 'Journal Entries'],
@@ -309,29 +311,22 @@
                 </li>
                 @endif
 
-                {{-- Staff Management: employees, payroll, attendance, leave, loans, and the
-                     school's location/clock-time policy all grouped together --}}
+                {{-- Staff & Payroll: employees, payslips, staff attendance grouped together --}}
                 @php
                     $staffActive = request()->routeIs('admin.employees.*')
                         || request()->routeIs('admin.payslips.*')
-                        || request()->routeIs('admin.staff_attendance.*')
-                        || request()->routeIs('admin.leave_requests.*')
-                        || request()->routeIs('admin.loan_requests.*')
-                        || request()->routeIs('admin.settings.school_profile.*');
+                        || request()->routeIs('admin.staff_attendance.*');
                     $staffLinks = [
                         ['perm' => 'manage_employees', 'route' => 'admin.employees.index', 'routeIs' => 'admin.employees.*', 'icon' => 'bi-person-lines-fill', 'label' => 'Employees'],
                         ['perm' => 'generate_payslips', 'route' => 'admin.payslips.index', 'routeIs' => 'admin.payslips.*', 'icon' => 'bi-wallet2', 'label' => 'Payroll &amp; Payslips'],
                         ['perm' => 'view_staff_attendance', 'route' => 'admin.staff_attendance.index', 'routeIs' => 'admin.staff_attendance.*', 'icon' => 'bi-fingerprint', 'label' => 'Staff Attendance'],
-                        ['perm' => 'manage_leave_requests', 'route' => 'admin.leave_requests.index', 'routeIs' => 'admin.leave_requests.*', 'icon' => 'bi-calendar-x', 'label' => 'Leave Requests'],
-                        ['perm' => 'manage_loan_requests', 'route' => 'admin.loan_requests.index', 'routeIs' => 'admin.loan_requests.*', 'icon' => 'bi-cash-stack', 'label' => 'Loans &amp; Advances'],
-                        ['perm' => 'manage_settings', 'route' => 'admin.settings.school_profile.edit', 'routeIs' => 'admin.settings.school_profile.*', 'icon' => 'bi-geo-alt', 'label' => 'School Location &amp; Hours'],
                     ];
                     $visibleStaffLinks = collect($staffLinks)->filter(fn ($l) => $u->hasPermission($l['perm']));
                 @endphp
                 @if($visibleStaffLinks->isNotEmpty())
                 <li class="nav-item">
                     <a class="nav-link d-flex justify-content-between align-items-center {{ $staffActive ? 'active' : '' }}" data-bs-toggle="collapse" href="#staffMenu" role="button" aria-expanded="{{ $staffActive ? 'true' : 'false' }}">
-                        <span><i class="bi bi-briefcase-fill"></i> Staff Management</span>
+                        <span><i class="bi bi-briefcase-fill"></i> Staff &amp; Payroll</span>
                         <i class="bi bi-chevron-down small"></i>
                     </a>
                     <div class="collapse {{ $staffActive ? 'show' : '' }}" id="staffMenu">
@@ -350,19 +345,10 @@
                 @if($u->hasPermission('manage_settings') || $u->hasPermission('manage_rights'))
                     <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}" href="{{ route('admin.settings.index') }}"><i class="bi bi-gear-fill"></i> Settings</a></li>
                 @endif
-                @if(\App\Models\Employee::where('user_id', $u->id)->exists())
-                    <li class="nav-item"><a class="nav-link {{ request()->routeIs('staff.clock.*') ? 'active' : '' }}" href="{{ route('staff.clock.index') }}"><i class="bi bi-fingerprint"></i> Clock In/Out</a></li>
-                    <li class="nav-item"><a class="nav-link {{ request()->routeIs('staff.leave.*') ? 'active' : '' }}" href="{{ route('staff.leave.index') }}"><i class="bi bi-calendar-x"></i> Request Leave</a></li>
-                    <li class="nav-item"><a class="nav-link {{ request()->routeIs('staff.loans.*') ? 'active' : '' }}" href="{{ route('staff.loans.index') }}"><i class="bi bi-cash-stack"></i> Loans &amp; Advances</a></li>
-                    <li class="nav-item"><a class="nav-link {{ request()->routeIs('staff.payslips.*') ? 'active' : '' }}" href="{{ route('staff.payslips.index') }}"><i class="bi bi-wallet2"></i> My Payslips</a></li>
-                @endif
             @elseif(auth()->user()->role === 'teacher')
                 <li class="nav-item"><a class="nav-link {{ request()->routeIs('teacher.dashboard') ? 'active' : '' }}" href="{{ route('teacher.dashboard') }}"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
                 <li class="nav-item"><a class="nav-link {{ request()->routeIs('teacher.attendance.*') ? 'active' : '' }}" href="{{ route('teacher.attendance.index') }}"><i class="bi bi-calendar-check"></i> Attendance</a></li>
                 <li class="nav-item"><a class="nav-link {{ request()->routeIs('teacher.clock.*') ? 'active' : '' }}" href="{{ route('teacher.clock.index') }}"><i class="bi bi-fingerprint"></i> Clock In/Out</a></li>
-                <li class="nav-item"><a class="nav-link {{ request()->routeIs('staff.leave.*') ? 'active' : '' }}" href="{{ route('staff.leave.index') }}"><i class="bi bi-calendar-x"></i> Request Leave</a></li>
-                <li class="nav-item"><a class="nav-link {{ request()->routeIs('staff.loans.*') ? 'active' : '' }}" href="{{ route('staff.loans.index') }}"><i class="bi bi-cash-stack"></i> Loans &amp; Advances</a></li>
-                <li class="nav-item"><a class="nav-link {{ request()->routeIs('staff.payslips.*') ? 'active' : '' }}" href="{{ route('staff.payslips.index') }}"><i class="bi bi-wallet2"></i> My Payslips</a></li>
                 <li class="nav-item"><a class="nav-link {{ request()->routeIs('teacher.timetable.*') ? 'active' : '' }}" href="{{ route('teacher.timetable.index') }}"><i class="bi bi-calendar-week"></i> My Timetable</a></li>
                 <li class="nav-item"><a class="nav-link {{ request()->routeIs('teacher.results.*') ? 'active' : '' }}" href="{{ route('teacher.results.index') }}"><i class="bi bi-clipboard-data"></i> Enter Results</a></li>
                 <li class="nav-item"><a class="nav-link {{ request()->routeIs('teacher.cbc.*') ? 'active' : '' }}" href="{{ route('teacher.cbc.index') }}"><i class="bi bi-award"></i> CBC Assessment</a></li>
@@ -371,6 +357,16 @@
                 <li class="nav-item"><a class="nav-link {{ request()->routeIs('student.cbc_report') ? 'active' : '' }}" href="{{ route('student.cbc_report') }}"><i class="bi bi-award"></i> CBC Report</a></li>
             @elseif(auth()->user()->role === 'parent')
                 <li class="nav-item"><a class="nav-link {{ request()->routeIs('parent.dashboard') ? 'active' : '' }}" href="{{ route('parent.dashboard') }}"><i class="bi bi-speedometer2"></i> My Children</a></li>
+            @elseif(auth()->user()->role === 'super_admin')
+                <li class="nav-item"><a class="nav-link {{ request()->routeIs('superadmin.schools.*') ? 'active' : '' }}" href="{{ route('superadmin.schools.index') }}"><i class="bi bi-buildings"></i> Schools</a></li>
+                @if(session('impersonating_school_id'))
+                    <li class="nav-item">
+                        <form method="POST" action="{{ route('superadmin.stop-impersonating') }}">
+                            @csrf
+                            <button class="nav-link border-0 bg-transparent w-100 text-start" type="submit"><i class="bi bi-box-arrow-left"></i> Stop Impersonating</button>
+                        </form>
+                    </li>
+                @endif
             @endif
         </ul>
     </div>
@@ -378,13 +374,14 @@
 
     <div class="main-content p-4">
         @if(session('success'))
-            <div class="alert alert-success alert-dismissible fade show">{{ session('success') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        @endif
-        @if(session('error'))
-            <div class="alert alert-danger alert-dismissible fade show">{{ session('error') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            <div class="alert alert-success alert-dismissible fade show d-flex justify-content-between align-items-center">
+                <span>{{ session('success') }}</span>
+                <div class="d-flex align-items-center gap-2">
+                    @foreach(session('receipt_urls', []) as $i => $url)
+                        <a href="{{ $url }}" class="btn btn-sm btn-success">{{ count(session('receipt_urls')) > 1 ? 'Receipt '.($i + 1) : 'View Receipt' }}</a>
+                    @endforeach
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
             </div>
         @endif
         @if($errors->any())

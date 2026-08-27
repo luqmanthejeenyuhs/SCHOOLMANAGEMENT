@@ -33,12 +33,23 @@ class SettingsController extends Controller
             "email" => "nullable|email|max:255",
             "phone" => "nullable|string|max:50",
             "address" => "nullable|string|max:500",
+            "logo" => "nullable|image|max:2048",
             "latitude" => "nullable|numeric|between:-90,90",
             "longitude" => "nullable|numeric|between:-180,180",
             "geofence_radius_meters" => "nullable|integer|min:20|max:5000",
             "expected_clock_in" => "required|date_format:H:i",
             "expected_clock_out" => "required|date_format:H:i",
         ]);
+
+        if ($request->hasFile("logo")) {
+            if ($school->logo_path) {
+                \Illuminate\Support\Facades\Storage::disk("public")->delete($school->logo_path);
+            }
+
+            $data["logo_path"] = $request->file("logo")->store("school-logos", "public");
+        }
+
+        unset($data["logo"]);
 
         $school->update($data);
 
@@ -87,20 +98,18 @@ class SettingsController extends Controller
             ->with("success", "Rights updated for {$user->name}.");
     }
 
-    public function resetPassword(Request $request, User $user)
+    public function resetPassword(Request $request, User $user, \App\Services\AccountProvisioningService $accounts)
     {
-        $data = $request->validate([
-            "password" => "nullable|min:6|confirmed",
-        ]);
-
-        $newPassword = $data["password"] ?? Str::random(10);
+        // No password field here on purpose — an admin can trigger a reset,
+        // but the new password is generated and emailed directly to the
+        // account owner, never shown to the admin. See
+        // App\Services\AccountProvisioningService.
+        $newPassword = Str::password(12);
 
         $user->update(["password" => Hash::make($newPassword)]);
 
-        $message = empty($data["password"])
-            ? "Password reset for {$user->name}. Temporary password: {$newPassword}"
-            : "Password reset for {$user->name}.";
+        $accounts->sendCredentials($user, $newPassword);
 
-        return back()->with("success", $message);
+        return back()->with("success", "Password reset for {$user->name}. A new temporary password has been emailed to them.");
     }
 }

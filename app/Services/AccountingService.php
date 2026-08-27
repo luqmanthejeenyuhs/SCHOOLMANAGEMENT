@@ -34,10 +34,11 @@ class AccountingService
 
         // Best-effort only: if this runs from a webhook context with no
         // resolved tenant, FeeInvoice's own tenant scope may hide the
-        // relation and this just falls back to no student label in the memo
-        // — doesn't affect the posted amounts/accounts, which are correct
-        // either way since those come from $schoolId directly.
+        // relation and this just falls back to a plainer memo — doesn't
+        // affect the posted amounts/accounts, which are correct either way
+        // since those come from $schoolId directly.
         $studentLabel = optional(optional($payment->invoice)->student)->admission_no;
+        $feeTypeLabel = optional(optional($payment->invoice)->feeType)->name;
         $methodDetail = $payment->method;
         if ($payment->bank_name) {
             $methodDetail .= " — {$payment->bank_name}";
@@ -45,7 +46,7 @@ class AccountingService
         if ($payment->reference) {
             $methodDetail .= " ref: {$payment->reference}";
         }
-        $memo = "Fee payment".($studentLabel ? " — {$studentLabel}" : "")." ({$methodDetail})";
+        $memo = ($feeTypeLabel ?: "Fee")." payment".($studentLabel ? " — {$studentLabel}" : "")." ({$methodDetail})";
 
         return $this->postEntry(
             schoolId: $schoolId,

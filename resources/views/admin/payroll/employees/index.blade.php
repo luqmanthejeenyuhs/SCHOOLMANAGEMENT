@@ -18,12 +18,17 @@
             <tbody>
             @forelse($employees as $employee)
                 <tr>
-                    <td>{{ $employee->name }} @if($employee->is_teaching_staff)<span class="badge bg-info text-dark">Teaching</span>@endif</td>
+                    <td>
+                        {{ $employee->name }}
+                        @if($employee->is_teaching_staff)<span class="badge bg-info text-dark">Teaching</span>@endif
+                        @if(! $employee->user_id)<span class="badge bg-warning text-dark" title="Can't clock in until linked to a user account">Not linked</span>@endif
+                    </td>
                     <td>{{ $employee->job_title }}</td>
                     <td>{{ $employee->kra_pin ?? '—' }}</td>
                     <td>KES {{ number_format($employee->basic_salary, 2) }}</td>
                     <td>KES {{ number_format($employee->grossPay(), 2) }}</td>
                     <td class="text-end">
+                        <a href="{{ route('admin.employees.edit', $employee) }}" class="btn btn-sm btn-outline-dark"><i class="bi bi-pencil"></i> Edit</a>
                         <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#payslipModal{{ $employee->id }}">Generate Payslip</button>
                         <form action="{{ route('admin.employees.destroy', $employee) }}" method="POST" class="d-inline" onsubmit="return confirm('Remove this employee?');">
                             @csrf @method('DELETE')
