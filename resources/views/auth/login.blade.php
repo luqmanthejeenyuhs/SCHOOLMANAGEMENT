@@ -3,169 +3,152 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login — Taaluma SMS</title>
+    <title>Login — {{ $school->name ?? 'Taaluma SMS' }}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --brand-green: #0F7A45;
-            --brand-green-dark: #0A5A33;
-            --brand-green-light: #E8F5EC;
-            --brand-green-mid: #2FA968;
+            /* Taaluma brand — green, gold, white */
+            --brand-green: #012622;
+            --brand-green-dark: #01201D;
+            --brand-green-darker: #010F0D;
             --brand-gold: #C9972F;
             --brand-gold-dark: #A97C1F;
             --brand-gold-light: #FBF1DC;
         }
         * { font-family: 'Poppins', sans-serif; }
         html, body { height: 100%; }
-        body { margin: 0; }
-
-        /* Full-page centered layout, replacing the old split screen */
-        .auth-wrap {
+        body {
+            margin: 0;
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 2rem 1rem;
-            position: relative;
-            overflow: hidden;
-            background: linear-gradient(160deg, var(--brand-green-dark) 0%, var(--brand-green) 45%, var(--brand-green-mid) 100%);
-            background-size: 200% 200%;
-            animation: gradientShift 16s ease infinite;
-        }
-        @keyframes gradientShift {
-            0%, 100% { background-position: 0% 0%; }
-            50% { background-position: 100% 100%; }
-        }
-
-        /* Floating school-themed icons in the background, all around the centered card */
-        .float-icon {
-            position: absolute;
-            color: rgba(255,255,255,.14);
-            animation: drift 10s ease-in-out infinite;
-            pointer-events: none;
-        }
-        .float-icon.i1 { top: 8%;  left: 10%; font-size: 4rem; animation-duration: 12s; }
-        .float-icon.i2 { top: 70%; left: 8%;  font-size: 3rem; animation-duration: 9s; animation-delay: 1s; }
-        .float-icon.i3 { top: 14%; left: 82%; font-size: 3.5rem; animation-duration: 11s; animation-delay: .5s; }
-        .float-icon.i4 { top: 74%; left: 80%; font-size: 5rem; animation-duration: 14s; animation-delay: 2s; }
-        .float-icon.i5 { top: 40%; left: 4%; font-size: 3rem; animation-duration: 15s; animation-delay: 1.2s; }
-        .float-icon.i6 { top: 45%; left: 90%; font-size: 3.2rem; animation-duration: 13s; animation-delay: .8s; }
-        @keyframes drift {
-            0%, 100% { transform: translateY(0) rotate(0deg); }
-            50% { transform: translateY(-22px) rotate(8deg); }
-        }
-
-        .brand-badge {
-            display: inline-flex; align-items: center; gap: .5rem;
-            background: var(--brand-gold-light);
-            border: 1px solid var(--brand-gold);
-            color: var(--brand-gold-dark);
-            padding: .4rem .9rem; border-radius: 2rem;
-            font-size: .8rem; font-weight: 600;
-            margin-bottom: 1rem;
+            padding: 1.5rem;
+            background: linear-gradient(160deg, var(--brand-green-darker) 0%, var(--brand-green) 100%);
         }
 
         .login-card {
-            position: relative;
-            z-index: 1;
             width: 100%;
-            max-width: 420px;
-            border-radius: 1.2rem;
-            border: none;
-            border-top: 4px solid var(--brand-gold);
-            box-shadow: 0 20px 60px rgba(10, 60, 35, .35);
-            padding: 2.5rem 2.25rem;
+            max-width: 340px;
+            border-radius: .9rem;
             background: #fff;
+            border-top: 4px solid var(--brand-gold);
+            box-shadow: 0 16px 40px rgba(1, 15, 13, .35);
+            padding: 2rem 1.75rem;
         }
-        .login-card .form-control {
-            border-radius: .6rem;
-            padding: .65rem .9rem;
-            border-color: #dbe9df;
+        .brand-mark {
+            width: 46px; height: 46px;
+            border-radius: 50%;
+            display: inline-flex; align-items: center; justify-content: center;
+            background: linear-gradient(135deg, var(--brand-green), var(--brand-green-dark));
+            color: var(--brand-gold-light);
+            font-size: 1.3rem;
+            margin-bottom: .6rem;
         }
-        .login-card .form-control:focus {
+        .school-logo {
+            width: 46px; height: 46px; object-fit: cover;
+            border-radius: 50%;
+            margin-bottom: .6rem;
+            border: 2px solid var(--brand-gold);
+        }
+        .login-card h5 { font-weight: 700; color: var(--brand-green-dark); margin-bottom: .1rem; }
+        .login-card small.subtitle { color: #7a8683; }
+
+        .form-label { font-size: .82rem; font-weight: 600; color: var(--brand-green-dark); }
+        .form-control {
+            border-radius: .55rem;
+            padding: .55rem .8rem;
+            border-color: #dfe6e2;
+            font-size: .92rem;
+        }
+        .form-control:focus {
             border-color: var(--brand-green);
-            box-shadow: 0 0 0 .2rem rgba(15, 122, 69, .15);
+            box-shadow: 0 0 0 .18rem rgba(1, 38, 34, .12);
         }
         .btn-brand {
             background: linear-gradient(90deg, var(--brand-green), var(--brand-green-dark));
             border: none;
-            color: #fff;
+            color: var(--brand-gold-light);
             font-weight: 600;
-            border-radius: .6rem;
-            padding: .7rem;
-            transition: transform .15s ease, box-shadow .15s ease;
+            border-radius: .55rem;
+            padding: .55rem;
+            font-size: .92rem;
         }
-        .btn-brand:hover {
-            box-shadow: 0 6px 16px rgba(15, 122, 69, .35);
-            transform: translateY(-1px);
-            color: #fff;
-        }
-        .demo-box {
-            background: var(--brand-green-light);
-            border-radius: .6rem;
-            padding: .75rem .9rem;
-            font-size: .8rem;
-            color: var(--brand-green-dark);
-        }
+        .btn-brand:hover { background: var(--brand-green-darker); color: var(--brand-gold-light); }
+
+        .school-picker { margin-top: 1rem; }
+        .school-picker .form-select { border-radius: .55rem; font-size: .85rem; border-color: #dfe6e2; }
+        .switch-link { font-size: .8rem; color: var(--brand-green-dark); text-decoration: none; }
+        .switch-link:hover { color: var(--brand-gold-dark); }
     </style>
 </head>
 <body>
-<div class="auth-wrap">
-    <i class="bi bi-mortarboard-fill float-icon i1"></i>
-    <i class="bi bi-book-half float-icon i2"></i>
-    <i class="bi bi-pencil-fill float-icon i3"></i>
-    <i class="bi bi-backpack2-fill float-icon i4"></i>
-    <i class="bi bi-award float-icon i5"></i>
-    <i class="bi bi-calendar-week float-icon i6"></i>
-
     <div class="login-card">
-        <div class="text-center mb-4">
-            <span class="brand-badge"><i class="bi bi-shield-check"></i> Trusted School Platform</span>
-            @if($school ?? null)
-                <h3 class="mb-0" style="font-weight:800;color:var(--brand-green-dark);">
-                    <i class="bi bi-mortarboard-fill" style="color:var(--brand-gold);"></i> {{ $school->name }}
-                </h3>
-                <small class="text-muted">Powered by Taaluma SMS — sign in to your account</small>
+        <div class="text-center mb-3">
+            @if($school)
+                @if($school->logo_path)
+                    <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($school->logo_path) }}" alt="{{ $school->name }} logo" class="school-logo">
+                @else
+                    <span class="brand-mark"><i class="bi bi-mortarboard-fill"></i></span>
+                @endif
+                <h5>{{ $school->name }}</h5>
+                <small class="subtitle">Sign in to your account</small>
             @else
-                <h3 class="mb-0" style="font-weight:800;color:var(--brand-green-dark);">
-                    <i class="bi bi-mortarboard-fill" style="color:var(--brand-gold);"></i> Taaluma SMS
-                </h3>
-                <small class="text-muted">Sign in to your account to continue</small>
+                <span class="brand-mark"><i class="bi bi-mortarboard-fill"></i></span>
+                <h5>Taaluma SMS</h5>
+                <small class="subtitle">Sign in to continue</small>
             @endif
         </div>
 
-        @if($errors->any())
-            <div class="alert alert-danger">{{ $errors->first() }}</div>
+        @if($suspended ?? false)
+            <div class="alert alert-warning small mb-0">
+                <strong>{{ $school->name }}</strong>'s account is currently suspended. Please contact the platform administrator.
+            </div>
+        @else
+            @if($errors->any())
+                <div class="alert alert-danger small py-2">{{ $errors->first() }}</div>
+            @endif
+
+            <form method="POST" action="{{ $school ? route('login.school', $school) : route('login') }}">
+                @csrf
+                <div class="mb-3">
+                    <label class="form-label">Username or Email</label>
+                    <input type="text" name="username" class="form-control" value="{{ old('username') }}" required autofocus autocapitalize="none" autocorrect="off">
+                    <div class="form-text">Students: use your admission number.</div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Password</label>
+                    <input type="password" name="password" class="form-control" required>
+                </div>
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" name="remember" id="remember">
+                    <label class="form-check-label small" for="remember">Remember me</label>
+                </div>
+                <button class="btn btn-brand w-100" type="submit">Login</button>
+            </form>
+
+            @if($school)
+                <div class="text-center mt-3">
+                    <a href="{{ route('login') }}" class="switch-link"><i class="bi bi-arrow-left"></i> Not {{ $school->name }}?</a>
+                </div>
+            @else
+                @php $allSchools = \App\Models\School::where('is_active', true)->orderBy('name')->get(['name', 'slug']); @endphp
+                @if($allSchools->isNotEmpty())
+                    <div class="school-picker">
+                        <label class="form-label mb-1"><i class="bi bi-search"></i> Find your school</label>
+                        <select class="form-select form-select-sm" onchange="if(this.value) window.location = '/school/' + this.value + '/login';">
+                            <option value="">Select your school…</option>
+                            @foreach($allSchools as $s)
+                                <option value="{{ $s->slug }}">{{ $s->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                @endif
+            @endif
         @endif
-
-        <form method="POST" action="{{ route('login') }}">
-            @csrf
-            <div class="mb-3">
-                <label class="form-label">Email</label>
-                <input type="email" name="email" class="form-control" value="{{ old('email') }}" required autofocus>
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Password</label>
-                <input type="password" name="password" class="form-control" required>
-            </div>
-            <div class="form-check mb-3">
-                <input class="form-check-input" type="checkbox" name="remember" id="remember">
-                <label class="form-check-label" for="remember">Remember me</label>
-            </div>
-            <button class="btn btn-brand w-100" type="submit">Login</button>
-        </form>
-
-        <hr>
-        <div class="demo-box">
-            <div class="fw-semibold mb-1"><i class="bi bi-info-circle"></i> Demo accounts (password: <code>password</code>)</div>
-            <div>Admin — admin@school.test</div>
-            <div>Teacher — teacher1@school.test</div>
-            <div>Student — student1@school.test</div>
-        </div>
     </div>
-</div>
 </body>
 </html>

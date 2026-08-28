@@ -15,13 +15,9 @@
                 <input type="email" name="email" class="form-control" value="{{ old('email') }}" required>
             </div>
             <div class="col-md-6">
-                <label class="form-label">Username (used to log in)</label>
-                <input type="text" name="username" class="form-control" value="{{ old('username') }}" required pattern="[A-Za-z0-9_\-]+" autocapitalize="none" autocorrect="off">
-                <div class="form-text">A temporary password is generated automatically and emailed to them.</div>
-            </div>
-            <div class="col-md-6">
-                <label class="form-label">Admission No</label>
+                <label class="form-label">Admission No (used to log in)</label>
                 <input type="text" name="admission_no" class="form-control" value="{{ old('admission_no') }}" required>
+                <div class="form-text">This doubles as their login username. A temporary password is generated automatically and emailed to them.</div>
             </div>
             <div class="col-md-4">
                 <label class="form-label">Class</label>

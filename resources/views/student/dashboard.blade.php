@@ -7,6 +7,49 @@
 <h3 class="mb-3">Welcome, {{ auth()->user()->name }}</h3>
 <p class="text-muted">{{ $student->schoolClass->name ?? '—' }} @if($student->section) - Section {{ $student->section->name }} @endif · Admission No: {{ $student->admission_no }}</p>
 
+<div class="row g-2 mb-4">
+    <div class="col-6 col-md-3 col-lg-3">
+        <a href="{{ route('student.results.index') }}" class="text-decoration-none text-dark">
+            <div class="card p-3 text-center h-100"><i class="bi bi-clipboard-data fs-4 d-block mb-1"></i><small>Results</small></div>
+        </a>
+    </div>
+    <div class="col-6 col-md-3 col-lg-3">
+        <a href="{{ route('student.fees.index') }}" class="text-decoration-none text-dark">
+            <div class="card p-3 text-center h-100"><i class="bi bi-cash-coin fs-4 d-block mb-1"></i><small>Fees</small></div>
+        </a>
+    </div>
+    <div class="col-6 col-md-3 col-lg-3">
+        <a href="{{ route('student.class.index') }}" class="text-decoration-none text-dark">
+            <div class="card p-3 text-center h-100"><i class="bi bi-people fs-4 d-block mb-1"></i><small>My Class</small></div>
+        </a>
+    </div>
+    <div class="col-6 col-md-3 col-lg-3">
+        <a href="{{ route('student.teachers.index') }}" class="text-decoration-none text-dark">
+            <div class="card p-3 text-center h-100"><i class="bi bi-person-workspace fs-4 d-block mb-1"></i><small>Teachers</small></div>
+        </a>
+    </div>
+    <div class="col-6 col-md-3 col-lg-3">
+        <a href="{{ route('student.performance.index') }}" class="text-decoration-none text-dark">
+            <div class="card p-3 text-center h-100"><i class="bi bi-graph-up-arrow fs-4 d-block mb-1"></i><small>Performance</small></div>
+        </a>
+    </div>
+    <div class="col-6 col-md-3 col-lg-3">
+        <a href="{{ route('student.activities.index') }}" class="text-decoration-none text-dark">
+            <div class="card p-3 text-center h-100"><i class="bi bi-stars fs-4 d-block mb-1"></i><small>Activities</small></div>
+        </a>
+    </div>
+    <div class="col-6 col-md-3 col-lg-3">
+        <a href="{{ route('student.library.index') }}" class="text-decoration-none text-dark">
+            <div class="card p-3 text-center h-100"><i class="bi bi-journal-bookmark fs-4 d-block mb-1"></i><small>Library</small></div>
+        </a>
+    </div>
+    <div class="col-6 col-md-3 col-lg-3">
+        <a href="{{ route('student.cbc_report') }}" class="text-decoration-none text-dark">
+            <div class="card p-3 text-center h-100"><i class="bi bi-award fs-4 d-block mb-1"></i><small>CBC Report</small></div>
+        </a>
+    </div>
+</div>
+
 <div class="row g-3 mb-4">
     <div class="col-md-4">
         <div class="card stat-card p-3">

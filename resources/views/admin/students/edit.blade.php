@@ -15,8 +15,9 @@
                 <input type="email" name="email" class="form-control" value="{{ old('email', $student->user->email) }}" required>
             </div>
             <div class="col-md-6">
-                <label class="form-label">Admission No</label>
+                <label class="form-label">Admission No (used to log in)</label>
                 <input type="text" name="admission_no" class="form-control" value="{{ old('admission_no', $student->admission_no) }}" required>
+                <div class="form-text">Changing this also changes their login username.</div>
             </div>
             <div class="col-md-3">
                 <label class="form-label">Class</label>

@@ -78,6 +78,12 @@
     <li class="nav-item" role="presentation">
         <button class="nav-link" id="tab-cbc-btn" data-bs-toggle="tab" data-bs-target="#tab-cbc" type="button" role="tab"><i class="bi bi-award"></i> CBC</button>
     </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-activities-btn" data-bs-toggle="tab" data-bs-target="#tab-activities" type="button" role="tab"><i class="bi bi-stars"></i> Activities</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-library-btn" data-bs-toggle="tab" data-bs-target="#tab-library" type="button" role="tab"><i class="bi bi-journal-bookmark"></i> Library</button>
+    </li>
 </ul>
 
 <div class="tab-content">
@@ -356,6 +362,76 @@
                 @if($cbcRecords->count() > 15)
                     <p class="text-muted small mt-2 mb-0">Showing 15 most recent of {{ $cbcRecords->count() }} — see the full CBC report for everything.</p>
                 @endif
+            @endif
+        </div>
+    </div>
+
+    {{-- ACTIVITIES --}}
+    <div class="tab-pane fade" id="tab-activities" role="tabpanel">
+        <div class="card p-3">
+            <h6 class="mb-3">Extra-Curricular Activities</h6>
+            @if($activities->isEmpty())
+                <p class="text-muted mb-0">Not signed up for any activities yet.</p>
+            @else
+                <table class="table table-sm mb-0">
+                    <thead><tr><th>Activity</th><th>Patron</th><th>Schedule</th><th>Venue</th></tr></thead>
+                    <tbody>
+                    @foreach($activities as $a)
+                        <tr>
+                            <td>{{ $a->name }}</td>
+                            <td>{{ $a->patron->user->name ?? '—' }}</td>
+                            <td>{{ $a->day_of_week ?? '—' }} @if($a->start_time) {{ \Illuminate\Support\Carbon::parse($a->start_time)->format('g:i A') }}–{{ \Illuminate\Support\Carbon::parse($a->end_time)->format('g:i A') }} @endif</td>
+                            <td>{{ $a->venue ?? '—' }}</td>
+                        </tr>
+                    @endforeach
+                    </tbody>
+                </table>
+            @endif
+        </div>
+    </div>
+
+    {{-- LIBRARY --}}
+    <div class="tab-pane fade" id="tab-library" role="tabpanel">
+        <div class="card p-3 mb-3">
+            <h6 class="mb-3">Currently Borrowed</h6>
+            @if($currentLoans->isEmpty())
+                <p class="text-muted mb-0">No books currently on loan.</p>
+            @else
+                <table class="table table-sm mb-0">
+                    <thead><tr><th>Book</th><th>Copy</th><th>Issued</th><th>Due</th><th>Status</th></tr></thead>
+                    <tbody>
+                    @foreach($currentLoans as $loan)
+                        @php $overdue = $loan->due_date && $loan->due_date->isPast(); @endphp
+                        <tr>
+                            <td>{{ $loan->copy->item->name ?? '—' }}</td>
+                            <td><code class="small">{{ $loan->copy->barcode ?? '—' }}</code></td>
+                            <td>{{ $loan->issued_at?->format('d M Y') }}</td>
+                            <td>{{ $loan->due_date?->format('d M Y') ?? '—' }}</td>
+                            <td>@if($overdue) <span class="badge bg-danger">Overdue</span> @else <span class="badge bg-success">On loan</span> @endif</td>
+                        </tr>
+                    @endforeach
+                    </tbody>
+                </table>
+            @endif
+        </div>
+        <div class="card p-3">
+            <h6 class="mb-3">Past Loans</h6>
+            @if($pastLoans->isEmpty())
+                <p class="text-muted mb-0">No past loan history.</p>
+            @else
+                <table class="table table-sm mb-0">
+                    <thead><tr><th>Book</th><th>Copy</th><th>Issued</th><th>Returned</th></tr></thead>
+                    <tbody>
+                    @foreach($pastLoans as $loan)
+                        <tr>
+                            <td>{{ $loan->copy->item->name ?? '—' }}</td>
+                            <td><code class="small">{{ $loan->copy->barcode ?? '—' }}</code></td>
+                            <td>{{ $loan->issued_at?->format('d M Y') }}</td>
+                            <td>{{ $loan->returned_at?->format('d M Y') }}</td>
+                        </tr>
+                    @endforeach
+                    </tbody>
+                </table>
             @endif
         </div>
     </div>
