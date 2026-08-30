@@ -48,7 +48,14 @@ class Account extends Model
     public static function seedDefaultChart(School $school): void
     {
         foreach (self::defaultChart() as $row) {
-            self::firstOrCreate(
+            // ->allSchools() bypasses the BelongsToTenant global scope —
+            // required here because this runs both from SchoolObserver
+            // (inside a normal web request, tenant resolved fine) AND from
+            // console/migration contexts with no tenant resolved at all. Without
+            // this, firstOrCreate's lookup silently gets an extra (wrong or
+            // empty) school_id condition from the scope, never finds the
+            // existing row, and tries to INSERT a duplicate.
+            self::allSchools()->firstOrCreate(
                 ["school_id" => $school->id, "code" => $row["code"]],
                 $row
             );
