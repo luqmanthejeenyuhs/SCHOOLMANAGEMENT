@@ -55,5 +55,6 @@ class Kernel extends HttpKernel
         'role' => \App\Http\Middleware\RoleMiddleware::class,
         'super_admin' => \App\Http\Middleware\EnsureSuperAdmin::class,
         'permission' => \App\Http\Middleware\PermissionMiddleware::class,
+        'password.changed' => \App\Http\Middleware\EnsurePasswordIsChanged::class,
     ];
 }

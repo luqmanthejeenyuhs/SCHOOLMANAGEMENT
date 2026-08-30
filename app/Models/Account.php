@@ -31,10 +31,16 @@ class Account extends Model
             ["code" => "1020", "name" => "M-Pesa", "type" => "asset", "is_system" => true],
             ["code" => "1030", "name" => "Other Receipts (Card/Unmapped)", "type" => "asset", "is_system" => true],
             ["code" => "1100", "name" => "Accounts Receivable — Fees", "type" => "asset", "is_system" => false],
+            ["code" => "1200", "name" => "Staff Loans & Advances Receivable", "type" => "asset", "is_system" => true],
+            ["code" => "1300", "name" => "VAT Input (Recoverable)", "type" => "asset", "is_system" => true],
+            ["code" => "2000", "name" => "Accounts Payable — Suppliers", "type" => "liability", "is_system" => true],
+            ["code" => "2100", "name" => "VAT Output (Payable)", "type" => "liability", "is_system" => true],
             ["code" => "3000", "name" => "Opening Balance Equity", "type" => "equity", "is_system" => false],
             ["code" => "4000", "name" => "Fees Income", "type" => "income", "is_system" => true],
+            ["code" => "4100", "name" => "Interest Income — Staff Loans", "type" => "income", "is_system" => true],
             ["code" => "4900", "name" => "Other Income", "type" => "income", "is_system" => false],
             ["code" => "5000", "name" => "Salaries & Wages Expense", "type" => "expense", "is_system" => false],
+            ["code" => "5100", "name" => "Supplier Purchases & Expenses", "type" => "expense", "is_system" => true],
             ["code" => "5900", "name" => "Other Expense", "type" => "expense", "is_system" => false],
         ];
     }

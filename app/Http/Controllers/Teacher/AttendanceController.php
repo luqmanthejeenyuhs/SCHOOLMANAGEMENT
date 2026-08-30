@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Teacher;
 
 use App\Http\Controllers\Controller;
 use App\Models\Attendance;
-use App\Models\SchoolClass;
 use App\Models\Student;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -13,17 +12,29 @@ class AttendanceController extends Controller
 {
     public function index(Request $request)
     {
-        $classes = SchoolClass::with("sections")->get();
+        $teacher = Auth::user()->teacher;
+        abort_if(! $teacher, 403, "No staff record is linked to your account yet.");
+
+        // Restricted to this teacher's own classes only — previously any
+        // class in the school was selectable here regardless of whether the
+        // teacher actually taught it.
+        $sections = $teacher->attachedSections();
+        $classes = $sections->pluck("schoolClass")->unique("id")->sortBy("name")->values();
+
         $classId = $request->get("school_class_id");
         $sectionId = $request->get("section_id");
         $date = $request->get("date", now()->toDateString());
 
-        $sections = collect();
+        $classSections = $classId ? $sections->where("school_class_id", $classId)->values() : collect();
         $students = collect();
 
-        if ($classId) {
-            $sections = SchoolClass::find($classId)?->sections ?? collect();
+        // Guard against a teacher fiddling with the URL to reach a class
+        // that isn't theirs — the dropdown already only shows their own
+        // classes, but the query string is still user input.
+        $allowedSectionIds = $sections->pluck("id");
+        $sectionAllowed = ! $sectionId || $allowedSectionIds->contains((int) $sectionId);
 
+        if ($classId && $classes->pluck("id")->contains((int) $classId) && $sectionAllowed) {
             $students = Student::with(["user", "attendances" => function ($q) use ($date) {
                 $q->whereDate("date", $date);
             }])
@@ -33,23 +44,48 @@ class AttendanceController extends Controller
                 ->orderBy("users.name")
                 ->select("students.*")
                 ->get();
+        } else {
+            $classId = null;
         }
 
-        return view("teacher.attendance", compact("classes", "sections", "students", "classId", "sectionId", "date"));
+        return view("teacher.attendance", compact("classes", "classSections", "students", "classId", "sectionId", "date"))
+            ->with("sections", $classSections);
     }
 
     public function store(Request $request)
     {
+        $teacher = Auth::user()->teacher;
+        abort_if(! $teacher, 403);
+
         $data = $request->validate([
             "date" => "required|date",
             "statuses" => "required|array",
             "statuses.*" => "in:present,absent,late,excused",
+            "reasons" => "nullable|array",
+            "reasons.*" => "nullable|string|max:255",
         ]);
 
+        // Only ever write attendance for students actually in one of this
+        // teacher's own classes — the form only renders their own students,
+        // but the POST body is still user input.
+        $allowedStudentIds = Student::whereIn("section_id", $teacher->attachedSections()->pluck("id"))->pluck("id");
+
         foreach ($data["statuses"] as $studentId => $status) {
+            if (! $allowedStudentIds->contains((int) $studentId)) {
+                continue;
+            }
+
+            $reason = $data["reasons"][$studentId] ?? null;
+
             Attendance::updateOrCreate(
                 ["student_id" => $studentId, "date" => $data["date"]],
-                ["status" => $status, "marked_by" => Auth::id()]
+                [
+                    "status" => $status,
+                    "marked_by" => Auth::id(),
+                    // Present pupils don't need a reason; clear any stale one
+                    // left over from a previous day's mark for the same slot.
+                    "remarks" => $status === "present" ? null : $reason,
+                ]
             );
         }
 

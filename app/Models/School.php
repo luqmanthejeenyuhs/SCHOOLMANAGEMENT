@@ -17,7 +17,7 @@ class School extends Model
     use HasFactory;
 
     protected $fillable = [
-        "name", "slug", "domain", "email", "phone", "address",
+        "name", "slug", "plan", "domain", "email", "phone", "address",
         "timezone", "logo_path", "is_active", "trial_ends_at",
         "latitude", "longitude", "geofence_radius_meters",
         "expected_clock_in", "expected_clock_out",

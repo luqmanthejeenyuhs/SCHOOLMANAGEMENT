@@ -11,6 +11,8 @@ class DashboardController extends Controller
     {
         $teacher = Auth::user()->teacher()->with("assignments.schoolClass", "assignments.section", "assignments.subject")->first();
 
-        return view("teacher.dashboard", compact("teacher"));
+        $sections = $teacher ? $teacher->attachedSections() : collect();
+
+        return view("teacher.dashboard", compact("teacher", "sections"));
     }
 }

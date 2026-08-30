@@ -38,7 +38,9 @@ class PasswordController extends Controller
             ]);
         }
 
-        $user->update(["password" => Hash::make($data["password"])]);
+        $wasForced = $user->must_change_password;
+
+        $user->update(["password" => Hash::make($data["password"]), "must_change_password" => false]);
 
         $auditLogger->log("password_changed_self", [
             "school_id" => $user->school_id,
@@ -46,6 +48,11 @@ class PasswordController extends Controller
             "username_attempted" => $user->username,
             "description" => "{$user->name} changed their own password.",
         ]);
+
+        if ($wasForced) {
+            return redirect(\App\Providers\RouteServiceProvider::redirectByRole())
+                ->with("success", "Password set. Welcome in!");
+        }
 
         return back()->with("success", "Your password has been updated.");
     }

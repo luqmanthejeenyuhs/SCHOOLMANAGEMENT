@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AccountController;
 use App\Http\Controllers\Admin\ActivityController;
 use App\Http\Controllers\Admin\CbcController;
 use App\Http\Controllers\Admin\EmployeeController;
@@ -11,10 +12,10 @@ use App\Http\Controllers\Admin\AccountingController;
 use App\Http\Controllers\Admin\FinanceLedgerController;
 use App\Http\Controllers\Admin\GradingScaleController;
 use App\Http\Controllers\Admin\InventoryController;
-use App\Http\Controllers\Admin\MpesaController;
 use App\Http\Controllers\Admin\LeaveRequestController;
-use App\Http\Controllers\Admin\LoanRequestController;
+use App\Http\Controllers\Admin\MpesaController;
 use App\Http\Controllers\Admin\PayslipController;
+use App\Http\Controllers\Admin\ReceiptController;
 use App\Http\Controllers\Admin\SchoolClassController;
 use App\Http\Controllers\Admin\SectionController;
 use App\Http\Controllers\Admin\SmsController;
@@ -29,11 +30,10 @@ use App\Http\Controllers\Student\DashboardController as StudentDashboardControll
 use App\Http\Controllers\Teacher\AttendanceController;
 use App\Http\Controllers\Teacher\CbcAssessmentController;
 use App\Http\Controllers\Teacher\ClockController;
-use App\Http\Controllers\Teacher\LeaveController;
-use App\Http\Controllers\Teacher\LoanController;
-use App\Http\Controllers\Teacher\PayslipController as StaffPayslipController;
 use App\Http\Controllers\Teacher\DashboardController as TeacherDashboardController;
 use App\Http\Controllers\Teacher\ExamResultController as TeacherExamResultController;
+use App\Http\Controllers\Teacher\LeaveController as StaffLeaveController;
+use App\Http\Controllers\Teacher\PayslipController as StaffPayslipController;
 use App\Http\Controllers\Webhooks\BankWebhookController;
 use App\Http\Controllers\Webhooks\MpesaC2bWebhookController;
 use Illuminate\Support\Facades\Route;
@@ -56,13 +56,11 @@ Route::get('/', fn () => redirect('/login'));
 
 // Guest routes
 Route::middleware('guest')->group(function () {
-    // Generic login — no school branding, used for the platform super_admin.
     Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [LoginController::class, 'login']);
 
-    // Branded, per-school login — shows that school's logo/name and scopes
-    // the username lookup to it. This is the link a school shares with its
-    // own staff/students/parents (e.g. /school/greenwood/login).
+    // Branded per-school login — {school} binds by slug (not id), since
+    // that's what the URL actually carries, e.g. /school/greenwood/login.
     Route::get('/school/{school:slug}/login', [LoginController::class, 'showLoginForm'])->name('login.school');
     Route::post('/school/{school:slug}/login', [LoginController::class, 'login']);
 });
@@ -70,26 +68,30 @@ Route::middleware('guest')->group(function () {
 Route::post('/logout', [LoginController::class, 'logout'])->middleware('auth')->name('logout');
 
 Route::middleware('auth')->group(function () {
-    // Self-service password change — every signed-in user (any role) can
-    // change their own password here without an admin seeing the new value.
-    Route::get('/account/password', [\App\Http\Controllers\Auth\PasswordController::class, 'edit'])->name('account.password.edit');
-    Route::put('/account/password', [\App\Http\Controllers\Auth\PasswordController::class, 'update'])->name('account.password.update');
+    // Available to every role — the same page serves the voluntary
+    // "Password" nav button and the forced first-login change (see
+    // App\Http\Middleware\EnsurePasswordIsChanged, aliased as
+    // 'password.changed' in Kernel.php).
+    Route::get('/account/password', [AccountController::class, 'editPassword'])->name('account.password.edit');
+    Route::put('/account/password', [AccountController::class, 'updatePassword'])->name('account.password.update');
+});
 
+Route::middleware(['auth', 'password.changed'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    // Self clock-in, open to anyone with a linked Employee record —
-    // teachers already have /teacher/clock; this is the same controller so
-    // non-teaching staff who log in with an admin-role account (bursar,
-    // front office, etc.) can clock themselves in too.
+    // Self clock-in/leave/payslips, open to anyone with a linked Employee
+    // record — teachers already have /teacher/clock, /teacher/results etc;
+    // this is the SAME controllers so non-teaching staff who log in with an
+    // admin-role account (bursar, front office, etc.) can use them too.
+    // NOTE: no staff.loans here on purpose — Staff Loans are now recorded
+    // directly by an admin (see Admin\StaffLoanController), not requested
+    // by staff, so there's nothing for a self-service page to submit to.
     Route::prefix('staff')->name('staff.')->middleware('role:admin,teacher')->group(function () {
         Route::get('/clock', [ClockController::class, 'index'])->name('clock.index');
         Route::post('/clock', [ClockController::class, 'store'])->name('clock.store');
 
-        Route::get('/leave', [LeaveController::class, 'index'])->name('leave.index');
-        Route::post('/leave', [LeaveController::class, 'store'])->name('leave.store');
-
-        Route::get('/loans', [LoanController::class, 'index'])->name('loans.index');
-        Route::post('/loans', [LoanController::class, 'store'])->name('loans.store');
+        Route::get('/leave', [StaffLeaveController::class, 'index'])->name('leave.index');
+        Route::post('/leave', [StaffLeaveController::class, 'store'])->name('leave.store');
 
         Route::get('/payslips', [StaffPayslipController::class, 'index'])->name('payslips.index');
     });
@@ -215,6 +217,9 @@ Route::middleware('auth')->group(function () {
             Route::post('invoices/{invoice}/payments', [FeeInvoiceController::class, 'recordPayment'])->name('invoices.payments.store');
             Route::post('invoices/{invoice}/mpesa-push', [MpesaController::class, 'push'])->name('invoices.mpesa_push');
             Route::get('mpesa/transactions/{transaction}/status', [MpesaController::class, 'status'])->name('mpesa.status');
+
+            Route::get('receipts', [ReceiptController::class, 'index'])->name('receipts.index');
+            Route::get('receipts/{receipt}', [ReceiptController::class, 'show'])->name('receipts.show');
         });
 
         // CBC (Competency Based Curriculum)
@@ -254,6 +259,8 @@ Route::middleware('auth')->group(function () {
             Route::get('employees', [EmployeeController::class, 'index'])->name('employees.index');
             Route::get('employees/create', [EmployeeController::class, 'create'])->name('employees.create');
             Route::post('employees', [EmployeeController::class, 'store'])->name('employees.store');
+            Route::get('employees/{employee}/edit', [EmployeeController::class, 'edit'])->name('employees.edit');
+            Route::put('employees/{employee}', [EmployeeController::class, 'update'])->name('employees.update');
             Route::delete('employees/{employee}', [EmployeeController::class, 'destroy'])->name('employees.destroy');
         });
         Route::middleware('permission:generate_payslips')->group(function () {
@@ -264,22 +271,11 @@ Route::middleware('auth')->group(function () {
 
         // Staff Attendance
         Route::get('staff-attendance', [StaffAttendanceController::class, 'index'])->name('staff_attendance.index')->middleware('permission:view_staff_attendance');
-        Route::middleware('permission:manage_staff_attendance')->group(function () {
-            Route::post('staff-attendance', [StaffAttendanceController::class, 'store'])->name('staff_attendance.store');
-            Route::put('staff-attendance/{staffAttendance}', [StaffAttendanceController::class, 'update'])->name('staff_attendance.update');
-        });
 
         Route::middleware('permission:manage_leave_requests')->group(function () {
             Route::get('leave-requests', [LeaveRequestController::class, 'index'])->name('leave_requests.index');
             Route::post('leave-requests/{leaveRequest}/approve', [LeaveRequestController::class, 'approve'])->name('leave_requests.approve');
             Route::post('leave-requests/{leaveRequest}/reject', [LeaveRequestController::class, 'reject'])->name('leave_requests.reject');
-        });
-
-        Route::middleware('permission:manage_loan_requests')->group(function () {
-            Route::get('loan-requests', [LoanRequestController::class, 'index'])->name('loan_requests.index');
-            Route::post('loan-requests/{loanRequest}/approve', [LoanRequestController::class, 'approve'])->name('loan_requests.approve');
-            Route::post('loan-requests/{loanRequest}/reject', [LoanRequestController::class, 'reject'])->name('loan_requests.reject');
-            Route::post('loan-requests/{loanRequest}/disburse', [LoanRequestController::class, 'markDisbursed'])->name('loan_requests.disburse');
         });
 
         // Finance: Bank + M-Pesa C2B ledger (paperless deposit reconciliation)
@@ -303,6 +299,34 @@ Route::middleware('auth')->group(function () {
 
             Route::get('ledger', [AccountingController::class, 'ledger'])->name('ledger');
             Route::get('trial-balance', [AccountingController::class, 'trialBalance'])->name('trial_balance');
+        });
+
+        // Suppliers: bills, payments, and credit notes — all auto-post to
+        // the ledger via AccountingService, same as fee payments do.
+        Route::middleware('permission:manage_suppliers')->group(function () {
+            Route::resource('suppliers', \App\Http\Controllers\Admin\SupplierController::class)->except(["destroy"]);
+
+            Route::get('suppliers-bills', [\App\Http\Controllers\Admin\SupplierBillController::class, 'index'])->name('suppliers.bills.index');
+            Route::get('suppliers-bills/create', [\App\Http\Controllers\Admin\SupplierBillController::class, 'create'])->name('suppliers.bills.create');
+            Route::post('suppliers-bills', [\App\Http\Controllers\Admin\SupplierBillController::class, 'store'])->name('suppliers.bills.store');
+            Route::get('suppliers-bills/{bill}', [\App\Http\Controllers\Admin\SupplierBillController::class, 'show'])->name('suppliers.bills.show');
+            Route::post('suppliers-bills/{bill}/payments', [\App\Http\Controllers\Admin\SupplierBillController::class, 'recordPayment'])->name('suppliers.bills.payments.store');
+            Route::post('suppliers-bills/{bill}/credit-notes', [\App\Http\Controllers\Admin\SupplierBillController::class, 'storeCreditNote'])->name('suppliers.bills.credit-notes.store');
+
+            Route::get('finance/vat-report', [\App\Http\Controllers\Admin\VatReportController::class, 'index'])->name('finance.vat_report');
+        });
+
+        // Staff Loans & Advances: disbursement posts to the ledger
+        // immediately; repayment via payroll is tracked on the loan itself
+        // (see PayslipController@generate) since payroll doesn't post to
+        // the ledger yet — manual repayments made outside payroll do post.
+        Route::middleware('permission:manage_loans')->group(function () {
+            Route::get('loans', [\App\Http\Controllers\Admin\StaffLoanController::class, 'index'])->name('loans.index');
+            Route::get('loans/create', [\App\Http\Controllers\Admin\StaffLoanController::class, 'create'])->name('loans.create');
+            Route::post('loans', [\App\Http\Controllers\Admin\StaffLoanController::class, 'store'])->name('loans.store');
+            Route::get('loans/{loan}', [\App\Http\Controllers\Admin\StaffLoanController::class, 'show'])->name('loans.show');
+            Route::post('loans/{loan}/repayments', [\App\Http\Controllers\Admin\StaffLoanController::class, 'recordManualRepayment'])->name('loans.repayments.store');
+            Route::post('loans/{loan}/write-off', [\App\Http\Controllers\Admin\StaffLoanController::class, 'writeOff'])->name('loans.write-off');
         });
 
         // Inventory: stationery/consumables POS-style issuing
@@ -333,9 +357,6 @@ Route::middleware('auth')->group(function () {
             Route::put('settings/rights/{user}', [SettingsController::class, 'rightsUpdate'])->name('settings.rights.update');
             Route::post('settings/rights/{user}/reset-password', [SettingsController::class, 'resetPassword'])->name('settings.rights.reset_password');
         });
-        Route::middleware('permission:view_audit_logs')->group(function () {
-            Route::get('settings/audit-logs', [\App\Http\Controllers\Admin\AuditLogController::class, 'index'])->name('settings.audit_logs.index');
-        });
     });
 
     // TEACHER
@@ -350,18 +371,14 @@ Route::middleware('auth')->group(function () {
         Route::get('/clock', [ClockController::class, 'index'])->name('clock.index');
         Route::post('/clock', [ClockController::class, 'store'])->name('clock.store');
         Route::get('/timetable', [TeacherTimetableController::class, 'index'])->name('timetable.index');
+        Route::get('/reports', [\App\Http\Controllers\Teacher\ReportController::class, 'index'])->name('reports.index');
+        Route::get('/reports/attendance', [\App\Http\Controllers\Teacher\ReportController::class, 'attendanceSummary'])->name('reports.attendance');
+        Route::get('/reports/exam-performance', [\App\Http\Controllers\Teacher\ReportController::class, 'examPerformance'])->name('reports.exam-performance');
     });
 
     // STUDENT
     Route::prefix('student')->name('student.')->middleware('role:student')->group(function () {
         Route::get('/dashboard', [StudentDashboardController::class, 'index'])->name('dashboard');
-        Route::get('/results', [\App\Http\Controllers\Student\PortalController::class, 'results'])->name('results.index');
-        Route::get('/fees', [\App\Http\Controllers\Student\PortalController::class, 'fees'])->name('fees.index');
-        Route::get('/class', [\App\Http\Controllers\Student\PortalController::class, 'myClass'])->name('class.index');
-        Route::get('/activities', [\App\Http\Controllers\Student\PortalController::class, 'activities'])->name('activities.index');
-        Route::get('/teachers', [\App\Http\Controllers\Student\PortalController::class, 'teachers'])->name('teachers.index');
-        Route::get('/performance', [\App\Http\Controllers\Student\PortalController::class, 'performance'])->name('performance.index');
-        Route::get('/library', [\App\Http\Controllers\Student\PortalController::class, 'library'])->name('library.index');
         Route::get('/cbc-report', function (\Illuminate\Http\Request $request) {
             $student = auth()->user()->student;
             abort_if(! $student, 404);
@@ -376,3 +393,20 @@ Route::middleware('auth')->group(function () {
         Route::get('/children/{student}', [ParentDashboardController::class, 'show'])->name('children.show');
     });
 });
+
+// SUPER ADMIN — platform-level: onboarding/managing schools themselves, as
+// opposed to a single school's own data. Previously defined in
+// routes/tenancy.php but never actually merged in, so none of this existed
+// in the live app. See App\Http\Middleware\EnsureSuperAdmin.
+Route::middleware(['auth', 'super_admin'])
+    ->prefix('superadmin')
+    ->name('superadmin.')
+    ->group(function () {
+        Route::resource('schools', \App\Http\Controllers\SuperAdmin\SchoolController::class);
+        Route::post('schools/{school}/toggle-active', [\App\Http\Controllers\SuperAdmin\SchoolController::class, 'toggleActive'])
+            ->name('schools.toggle-active');
+        Route::post('schools/{school}/impersonate', [\App\Http\Controllers\SuperAdmin\ImpersonationController::class, 'start'])
+            ->name('schools.impersonate');
+        Route::post('stop-impersonating', [\App\Http\Controllers\SuperAdmin\ImpersonationController::class, 'stop'])
+            ->name('stop-impersonating');
+    });

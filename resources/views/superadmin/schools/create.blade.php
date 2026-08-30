@@ -24,6 +24,14 @@
             </div>
             <div class="form-text">Lowercase letters, numbers, and hyphens only — this becomes their login URL.</div>
         </div>
+        <div class="mb-3">
+            <label class="form-label">Plan</label>
+            <select name="plan" class="form-select" required>
+                <option value="trial" @selected(old('plan', 'trial') === 'trial')>Trial</option>
+                <option value="basic" @selected(old('plan') === 'basic')>Basic</option>
+                <option value="premium" @selected(old('plan') === 'premium')>Premium</option>
+            </select>
+        </div>
         <div class="row">
             <div class="col-md-6 mb-3">
                 <label class="form-label">School Email (optional)</label>
@@ -42,19 +50,15 @@
 
     <div class="card p-4 mb-3" style="max-width:700px;">
         <h6 class="mb-1">First Admin Account</h6>
-        <p class="text-muted small">This is who the school logs in as first. Give these credentials to the school's own administrator — once logged in, they can add their own teachers, students, and staff themselves.</p>
+        <p class="text-muted small">This is who the school logs in as first. A secure temporary password is generated automatically and emailed directly to them — you never see it, and they'll set their own password the first time they log in.</p>
         <div class="mb-3">
             <label class="form-label">Admin Full Name</label>
             <input type="text" name="admin_name" class="form-control" value="{{ old('admin_name') }}" required>
         </div>
-        <div class="mb-3">
+        <div class="mb-0">
             <label class="form-label">Admin Email</label>
             <input type="email" name="admin_email" class="form-control" value="{{ old('admin_email') }}" required>
-        </div>
-        <div class="mb-0">
-            <label class="form-label">Admin Password</label>
-            <input type="text" name="admin_password" class="form-control" minlength="10" required>
-            <div class="form-text">Set something specific, write it down, and hand it to them directly — it won't be shown again after this page.</div>
+            <div class="form-text">Their login link and temporary password go here — make sure it's correct.</div>
         </div>
     </div>
 

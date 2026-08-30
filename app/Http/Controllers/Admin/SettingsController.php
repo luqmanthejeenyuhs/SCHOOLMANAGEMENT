@@ -106,7 +106,7 @@ class SettingsController extends Controller
         // App\Services\AccountProvisioningService.
         $newPassword = Str::password(12);
 
-        $user->update(["password" => Hash::make($newPassword)]);
+        $user->update(["password" => Hash::make($newPassword), "must_change_password" => true]);
 
         $accounts->sendCredentials($user, $newPassword);
 

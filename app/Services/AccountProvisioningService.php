@@ -33,6 +33,11 @@ class AccountProvisioningService
 
         $user = User::create(array_merge($attributes, [
             "password" => Hash::make($plainPassword),
+            // Forces them through /account/password before anything else —
+            // see App\Http\Middleware\EnsurePasswordIsChanged — so this
+            // system-generated password doesn't linger as their permanent
+            // one just because they never got around to changing it.
+            "must_change_password" => true,
         ]));
 
         $this->sendCredentials($user, $plainPassword, $school);

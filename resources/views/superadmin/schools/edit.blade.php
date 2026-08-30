@@ -23,6 +23,14 @@
             </div>
             <div class="form-text text-warning">Changing this changes the school's login URL — let them know before you save.</div>
         </div>
+        <div class="mb-3">
+            <label class="form-label">Plan</label>
+            <select name="plan" class="form-select" required>
+                <option value="trial" @selected(old('plan', $school->plan) === 'trial')>Trial</option>
+                <option value="basic" @selected(old('plan', $school->plan) === 'basic')>Basic</option>
+                <option value="premium" @selected(old('plan', $school->plan) === 'premium')>Premium</option>
+            </select>
+        </div>
         <div class="row">
             <div class="col-md-6 mb-3">
                 <label class="form-label">School Email</label>

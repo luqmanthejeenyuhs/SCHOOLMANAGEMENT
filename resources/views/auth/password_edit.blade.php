@@ -7,6 +7,12 @@
     <small class="text-muted">Only you can see or set this — not even your school admin can view your password.</small>
 </div>
 
+@if(session('must_change_password'))
+    <div class="alert alert-warning" style="max-width:480px;">
+        <i class="bi bi-shield-exclamation"></i> You're signing in with a temporary, system-generated password. Please set a new one you'll remember before continuing.
+    </div>
+@endif
+
 <div class="card p-4" style="max-width:480px;">
     @if($errors->any())
         <div class="alert alert-danger">{{ $errors->first() }}</div>

@@ -78,12 +78,16 @@
     <li class="nav-item" role="presentation">
         <button class="nav-link" id="tab-cbc-btn" data-bs-toggle="tab" data-bs-target="#tab-cbc" type="button" role="tab"><i class="bi bi-award"></i> CBC</button>
     </li>
+    @if(auth()->user()->hasPermission('view_student_activities'))
     <li class="nav-item" role="presentation">
         <button class="nav-link" id="tab-activities-btn" data-bs-toggle="tab" data-bs-target="#tab-activities" type="button" role="tab"><i class="bi bi-stars"></i> Activities</button>
     </li>
+    @endif
+    @if(auth()->user()->hasPermission('view_student_library'))
     <li class="nav-item" role="presentation">
         <button class="nav-link" id="tab-library-btn" data-bs-toggle="tab" data-bs-target="#tab-library" type="button" role="tab"><i class="bi bi-journal-bookmark"></i> Library</button>
     </li>
+    @endif
 </ul>
 
 <div class="tab-content">
@@ -367,6 +371,7 @@
     </div>
 
     {{-- ACTIVITIES --}}
+    @if(auth()->user()->hasPermission('view_student_activities'))
     <div class="tab-pane fade" id="tab-activities" role="tabpanel">
         <div class="card p-3">
             <h6 class="mb-3">Extra-Curricular Activities</h6>
@@ -389,8 +394,10 @@
             @endif
         </div>
     </div>
+    @endif
 
     {{-- LIBRARY --}}
+    @if(auth()->user()->hasPermission('view_student_library'))
     <div class="tab-pane fade" id="tab-library" role="tabpanel">
         <div class="card p-3 mb-3">
             <h6 class="mb-3">Currently Borrowed</h6>
@@ -435,6 +442,7 @@
             @endif
         </div>
     </div>
+    @endif
 
 </div>
 @endsection

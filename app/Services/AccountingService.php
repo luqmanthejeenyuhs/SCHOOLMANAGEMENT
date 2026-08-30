@@ -3,8 +3,13 @@
 namespace App\Services;
 
 use App\Models\Account;
+use App\Models\CreditNote;
 use App\Models\JournalEntry;
+use App\Models\LoanRepayment;
 use App\Models\Payment;
+use App\Models\StaffLoan;
+use App\Models\SupplierBill;
+use App\Models\SupplierBillPayment;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
@@ -102,6 +107,152 @@ class AccountingService
      * the lines don't balance — a journal entry that doesn't balance isn't
      * a valid accounting entry, full stop.
      */
+    /**
+     * A bill received from a supplier — money the school now owes, on
+     * whatever credit terms that supplier gives (see Supplier::payment_terms_days).
+     * The VAT portion is split out to VAT Input so it's separately trackable
+     * as recoverable input tax, not buried inside the expense figure.
+     */
+    public function postSupplierBill(SupplierBill $bill): JournalEntry
+    {
+        $schoolId = $bill->school_id;
+        $purchases = $this->accountByCode($schoolId, "5100");
+        $vatInput = $this->accountByCode($schoolId, "1300");
+        $payable = $this->accountByCode($schoolId, "2000");
+
+        $lines = [
+            ["account_id" => $purchases->id, "debit" => $bill->amount, "credit" => 0],
+        ];
+        if ($bill->vat_amount > 0) {
+            $lines[] = ["account_id" => $vatInput->id, "debit" => $bill->vat_amount, "credit" => 0];
+        }
+        $lines[] = ["account_id" => $payable->id, "debit" => 0, "credit" => $bill->total_amount];
+
+        return $this->postEntry(
+            schoolId: $schoolId,
+            date: $bill->bill_date->toDateString(),
+            memo: "Supplier bill — {$bill->supplier->name}: {$bill->description}",
+            lines: $lines,
+            sourceType: "supplier_bill",
+            sourceId: $bill->id,
+            reference: "BILL-{$bill->id}",
+        );
+    }
+
+    public function postSupplierBillPayment(SupplierBillPayment $payment): JournalEntry
+    {
+        $bill = $payment->bill;
+        $schoolId = $bill->school_id;
+        $payable = $this->accountByCode($schoolId, "2000");
+        $cashAccount = $this->accountForPaymentMethod($schoolId, $payment->method);
+
+        return $this->postEntry(
+            schoolId: $schoolId,
+            date: $payment->payment_date->toDateString(),
+            memo: "Payment to {$bill->supplier->name} — bill #{$bill->id} ({$payment->method})",
+            lines: [
+                ["account_id" => $payable->id, "debit" => $payment->amount, "credit" => 0],
+                ["account_id" => $cashAccount->id, "debit" => 0, "credit" => $payment->amount],
+            ],
+            sourceType: "supplier_bill_payment",
+            sourceId: $payment->id,
+            reference: "SPAY-{$payment->id}",
+            userId: $payment->paid_by,
+        );
+    }
+
+    /**
+     * A credit note reduces what's owed to the supplier without any cash
+     * changing hands (returned goods, an overcharge correction, etc.) — the
+     * mirror image of the original bill posting, reducing both the expense
+     * and the payable.
+     */
+    public function postCreditNote(CreditNote $creditNote): JournalEntry
+    {
+        $schoolId = $creditNote->school_id;
+        $purchases = $this->accountByCode($schoolId, "5100");
+        $payable = $this->accountByCode($schoolId, "2000");
+
+        return $this->postEntry(
+            schoolId: $schoolId,
+            date: $creditNote->date->toDateString(),
+            memo: "Credit note — {$creditNote->supplier->name}: {$creditNote->reason}",
+            lines: [
+                ["account_id" => $payable->id, "debit" => $creditNote->amount, "credit" => 0],
+                ["account_id" => $purchases->id, "debit" => 0, "credit" => $creditNote->amount],
+            ],
+            sourceType: "credit_note",
+            sourceId: $creditNote->id,
+            reference: $creditNote->creditNoteNumber(),
+            userId: $creditNote->issued_by,
+        );
+    }
+
+    /**
+     * Cash actually leaving the school today to hand a staff member their
+     * loan/advance — always posted regardless of how it gets repaid.
+     */
+    public function postLoanDisbursement(StaffLoan $loan, string $method = "bank"): JournalEntry
+    {
+        $schoolId = $loan->school_id;
+        $receivable = $this->accountByCode($schoolId, "1200");
+        $cashAccount = $this->accountForPaymentMethod($schoolId, $method);
+
+        return $this->postEntry(
+            schoolId: $schoolId,
+            date: $loan->start_date->toDateString(),
+            memo: "Staff ".($loan->loan_type === "advance" ? "advance" : "loan")." disbursed — {$loan->employee->name}",
+            lines: [
+                ["account_id" => $receivable->id, "debit" => $loan->principal, "credit" => 0],
+                ["account_id" => $cashAccount->id, "debit" => 0, "credit" => $loan->principal],
+            ],
+            sourceType: "staff_loan",
+            sourceId: $loan->id,
+            reference: "LOAN-{$loan->id}",
+            userId: $loan->approved_by,
+        );
+    }
+
+    /**
+     * Only for a repayment made OUTSIDE payroll (employee pays cash
+     * directly) — repayments deducted from a payslip are NOT posted here,
+     * since payroll itself doesn't post to the ledger yet in this system
+     * (a pre-existing gap). Posting only the loan half of an unposted
+     * payroll run would leave the books inconsistent, so those are tracked
+     * on the loan/repayment records only until payroll posting is added.
+     */
+    public function postManualLoanRepayment(LoanRepayment $repayment, string $method = "cash"): JournalEntry
+    {
+        $loan = $repayment->loan;
+        $schoolId = $loan->school_id;
+        $receivable = $this->accountByCode($schoolId, "1200");
+        $interestIncome = $this->accountByCode($schoolId, "4100");
+        $cashAccount = $this->accountForPaymentMethod($schoolId, $method);
+
+        $lines = [
+            ["account_id" => $cashAccount->id, "debit" => $repayment->amount, "credit" => 0],
+            ["account_id" => $receivable->id, "debit" => 0, "credit" => $repayment->principal_portion],
+        ];
+        if ($repayment->interest_portion > 0) {
+            $lines[] = ["account_id" => $interestIncome->id, "debit" => 0, "credit" => $repayment->interest_portion];
+        }
+
+        return $this->postEntry(
+            schoolId: $schoolId,
+            date: $repayment->payment_date->toDateString(),
+            memo: "Loan repayment — {$loan->employee->name}",
+            lines: $lines,
+            sourceType: "loan_repayment",
+            sourceId: $repayment->id,
+            reference: "LREPAY-{$repayment->id}",
+        );
+    }
+
+    protected function accountByCode(int $schoolId, string $code): Account
+    {
+        return $this->systemAccount($schoolId, $code);
+    }
+
     public function postEntry(int $schoolId, string $date, string $memo, array $lines, string $sourceType = "manual", ?int $sourceId = null, ?string $reference = null, ?int $userId = null): JournalEntry
     {
         $totalDebit = round(array_sum(array_column($lines, "debit")), 2);

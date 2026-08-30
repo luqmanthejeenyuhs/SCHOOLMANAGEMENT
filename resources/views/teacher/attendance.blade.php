@@ -11,6 +11,8 @@
     .student-meta { min-width: 160px; }
     .student-meta .name { font-weight: 600; }
     .student-meta .adm { color: #6c757d; font-size: .8rem; }
+    .reason-input { display: none; width: 100%; margin-top: 8px; }
+    .reason-input.show { display: block; }
     .save-bar { position: sticky; bottom: 0; background: #fff; border-top: 1px solid #e5e7eb; padding: 10px 14px; margin: 0 -1px; box-shadow: 0 -4px 14px rgba(0,0,0,.06); z-index: 5; }
     .count-pill { font-size: .78rem; padding: .3rem .6rem; }
     @media (max-width: 576px) {
@@ -69,19 +71,29 @@
 
     <div class="card">
         @forelse($students as $student)
-            @php $existing = $student->attendances->first()?->status ?? 'present'; @endphp
+            @php
+                $existingRecord = $student->attendances->first();
+                $existing = $existingRecord->status ?? 'present';
+                $existingReason = $existingRecord->remarks ?? '';
+            @endphp
             <div class="student-row">
                 <div class="student-meta">
                     <div class="name">{{ $student->user->name }}</div>
                     <div class="adm">Adm No: {{ $student->admission_no }}</div>
                 </div>
-                <div class="status-group btn-group" role="group" data-student="{{ $student->id }}">
-                    @foreach(['present' => ['Present','success'], 'absent' => ['Absent','danger'], 'late' => ['Late','warning'], 'excused' => ['Excused','secondary']] as $value => [$label, $color])
-                        <input type="radio" class="btn-check status-radio" name="statuses[{{ $student->id }}]"
-                               id="s{{ $student->id }}_{{ $value }}" value="{{ $value }}" autocomplete="off"
-                               @checked($existing === $value)>
-                        <label class="btn btn-outline-{{ $color }}" for="s{{ $student->id }}_{{ $value }}">{{ $label }}</label>
-                    @endforeach
+                <div style="flex:1 1 auto;">
+                    <div class="status-group btn-group" role="group" data-student="{{ $student->id }}">
+                        @foreach(['present' => ['Present','success'], 'absent' => ['Absent','danger'], 'late' => ['Late','warning'], 'excused' => ['Excused','secondary']] as $value => [$label, $color])
+                            <input type="radio" class="btn-check status-radio" name="statuses[{{ $student->id }}]"
+                                   id="s{{ $student->id }}_{{ $value }}" value="{{ $value }}" autocomplete="off"
+                                   data-student="{{ $student->id }}"
+                                   @checked($existing === $value)>
+                            <label class="btn btn-outline-{{ $color }}" for="s{{ $student->id }}_{{ $value }}">{{ $label }}</label>
+                        @endforeach
+                    </div>
+                    <input type="text" class="form-control form-control-sm reason-input {{ $existing !== 'present' ? 'show' : '' }}"
+                           id="reason_{{ $student->id }}" name="reasons[{{ $student->id }}]"
+                           placeholder="Reason (e.g. sick, travelling, no reason given)" value="{{ $existingReason }}">
                 </div>
             </div>
         @empty
@@ -113,10 +125,19 @@
             const radio = group.querySelector(`input[value="${status}"]`);
             if (radio) radio.checked = true;
         });
+        document.querySelectorAll('.reason-input').forEach(el => {
+            el.classList.toggle('show', status !== 'present');
+        });
         updateCounts();
     }
 
-    document.querySelectorAll('.status-radio').forEach(el => el.addEventListener('change', updateCounts));
+    document.querySelectorAll('.status-radio').forEach(el => {
+        el.addEventListener('change', function () {
+            const reasonField = document.getElementById('reason_' + this.dataset.student);
+            if (reasonField) reasonField.classList.toggle('show', this.value !== 'present');
+            updateCounts();
+        });
+    });
     updateCounts();
 </script>
 @else

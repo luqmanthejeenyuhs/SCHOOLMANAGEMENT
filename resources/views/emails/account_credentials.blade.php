@@ -35,9 +35,9 @@
                             </table>
 
                             <p style="font-size:14px;color:#444;line-height:1.5;">
-                                This password was generated automatically and only you have received it — for
-                                your security, please sign in and change it as soon as possible from the
-                                "Password" button in the top bar.
+                                This password was generated automatically and only you have received it.
+                                For your security, you'll be asked to set your own password the first time
+                                you sign in — after that it's yours alone; not even your school admin can see it.
                             </p>
 
                             <p style="text-align:center;margin:28px 0;">

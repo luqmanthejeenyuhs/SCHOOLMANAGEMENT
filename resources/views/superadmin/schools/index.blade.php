@@ -6,6 +6,33 @@
     <a href="{{ route('superadmin.schools.create') }}" class="btn btn-dark"><i class="bi bi-plus-lg"></i> Add School</a>
 </div>
 
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card stat-card p-3">
+            <div class="text-muted small">Total Schools</div>
+            <div class="fs-3 fw-bold">{{ $stats['total_schools'] }}</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card p-3">
+            <div class="text-muted small">Active Schools</div>
+            <div class="fs-3 fw-bold">{{ $stats['active_schools'] }}</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card p-3">
+            <div class="text-muted small">Students (Platform-wide)</div>
+            <div class="fs-3 fw-bold">{{ number_format($stats['total_students']) }}</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card p-3">
+            <div class="text-muted small">Revenue Processed (All-Time)</div>
+            <div class="fs-3 fw-bold">KES {{ number_format($stats['total_revenue'], 0) }}</div>
+        </div>
+    </div>
+</div>
+
 <div class="card">
     <div class="table-responsive">
         <table class="table table-hover mb-0 align-middle">
@@ -13,9 +40,11 @@
                 <tr>
                     <th>School</th>
                     <th>Subdomain</th>
-                    <th>Users</th>
+                    <th>Plan</th>
                     <th>Students</th>
                     <th>Teachers</th>
+                    <th>Joined</th>
+                    <th>Last Login</th>
                     <th>Status</th>
                     <th></th>
                 </tr>
@@ -25,9 +54,11 @@
                 <tr>
                     <td class="fw-semibold">{{ $school->name }}</td>
                     <td><code>{{ $school->slug }}</code></td>
-                    <td>{{ $school->users_count }}</td>
+                    <td><span class="badge bg-secondary text-capitalize">{{ $school->plan }}</span></td>
                     <td>{{ $school->students_count }}</td>
                     <td>{{ $school->teachers_count }}</td>
+                    <td>{{ $school->created_at->format('d M Y') }}</td>
+                    <td>{{ $school->last_login_at ? \Illuminate\Support\Carbon::parse($school->last_login_at)->diffForHumans() : '—' }}</td>
                     <td>
                         @if($school->is_active)
                             <span class="badge bg-success">Active</span>
@@ -53,7 +84,7 @@
                     </td>
                 </tr>
             @empty
-                <tr><td colspan="7" class="text-center text-muted py-4">No schools onboarded yet.</td></tr>
+                <tr><td colspan="9" class="text-center text-muted py-4">No schools onboarded yet.</td></tr>
             @endforelse
             </tbody>
         </table>

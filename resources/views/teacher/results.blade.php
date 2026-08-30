@@ -19,16 +19,18 @@
             <label class="form-label small">Subject</label>
             <select name="subject_id" class="form-select" onchange="this.form.submit()">
                 <option value="">Select subject</option>
-                @foreach($subjects as $subject)
-                    <option value="{{ $subject->id }}" @selected($subjectId == $subject->id)>{{ $subject->name }}</option>
-                @endforeach
+                @forelse($subjects as $s)
+                    <option value="{{ $s->id }}" @selected($subjectId == $s->id)>{{ $s->name }}</option>
+                @empty
+                    <option value="" disabled>You aren't assigned any subject in this class</option>
+                @endforelse
             </select>
         </div>
         @endif
     </form>
 </div>
 
-@if($exam && $subjectId)
+@if($exam && $subject)
 <form method="POST" action="{{ route('teacher.results.store') }}">
     @csrf
     <input type="hidden" name="exam_id" value="{{ $examId }}">
@@ -39,7 +41,14 @@
     </div>
     <div class="card">
         <table class="table mb-0 align-middle">
-            <thead class="table-light"><tr><th>Admission No</th><th>Student</th><th style="width:150px;">Marks Obtained</th></tr></thead>
+            <thead class="table-light">
+                <tr>
+                    <th>Admission No</th>
+                    <th>Student</th>
+                    <th style="width:150px;">{{ $subject->name }} Marks</th>
+                    <th style="width:160px;">Average So Far <span class="text-muted small fw-normal">(all subjects, this exam)</span></th>
+                </tr>
+            </thead>
             <tbody>
             @forelse($students as $student)
                 @php $existing = $student->examResults->first()?->marks_obtained; @endphp
@@ -47,9 +56,17 @@
                     <td>{{ $student->admission_no }}</td>
                     <td>{{ $student->user->name }}</td>
                     <td><input type="number" step="0.01" min="0" name="marks[{{ $student->id }}]" class="form-control form-control-sm marks-input" value="{{ $existing }}"></td>
+                    <td>
+                        @if($student->running_average !== null)
+                            <span class="fw-semibold">{{ $student->running_average }}%</span>
+                            <span class="text-muted small">({{ $student->subjects_recorded }} subject{{ $student->subjects_recorded == 1 ? '' : 's' }})</span>
+                        @else
+                            <span class="text-muted small">No marks recorded yet</span>
+                        @endif
+                    </td>
                 </tr>
             @empty
-                <tr><td colspan="3" class="text-center text-muted py-3">No students in this class.</td></tr>
+                <tr><td colspan="4" class="text-center text-muted py-3">No students in this class.</td></tr>
             @endforelse
             </tbody>
         </table>
@@ -68,7 +85,9 @@
     maxInput.addEventListener('input', applyMax);
     applyMax();
 </script>
+@elseif($exam)
+<p class="text-muted">Select a subject to enter marks. If none appear, you aren't assigned to teach a subject in this class — ask the admin to attach you.</p>
 @else
-<p class="text-muted">Select an exam and subject to enter marks.</p>
+<p class="text-muted">Select an exam to begin.</p>
 @endif
 @endsection

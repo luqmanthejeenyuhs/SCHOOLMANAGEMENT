@@ -18,8 +18,15 @@ class TimetableController extends Controller
             ->where("teacher_id", $teacher->id)
             ->get();
 
+        $timeRanges = $slots
+            ->map(fn ($slot) => $slot->start_time.'|'.$slot->end_time)
+            ->unique()
+            ->sort()
+            ->values();
+
         return view("teacher.timetable", [
             "slots" => $slots,
+            "timeRanges" => $timeRanges,
             "days" => AdminTimetableController::DAYS,
         ]);
     }

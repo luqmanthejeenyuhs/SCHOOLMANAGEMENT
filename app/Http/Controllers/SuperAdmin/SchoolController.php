@@ -3,10 +3,16 @@
 namespace App\Http\Controllers\SuperAdmin;
 
 use App\Http\Controllers\Controller;
+use App\Mail\SchoolAdminCredentials;
+use App\Models\Payment;
 use App\Models\School;
-use App\Services\AccountProvisioningService;
+use App\Models\Student;
+use App\Models\User;
 use App\Support\Facades\Tenant;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 /**
@@ -19,10 +25,20 @@ class SchoolController extends Controller
     public function index()
     {
         $schools = School::withCount(["users", "students", "teachers"])
+            ->withMax("users as last_login_at", "last_login_at")
             ->latest()
             ->get();
 
-        return view("superadmin.schools.index", compact("schools"));
+        // ->allSchools() bypasses tenant scoping deliberately here — this is
+        // the one place in the app a cross-school aggregate is correct.
+        $stats = [
+            "total_schools" => $schools->count(),
+            "active_schools" => $schools->where("is_active", true)->count(),
+            "total_students" => Student::allSchools()->count(),
+            "total_revenue" => Payment::allSchools()->sum("amount_paid"),
+        ];
+
+        return view("superadmin.schools.index", compact("schools", "stats"));
     }
 
     public function create()
@@ -30,7 +46,7 @@ class SchoolController extends Controller
         return view("superadmin.schools.create");
     }
 
-    public function store(Request $request, AccountProvisioningService $accounts)
+    public function store(Request $request)
     {
         $data = $request->validate([
             "name" => "required|string|max:255",
@@ -38,33 +54,55 @@ class SchoolController extends Controller
             "email" => "nullable|email",
             "phone" => "nullable|string",
             "address" => "nullable|string",
+            "plan" => "required|in:trial,basic,premium",
             "admin_name" => "required|string|max:255",
             "admin_email" => ["required", "email", Rule::unique("users", "email")],
-            "admin_username" => ["required", "string", "max:50", "alpha_dash"],
         ]);
 
         $school = School::create([
             "name" => $data["name"],
             "slug" => $data["slug"],
+            "plan" => $data["plan"],
             "email" => $data["email"] ?? null,
             "phone" => $data["phone"] ?? null,
             "address" => $data["address"] ?? null,
         ]);
 
+        // Nobody types this in, and nobody on our side ever sees it — it's
+        // generated here, emailed directly to the school's admin, and never
+        // stored or logged anywhere in plaintext. They set their own real
+        // password on first login (see EnsurePasswordIsChanged).
+        $temporaryPassword = Str::password(14);
+
         // The school's first admin user is created "as" that school so it
-        // gets school_id stamped automatically. Password is generated and
-        // emailed, not chosen here — see AccountProvisioningService. The
-        // platform super_admin creating this school never sees it either.
-        Tenant::runFor($school->id, function () use ($data, $school, $accounts) {
-            $accounts->createUserAccount([
+        // gets school_id stamped automatically.
+        $admin = Tenant::runFor($school->id, function () use ($data, $temporaryPassword) {
+            return User::create([
                 "name" => $data["admin_name"],
                 "email" => $data["admin_email"],
-                "username" => $data["admin_username"],
+                "password" => Hash::make($temporaryPassword),
                 "role" => "admin",
-            ], $school);
+                "must_change_password" => true,
+            ]);
         });
 
-        return redirect()->route("superadmin.schools.index")->with("success", "School onboarded successfully.");
+        $loginUrl = $this->loginUrlFor($school);
+
+        Mail::to($admin->email)->send(new SchoolAdminCredentials($admin, $school, $temporaryPassword, $loginUrl));
+
+        return redirect()->route("superadmin.schools.index")
+            ->with("success", "School onboarded. Login details were emailed to {$admin->email}.");
+    }
+
+    protected function loginUrlFor(School $school): string
+    {
+        $platformDomain = config("school.platform_domain");
+
+        if (! $platformDomain) {
+            return url("/login");
+        }
+
+        return "https://{$school->slug}.{$platformDomain}/login";
     }
 
     public function edit(School $school)
@@ -77,6 +115,7 @@ class SchoolController extends Controller
         $data = $request->validate([
             "name" => "required|string|max:255",
             "slug" => ["required", "alpha_dash", "lowercase", Rule::unique("schools", "slug")->ignore($school->id)],
+            "plan" => "required|in:trial,basic,premium",
             "email" => "nullable|email",
             "phone" => "nullable|string",
             "address" => "nullable|string",

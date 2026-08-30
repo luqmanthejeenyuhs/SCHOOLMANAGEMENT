@@ -118,16 +118,25 @@ class StudentController extends Controller
         // CBC summary
         $cbcRecords = $student->cbcRecords()->with("subStrand")->latest()->get();
 
-        // Extra-curricular activities
-        $activities = $student->activities()->with("patron.user")->get();
+        // Extra-curricular activities — only fetched if the viewer is
+        // allowed to see this tab (see the permission migration that
+        // added view_student_activities).
+        $activities = auth()->user()->hasPermission("view_student_activities")
+            ? $student->activities()->with("patron.user")->get()
+            : collect();
 
-        // Library
-        $loans = \App\Models\TextbookLoan::where("student_id", $student->id)
-            ->with(["copy.item"])
-            ->latest("issued_at")
-            ->get();
-        $currentLoans = $loans->whereNull("returned_at");
-        $pastLoans = $loans->whereNotNull("returned_at");
+        // Library — same gating for view_student_library.
+        if (auth()->user()->hasPermission("view_student_library")) {
+            $loans = \App\Models\TextbookLoan::where("student_id", $student->id)
+                ->with(["copy.item"])
+                ->latest("issued_at")
+                ->get();
+            $currentLoans = $loans->whereNull("returned_at");
+            $pastLoans = $loans->whereNotNull("returned_at");
+        } else {
+            $currentLoans = collect();
+            $pastLoans = collect();
+        }
 
         return view("admin.students.show", compact(
             "student", "invoices", "totalBilled", "totalPaid", "feeBalance", "payments",

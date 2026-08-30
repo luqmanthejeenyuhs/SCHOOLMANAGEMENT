@@ -29,11 +29,21 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
+        // This seeder creates every account (including a platform-wide
+        // super_admin) with the password "password" — perfectly fine for
+        // local development, catastrophic on a real production database.
+        // Use `php artisan admin:create-super` and `php artisan demo:reset`
+        // instead, both of which prompt for a real password interactively.
+        if (app()->environment('production')) {
+            $this->command->error('DatabaseSeeder is blocked in production (weak demo passwords). Use admin:create-super and demo:reset instead.');
+
+            return;
+        }
+
         // --- Platform-level super admin (belongs to no school) ---
         User::create([
             'name' => 'Platform Super Admin',
             'email' => 'superadmin@platform.test',
-            'username' => 'superadmin',
             'password' => Hash::make('password'),
             'role' => 'super_admin',
         ]);
@@ -57,7 +67,6 @@ class DatabaseSeeder extends Seeder
         $admin = User::create([
             'name' => 'System Admin',
             'email' => 'admin@school.test',
-            'username' => 'admin',
             'password' => Hash::make('password'),
             'role' => 'admin',
             'is_super_admin' => true,
@@ -80,7 +89,6 @@ class DatabaseSeeder extends Seeder
         $teacherUser1 = User::create([
             'name' => 'Grace Wanjiru',
             'email' => 'teacher1@school.test',
-            'username' => 'teacher1',
             'password' => Hash::make('password'),
             'role' => 'teacher',
         ]);
@@ -94,7 +102,6 @@ class DatabaseSeeder extends Seeder
         $teacherUser2 = User::create([
             'name' => 'David Otieno',
             'email' => 'teacher2@school.test',
-            'username' => 'teacher2',
             'password' => Hash::make('password'),
             'role' => 'teacher',
         ]);
@@ -132,21 +139,16 @@ class DatabaseSeeder extends Seeder
 
         $students = [];
         foreach ($studentNames as $i => [$name, $class, $section]) {
-            $admissionNo = 'ADM-'.str_pad($i + 1, 4, '0', STR_PAD_LEFT);
-
             $u = User::create([
                 'name' => $name,
                 'email' => 'student'.($i + 1).'@school.test',
-                // Students sign in with their admission number, not a
-                // separately chosen username.
-                'username' => $admissionNo,
                 'password' => Hash::make('password'),
                 'role' => 'student',
             ]);
 
             $student = Student::create([
                 'user_id' => $u->id,
-                'admission_no' => $admissionNo,
+                'admission_no' => 'ADM-'.str_pad($i + 1, 4, '0', STR_PAD_LEFT),
                 'school_class_id' => $class->id,
                 'section_id' => $section->id,
                 'school_level' => $class->name === 'Grade 10' ? 'senior' : 'junior',
@@ -335,7 +337,7 @@ class DatabaseSeeder extends Seeder
             'employment_date' => now()->subYears(2),
         ]);
 
-        $this->command->info('Demo data seeded for Greenwood Academy. Login as admin (username: admin) / teacher1 / student ADM-0001 — password for all: "password"');
+        $this->command->info('Demo data seeded for Greenwood Academy. Login as admin@school.test / teacher1@school.test / student1@school.test — password for all: "password"');
         });
 
         // --- A second school, to prove data doesn't cross tenants ---
@@ -362,9 +364,6 @@ class DatabaseSeeder extends Seeder
             $studentUser = User::create([
                 'name' => 'Kevin Otieno',
                 'email' => 'student1@sunrise.test',
-                // Students sign in with their admission number, not a
-                // separately chosen username.
-                'username' => 'ADM-0001',
                 'password' => Hash::make('password'),
                 'role' => 'student',
             ]);

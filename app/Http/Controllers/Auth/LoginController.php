@@ -80,6 +80,19 @@ class LoginController extends Controller
             $request->session()->regenerate();
             $request->session()->forget("login_school_id");
 
+            Auth::user()->forceFill(["last_login_at" => now()])->save();
+
+            // A system-generated password (every new account, and every
+            // admin-triggered reset — see AccountProvisioningService) must
+            // be replaced with one only the account owner knows before
+            // they can do anything else. EnsurePasswordIsChanged enforces
+            // this on every subsequent request too; redirecting straight
+            // there on login just avoids the extra bounce.
+            if (Auth::user()->must_change_password) {
+                return redirect()->route("account.password.edit")
+                    ->with("must_change_password", true);
+            }
+
             return redirect()->intended(RouteServiceProvider::redirectByRole());
         }
 

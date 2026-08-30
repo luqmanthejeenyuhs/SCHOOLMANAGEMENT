@@ -35,10 +35,50 @@ class PayslipController extends Controller
 
         $breakdown = $this->payroll->applyUnpaidLeaveDeduction($breakdown, $unpaidDays);
 
+        $loan = $employee->activeLoans()->first();
+        $loanDeduction = 0;
+
+        if ($loan) {
+            // Never deduct more than what's actually still owed — the final
+            // installment on a loan is often smaller than the regular one.
+            $loanDeduction = min((float) $loan->monthly_installment, (float) $loan->balance_remaining);
+            $breakdown["other_deductions"] = ($breakdown["other_deductions"] ?? 0) + $loanDeduction;
+            $breakdown["total_deductions"] += $loanDeduction;
+            $breakdown["net_pay"] -= $loanDeduction;
+        }
+
         $payslip = Payslip::updateOrCreate(
             ["employee_id" => $employee->id, "month" => $data["month"], "year" => $data["year"]],
             $breakdown
         );
+
+        if ($loan && $loanDeduction > 0) {
+            // Reverse any deduction already recorded against this exact
+            // payslip before re-adding — updateOrCreate above means
+            // "Generate" can be clicked again for the same month (e.g. after
+            // fixing an attendance record), and without this a re-generate
+            // would double-count the loan deduction against the balance.
+            $existing = $loan->repayments()->where("payslip_id", $payslip->id)->first();
+            if ($existing) {
+                $loan->increment("balance_remaining", $existing->amount);
+                $existing->delete();
+            }
+
+            $split = $loan->splitRepayment($loanDeduction);
+            $loan->repayments()->create([
+                "payslip_id" => $payslip->id,
+                "amount" => $loanDeduction,
+                "principal_portion" => $split["principal_portion"],
+                "interest_portion" => $split["interest_portion"],
+                "payment_date" => now()->toDateString(),
+            ]);
+
+            $loan->decrement("balance_remaining", $loanDeduction);
+            $loan->refresh();
+            if ($loan->balance_remaining <= 0.01) {
+                $loan->update(["status" => "completed", "balance_remaining" => 0]);
+            }
+        }
 
         return redirect()->route("admin.payslips.show", $payslip)->with("success", "Payslip generated.");
     }
