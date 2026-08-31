@@ -36,12 +36,9 @@
             <tr><td>SHIF (2.75% of gross)</td><td class="text-end">{{ number_format($payslip->shif, 2) }}</td></tr>
             <tr><td>Affordable Housing Levy (1.5% of gross)</td><td class="text-end">{{ number_format($payslip->housing_levy, 2) }}</td></tr>
             <tr><td>PAYE (after personal relief of KES {{ number_format($payslip->personal_relief, 2) }})</td><td class="text-end">{{ number_format($payslip->paye, 2) }}</td></tr>
-            @if($payslip->unpaid_leave_days > 0)
-            <tr><td>Unpaid Leave / Absence ({{ $payslip->unpaid_leave_days }} day{{ $payslip->unpaid_leave_days == 1 ? '' : 's' }})</td><td class="text-end">Included in Other Deductions</td></tr>
-            @endif
-            @if($payslip->other_deductions > 0)
-            <tr><td>Other Deductions</td><td class="text-end">{{ number_format($payslip->other_deductions, 2) }}</td></tr>
-            @endif
+            @foreach($payslip->items as $item)
+            <tr><td>{{ $item->label }}</td><td class="text-end">{{ number_format($item->amount, 2) }}</td></tr>
+            @endforeach
             <tr class="fw-bold"><td>Total Deductions</td><td class="text-end">{{ number_format($payslip->total_deductions, 2) }}</td></tr>
         </tbody>
     </table>
@@ -52,9 +49,11 @@
     </div>
 
     <p class="small text-muted mt-3 mb-0">
-        Statutory rates (PAYE bands, SHIF, NSSF Tier I/II limits, Housing Levy) follow Kenya's 2024/2025
-        framework and are configurable in <code>config/payroll.php</code>. Always verify current rates
-        against KRA, NSSF, and SHIF publications before relying on this for real payroll runs.
+        Statutory rates (PAYE bands, SHIF, NSSF Tier I/II limits, Housing Levy) follow Kenya's current
+        framework, including Housing Levy as a pre-tax deduction, and are configurable in
+        <code>config/payroll.php</code>. NSSF Tier II's upper earnings limit is disputed across current
+        sources (KES 72,000 vs 108,000) — verify directly at nssf.or.ke before relying on this for a real
+        payroll run.
     </p>
 </div>
 

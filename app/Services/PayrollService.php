@@ -16,8 +16,12 @@ class PayrollService
         $shif = $this->calculateShif($grossPay);
         $housingLevy = round($grossPay * config('payroll.housing_levy.rate'), 2);
 
-        // Taxable pay = gross pay less NSSF and SHIF (both are pre-tax deductible per KRA rules)
-        $taxablePay = max(0, $grossPay - $nssf - $shif);
+        // Taxable pay = gross pay less NSSF, SHIF, AND the Housing Levy — all
+        // three are pre-tax deductible under current KRA rules (verified
+        // against multiple current sources; this is NOT the same as the
+        // separate "Affordable Housing Relief" tax credit that was repealed
+        // in December 2024 — the levy itself still reduces taxable income).
+        $taxablePay = max(0, $grossPay - $nssf - $shif - $housingLevy);
         $grossPaye = $this->calculatePaye($taxablePay);
         $relief = config('payroll.paye.personal_relief');
         $paye = max(0, round($grossPaye - $relief, 2));

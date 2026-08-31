@@ -76,6 +76,21 @@ class Employee extends Model
         return $this->staffLoans()->where("status", "active");
     }
 
+    public function employeeDeductions()
+    {
+        return $this->hasMany(EmployeeDeduction::class);
+    }
+
+    public function activeDeductions()
+    {
+        return $this->employeeDeductions()->where("is_active", true)->with("deductionType");
+    }
+
+    public function leaveRequests()
+    {
+        return $this->hasMany(LeaveRequest::class);
+    }
+
     public function grossPay(): float
     {
         return (float) $this->basic_salary + $this->house_allowance + $this->transport_allowance + $this->other_allowances;

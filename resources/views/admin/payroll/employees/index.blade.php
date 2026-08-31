@@ -1,12 +1,27 @@
 @extends('layouts.app')
 @section('title', 'Staff & Payroll')
 @section('content')
+@include('admin.payroll._tabs')
+
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <h3>Staff &amp; Payroll</h3>
-    <div>
-        <a href="{{ route('admin.payslips.index') }}" class="btn btn-outline-dark me-2">View Payslips</a>
-        <a href="{{ route('admin.employees.create') }}" class="btn btn-dark"><i class="bi bi-plus-lg"></i> Add Employee</a>
-    </div>
+    <h3>Employees</h3>
+    <a href="{{ route('admin.employees.create') }}" class="btn btn-dark"><i class="bi bi-plus-lg"></i> Add Employee</a>
+</div>
+
+<div class="card p-3 mb-3">
+    <form method="GET" class="row g-2">
+        <div class="col-md-4">
+            <input type="text" name="q" class="form-control" placeholder="Search by name or job title..." value="{{ request('q') }}">
+        </div>
+        <div class="col-md-2">
+            <button class="btn btn-dark w-100">Search</button>
+        </div>
+        @if(request('q'))
+        <div class="col-md-2">
+            <a href="{{ route('admin.employees.index') }}" class="btn btn-outline-secondary w-100">Clear</a>
+        </div>
+        @endif
+    </form>
 </div>
 
 <div class="card">

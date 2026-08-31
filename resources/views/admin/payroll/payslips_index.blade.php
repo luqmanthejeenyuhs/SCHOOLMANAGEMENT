@@ -1,9 +1,9 @@
 @extends('layouts.app')
 @section('title', 'Payslips')
 @section('content')
+@include('admin.payroll._tabs')
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <h3>Payslips</h3>
-    <a href="{{ route('admin.employees.index') }}" class="btn btn-outline-dark btn-sm">Back to Staff</a>
+    <h3>Payroll</h3>
 </div>
 <div class="card">
     <div class="table-responsive">

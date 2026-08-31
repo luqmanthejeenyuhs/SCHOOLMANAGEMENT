@@ -21,6 +21,11 @@ class Payslip extends Model
         return $this->belongsTo(Employee::class);
     }
 
+    public function items()
+    {
+        return $this->hasMany(PayslipItem::class);
+    }
+
     public function periodLabel(): string
     {
         return date("F", mktime(0, 0, 0, $this->month, 1)) . " " . $this->year;

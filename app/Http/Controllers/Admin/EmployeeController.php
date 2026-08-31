@@ -11,9 +11,15 @@ use Illuminate\Validation\Rule;
 
 class EmployeeController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $employees = Employee::latest()->paginate(15);
+        $employees = Employee::query()
+            ->when($request->get("q"), function ($q, $search) {
+                $q->where(fn ($q2) => $q2->where("name", "like", "%{$search}%")->orWhere("job_title", "like", "%{$search}%"));
+            })
+            ->latest()
+            ->paginate(15)
+            ->withQueryString();
 
         return view("admin.payroll.employees.index", compact("employees"));
     }

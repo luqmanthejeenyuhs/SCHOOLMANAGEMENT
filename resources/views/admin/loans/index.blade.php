@@ -1,6 +1,7 @@
 @extends('layouts.app')
 @section('title', 'Staff Loans & Advances')
 @section('content')
+@include('admin.payroll._tabs')
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h3 class="mb-0">Staff Loans &amp; Advances</h3>
     <a href="{{ route('admin.loans.create') }}" class="btn btn-dark"><i class="bi bi-plus-lg"></i> New Loan / Advance</a>

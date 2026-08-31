@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\AccountController;
 use App\Http\Controllers\Admin\ActivityController;
 use App\Http\Controllers\Admin\CbcController;
 use App\Http\Controllers\Admin\EmployeeController;
@@ -12,7 +11,6 @@ use App\Http\Controllers\Admin\AccountingController;
 use App\Http\Controllers\Admin\FinanceLedgerController;
 use App\Http\Controllers\Admin\GradingScaleController;
 use App\Http\Controllers\Admin\InventoryController;
-use App\Http\Controllers\Admin\LeaveRequestController;
 use App\Http\Controllers\Admin\MpesaController;
 use App\Http\Controllers\Admin\PayslipController;
 use App\Http\Controllers\Admin\ReceiptController;
@@ -32,8 +30,6 @@ use App\Http\Controllers\Teacher\CbcAssessmentController;
 use App\Http\Controllers\Teacher\ClockController;
 use App\Http\Controllers\Teacher\DashboardController as TeacherDashboardController;
 use App\Http\Controllers\Teacher\ExamResultController as TeacherExamResultController;
-use App\Http\Controllers\Teacher\LeaveController as StaffLeaveController;
-use App\Http\Controllers\Teacher\PayslipController as StaffPayslipController;
 use App\Http\Controllers\Webhooks\BankWebhookController;
 use App\Http\Controllers\Webhooks\MpesaC2bWebhookController;
 use Illuminate\Support\Facades\Route;
@@ -58,43 +54,17 @@ Route::get('/', fn () => redirect('/login'));
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [LoginController::class, 'login']);
-
-    // Branded per-school login — {school} binds by slug (not id), since
-    // that's what the URL actually carries, e.g. /school/greenwood/login.
-    Route::get('/school/{school:slug}/login', [LoginController::class, 'showLoginForm'])->name('login.school');
-    Route::post('/school/{school:slug}/login', [LoginController::class, 'login']);
 });
 
 Route::post('/logout', [LoginController::class, 'logout'])->middleware('auth')->name('logout');
 
 Route::middleware('auth')->group(function () {
-    // Available to every role — the same page serves the voluntary
-    // "Password" nav button and the forced first-login change (see
-    // App\Http\Middleware\EnsurePasswordIsChanged, aliased as
-    // 'password.changed' in Kernel.php).
-    Route::get('/account/password', [AccountController::class, 'editPassword'])->name('account.password.edit');
-    Route::put('/account/password', [AccountController::class, 'updatePassword'])->name('account.password.update');
+    Route::get('/change-password', [\App\Http\Controllers\Auth\ChangePasswordController::class, 'show'])->name('password.change');
+    Route::post('/change-password', [\App\Http\Controllers\Auth\ChangePasswordController::class, 'update'])->name('password.update');
 });
 
 Route::middleware(['auth', 'password.changed'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-
-    // Self clock-in/leave/payslips, open to anyone with a linked Employee
-    // record — teachers already have /teacher/clock, /teacher/results etc;
-    // this is the SAME controllers so non-teaching staff who log in with an
-    // admin-role account (bursar, front office, etc.) can use them too.
-    // NOTE: no staff.loans here on purpose — Staff Loans are now recorded
-    // directly by an admin (see Admin\StaffLoanController), not requested
-    // by staff, so there's nothing for a self-service page to submit to.
-    Route::prefix('staff')->name('staff.')->middleware('role:admin,teacher')->group(function () {
-        Route::get('/clock', [ClockController::class, 'index'])->name('clock.index');
-        Route::post('/clock', [ClockController::class, 'store'])->name('clock.store');
-
-        Route::get('/leave', [StaffLeaveController::class, 'index'])->name('leave.index');
-        Route::post('/leave', [StaffLeaveController::class, 'store'])->name('leave.store');
-
-        Route::get('/payslips', [StaffPayslipController::class, 'index'])->name('payslips.index');
-    });
 
     // ADMIN
     Route::prefix('admin')->name('admin.')->middleware('role:admin')->group(function () {
@@ -269,14 +239,23 @@ Route::middleware(['auth', 'password.changed'])->group(function () {
             Route::get('payslips/{payslip}', [PayslipController::class, 'show'])->name('payslips.show');
         });
 
+        // Leave Requests & Statutory Deductions — part of the same
+        // Employees hub (tabs), not separate sidebar items.
+        Route::middleware('permission:manage_employees')->group(function () {
+            Route::get('leave-requests', [\App\Http\Controllers\Admin\LeaveRequestController::class, 'index'])->name('leave-requests.index');
+            Route::post('leave-requests', [\App\Http\Controllers\Admin\LeaveRequestController::class, 'store'])->name('leave-requests.store');
+            Route::post('leave-requests/{leaveRequest}/decide', [\App\Http\Controllers\Admin\LeaveRequestController::class, 'decide'])->name('leave-requests.decide');
+
+            Route::get('deduction-types', [\App\Http\Controllers\Admin\DeductionTypeController::class, 'index'])->name('deduction-types.index');
+            Route::post('deduction-types', [\App\Http\Controllers\Admin\DeductionTypeController::class, 'store'])->name('deduction-types.store');
+            Route::put('deduction-types/{deductionType}', [\App\Http\Controllers\Admin\DeductionTypeController::class, 'update'])->name('deduction-types.update');
+            Route::delete('deduction-types/{deductionType}', [\App\Http\Controllers\Admin\DeductionTypeController::class, 'destroy'])->name('deduction-types.destroy');
+            Route::post('deduction-types/assign', [\App\Http\Controllers\Admin\DeductionTypeController::class, 'assign'])->name('deduction-types.assign');
+            Route::delete('employee-deductions/{employeeDeduction}', [\App\Http\Controllers\Admin\DeductionTypeController::class, 'unassign'])->name('employee-deductions.unassign');
+        });
+
         // Staff Attendance
         Route::get('staff-attendance', [StaffAttendanceController::class, 'index'])->name('staff_attendance.index')->middleware('permission:view_staff_attendance');
-
-        Route::middleware('permission:manage_leave_requests')->group(function () {
-            Route::get('leave-requests', [LeaveRequestController::class, 'index'])->name('leave_requests.index');
-            Route::post('leave-requests/{leaveRequest}/approve', [LeaveRequestController::class, 'approve'])->name('leave_requests.approve');
-            Route::post('leave-requests/{leaveRequest}/reject', [LeaveRequestController::class, 'reject'])->name('leave_requests.reject');
-        });
 
         // Finance: Bank + M-Pesa C2B ledger (paperless deposit reconciliation)
         Route::middleware('permission:manage_finance_ledger')->group(function () {
@@ -347,10 +326,6 @@ Route::middleware(['auth', 'password.changed'])->group(function () {
 
         // Settings: user rights (permissions) and password resets
         Route::get('settings', [SettingsController::class, 'index'])->name('settings.index')->middleware('permission:manage_settings');
-        Route::middleware('permission:manage_settings')->group(function () {
-            Route::get('settings/school-profile', [SettingsController::class, 'schoolProfile'])->name('settings.school_profile.edit');
-            Route::put('settings/school-profile', [SettingsController::class, 'schoolProfileUpdate'])->name('settings.school_profile.update');
-        });
         Route::middleware('permission:manage_rights')->group(function () {
             Route::get('settings/rights', [SettingsController::class, 'rightsIndex'])->name('settings.rights.index');
             Route::get('settings/rights/{user}', [SettingsController::class, 'rightsEdit'])->name('settings.rights.edit');

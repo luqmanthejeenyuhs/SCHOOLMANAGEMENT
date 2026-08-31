@@ -32,5 +32,10 @@ class SchoolObserver
         // meaningfully without at least Cash/Bank/M-Pesa + Fees Income to
         // post against, so the starting Chart of Accounts is seeded here too.
         Account::seedDefaultChart($school);
+
+        // Reference-only rows so the Statutory Deductions screen shows the
+        // 4 core Kenya items alongside any custom ones (SACCO, etc.) the
+        // school adds later — see DeductionType::seedStatutoryReference().
+        \App\Models\DeductionType::seedStatutoryReference($school);
     }
 }

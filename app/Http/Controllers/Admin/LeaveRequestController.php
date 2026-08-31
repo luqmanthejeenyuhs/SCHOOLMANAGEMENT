@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Employee;
 use App\Models\LeaveRequest;
 use Illuminate\Http\Request;
 
@@ -10,39 +11,41 @@ class LeaveRequestController extends Controller
 {
     public function index(Request $request)
     {
-        $status = $request->input("status", "pending");
-
-        $requests = LeaveRequest::with(["employee", "reviewedBy"])
-            ->when($status !== "all", fn ($q) => $q->where("status", $status))
+        $requests = LeaveRequest::with("employee")
+            ->when($request->get("status"), fn ($q, $status) => $q->where("status", $status))
             ->latest()
-            ->paginate(20)
+            ->paginate(15)
             ->withQueryString();
 
-        return view("admin.leave_requests.index", compact("requests", "status"));
+        $employees = Employee::orderBy("name")->get();
+
+        return view("admin.payroll.leave_requests.index", compact("requests", "employees"));
     }
 
-    public function approve(Request $request, LeaveRequest $leaveRequest)
+    public function store(Request $request)
     {
-        $leaveRequest->update([
-            "status" => "approved",
-            "reviewed_by" => $request->user()->id,
-            "reviewed_at" => now(),
+        $data = $request->validate([
+            "employee_id" => "required|exists:employees,id",
+            "leave_type" => "required|in:annual,sick,unpaid,maternity,paternity,other",
+            "start_date" => "required|date",
+            "end_date" => "required|date|after_or_equal:start_date",
+            "reason" => "nullable|string|max:500",
         ]);
 
-        return back()->with("success", "Leave request approved.");
+        LeaveRequest::create($data);
+
+        return back()->with("success", "Leave request recorded.");
     }
 
-    public function reject(Request $request, LeaveRequest $leaveRequest)
+    public function decide(Request $request, LeaveRequest $leaveRequest)
     {
-        $data = $request->validate(["review_note" => "nullable|string|max:255"]);
+        $data = $request->validate(["status" => "required|in:approved,rejected"]);
 
         $leaveRequest->update([
-            "status" => "rejected",
-            "reviewed_by" => $request->user()->id,
-            "reviewed_at" => now(),
-            "review_note" => $data["review_note"] ?? null,
+            "status" => $data["status"],
+            "decided_by" => $request->user()->id,
         ]);
 
-        return back()->with("success", "Leave request rejected.");
+        return back()->with("success", "Leave request ".$data["status"].".");
     }
 }
