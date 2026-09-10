@@ -53,7 +53,13 @@
             @forelse($schools as $school)
                 <tr>
                     <td class="fw-semibold">{{ $school->name }}</td>
-                    <td><code>{{ $school->slug }}</code></td>
+                    @php
+                        $platformDomain = config('school.platform_domain');
+                        $loginLink = $platformDomain
+                            ? "https://{$school->slug}.{$platformDomain}/login"
+                            : route('login.school', $school);
+                    @endphp
+                    <td><a href="{{ $loginLink }}" target="_blank" class="small">{{ $school->slug }}<i class="bi bi-box-arrow-up-right ms-1"></i></a></td>
                     <td><span class="badge bg-secondary text-capitalize">{{ $school->plan }}</span></td>
                     <td>{{ $school->students_count }}</td>
                     <td>{{ $school->teachers_count }}</td>

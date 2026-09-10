@@ -14,10 +14,12 @@ class Student extends Model
         "school_id", "user_id", "admission_no", "school_class_id", "section_id",
         "guardian_name", "guardian_phone", "dob", "address",
         "school_level", "pathway", "upi_number", "assessment_number",
+        "status", "admitted_via_transfer",
     ];
 
     protected $casts = [
         "dob" => "date",
+        "admitted_via_transfer" => "boolean",
     ];
 
     public function user()
@@ -43,6 +45,17 @@ class Student extends Model
     public function examResults()
     {
         return $this->hasMany(ExamResult::class);
+    }
+
+    /**
+     * The single most recent exam result recorded for this student, across
+     * every subject — used for a "Last Exam Grade" column. Relies on
+     * ExamResult's auto-increment id as a recency proxy (results are only
+     * ever inserted/updated for the exam being marked right now).
+     */
+    public function latestExamResult()
+    {
+        return $this->hasOne(ExamResult::class)->latestOfMany();
     }
 
     public function feeInvoices()

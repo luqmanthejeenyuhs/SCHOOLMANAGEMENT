@@ -22,6 +22,11 @@ class Kernel extends HttpKernel
             \Illuminate\Session\Middleware\StartSession::class,
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
             \App\Http\Middleware\VerifyCsrfToken::class,
+            // Resolves which school this request belongs to purely from the
+            // hostname (e.g. greenwood.taalumasms.co.ke) — runs before
+            // everything else since login branding needs it pre-auth, with
+            // no session or authenticated user required.
+            \App\Http\Middleware\IdentifySchoolFromSubdomain::class,
             // Must run after StartSession (needs it for impersonation) and
             // after the session has been used to resolve the auth user
             // (needs $request->user()), and BEFORE SubstituteBindings —
@@ -31,6 +36,11 @@ class Kernel extends HttpKernel
             // fail-closed behavior) even for valid, correctly-scoped data.
             \App\Http\Middleware\IdentifyTenant::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
+            // Runs last in the group so route names/models are already
+            // resolved; forces anyone with a system-generated password
+            // (see App\Services\AccountProvisioningService) to change it
+            // before touching anything else. No-op for guests.
+            \App\Http\Middleware\EnsurePasswordIsChanged::class,
         ],
 
         'api' => [
@@ -55,6 +65,5 @@ class Kernel extends HttpKernel
         'role' => \App\Http\Middleware\RoleMiddleware::class,
         'super_admin' => \App\Http\Middleware\EnsureSuperAdmin::class,
         'permission' => \App\Http\Middleware\PermissionMiddleware::class,
-        'password.changed' => \App\Http\Middleware\EnsurePasswordIsChanged::class,
     ];
 }

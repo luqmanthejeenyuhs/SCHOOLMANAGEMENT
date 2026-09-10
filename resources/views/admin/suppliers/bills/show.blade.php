@@ -27,7 +27,7 @@
                 @csrf
                 <div class="mb-2">
                     <label class="form-label small">Amount (balance: KES {{ number_format($bill->balance(), 2) }})</label>
-                    <input type="number" step="0.01" min="0.01" max="{{ $bill->balance() }}" name="amount" class="form-control" required>
+                    <input type="text" inputmode="numeric" name="amount" class="form-control currency-input" placeholder="KSh 0.00" required>
                 </div>
                 <div class="mb-2">
                     <label class="form-label small">Date</label>
@@ -58,7 +58,7 @@
                 @csrf
                 <div class="mb-2">
                     <label class="form-label small">Amount (max: KES {{ number_format($bill->balance(), 2) }})</label>
-                    <input type="number" step="0.01" min="0.01" max="{{ $bill->balance() }}" name="amount" class="form-control" required>
+                    <input type="text" inputmode="numeric" name="amount" class="form-control currency-input" placeholder="KSh 0.00" required>
                 </div>
                 <div class="mb-2">
                     <label class="form-label small">Reason</label>

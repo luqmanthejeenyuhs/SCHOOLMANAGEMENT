@@ -32,7 +32,10 @@
         </div>
         <div class="col-md-2">
             <label class="form-label small">Amount</label>
-            <input type="number" step="0.01" name="amount" id="amountInput" class="form-control" required>
+            <div class="input-group">
+                <span class="input-group-text">KSh</span>
+                <input type="text" inputmode="numeric" name="amount" id="amountInput" class="form-control currency-input" required>
+            </div>
         </div>
         <div class="col-md-2">
             <label class="form-label small">Due Date</label>
@@ -100,8 +103,7 @@
                                             <div class="mb-2">
                                                 <label class="form-label small">Amount Paid (balance: KES {{ number_format($invoice->balance(),2) }})</label>
                                                 <div class="input-group">
-                                                    <span class="input-group-text">KES</span>
-                                                    <input type="number" step="0.01" min="0.01" name="amount_paid" class="form-control payment-amount-input" placeholder="0.00" required>
+                                                    <input type="text" inputmode="numeric" name="amount_paid" class="form-control currency-input payment-amount-input" placeholder="0.00" required>
                                                 </div>
                                             </div>
                                             <div class="mb-2">
@@ -204,7 +206,15 @@
 <script>
 document.getElementById('feeTypeSelect').addEventListener('change', function () {
     const opt = this.options[this.selectedIndex];
-    document.getElementById('amountInput').value = opt.dataset.amount || '';
+    const amount = opt.dataset.amount || '';
+    const amountInput = document.getElementById('amountInput');
+    if (amount) {
+        amountInput.value = 'KSh ' + parseFloat(amount).toLocaleString('en-KE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        amountInput.dataset.raw = parseFloat(amount).toFixed(2);
+    } else {
+        amountInput.value = '';
+        amountInput.dataset.raw = '';
+    }
 });
 document.getElementById('bulkScope').addEventListener('change', function () {
     document.getElementById('bulkClassWrap').style.display = this.value === 'class' ? 'block' : 'none';
@@ -239,15 +249,5 @@ document.addEventListener('change', function (e) {
         label.textContent = REFERENCE_LABELS[method] || 'Reference Number';
     }
 });
-
-// Currency-style formatting: round to 2 decimals once the person leaves the field.
-document.addEventListener('blur', function (e) {
-    if (e.target.matches('.payment-amount-input') && e.target.value !== '') {
-        const value = parseFloat(e.target.value);
-        if (!isNaN(value)) {
-            e.target.value = value.toFixed(2);
-        }
-    }
-}, true);
 </script>
 @endsection

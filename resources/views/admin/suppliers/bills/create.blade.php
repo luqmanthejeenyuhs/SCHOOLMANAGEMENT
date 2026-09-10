@@ -30,7 +30,7 @@
         <div class="row">
             <div class="col-md-6 mb-3">
                 <label class="form-label">Amount (excl. VAT)</label>
-                <input type="number" step="0.01" min="0.01" name="amount" id="amount" class="form-control" required>
+                <input type="text" inputmode="numeric" name="amount" id="amount" class="form-control currency-input" placeholder="KSh 0.00" required>
             </div>
             <div class="col-md-6 mb-3">
                 <label class="form-label">Bill Date</label>
@@ -56,13 +56,17 @@
 <script>
     const vatRate = {{ $vatRate }};
     function updateTotal() {
-        const amount = parseFloat(document.getElementById('amount').value) || 0;
+        const amount = parseFloat(document.getElementById('amount').dataset.raw || '0') || 0;
         const vatable = document.getElementById('isVatable').checked;
         const vat = vatable ? amount * (vatRate / 100) : 0;
-        document.getElementById('displayAmount').textContent = 'KES ' + amount.toFixed(2);
-        document.getElementById('displayVat').textContent = 'KES ' + vat.toFixed(2);
-        document.getElementById('displayTotal').textContent = 'KES ' + (amount + vat).toFixed(2);
+        document.getElementById('displayAmount').textContent = 'KSh ' + amount.toFixed(2);
+        document.getElementById('displayVat').textContent = 'KSh ' + vat.toFixed(2);
+        document.getElementById('displayTotal').textContent = 'KSh ' + (amount + vat).toFixed(2);
     }
-    document.getElementById('amount').addEventListener('input', updateTotal);
+    // 'currency:change' (not 'input') — see layouts/app.blade.php's money
+    // mask for why: a listener attached directly to this element (like this
+    // one) always fires before the mask's own document-level 'input'
+    // handler finishes formatting the value and setting dataset.raw.
+    document.getElementById('amount').addEventListener('currency:change', updateTotal);
 </script>
 @endsection

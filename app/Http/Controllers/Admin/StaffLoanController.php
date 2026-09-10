@@ -39,6 +39,7 @@ class StaffLoanController extends Controller
         $data = $request->validate([
             "employee_id" => "required|exists:employees,id",
             "loan_type" => "required|in:loan,advance",
+            "interest_method" => "required|in:simple,compound,flat",
             "principal" => "required|numeric|min:1",
             "interest_rate" => "required|numeric|min:0|max:100",
             "repayment_period_months" => "required|integer|min:1|max:60",
@@ -54,12 +55,13 @@ class StaffLoanController extends Controller
             return back()->withErrors(["employee_id" => "This employee already has an active loan/advance. It must be completed or written off before a new one can be issued."])->withInput();
         }
 
-        $terms = StaffLoan::calculateTerms($data["principal"], $data["interest_rate"], $data["repayment_period_months"]);
+        $terms = StaffLoan::calculateTerms($data["principal"], $data["interest_rate"], $data["repayment_period_months"], $data["interest_method"]);
 
         $loan = DB::transaction(function () use ($data, $terms, $request) {
             $loan = StaffLoan::create([
                 "employee_id" => $data["employee_id"],
                 "loan_type" => $data["loan_type"],
+                "interest_method" => $data["interest_method"],
                 "principal" => $data["principal"],
                 "interest_rate" => $data["interest_rate"],
                 "repayment_period_months" => $data["repayment_period_months"],

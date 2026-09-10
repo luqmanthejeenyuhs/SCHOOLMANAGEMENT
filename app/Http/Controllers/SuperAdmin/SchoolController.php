@@ -3,16 +3,10 @@
 namespace App\Http\Controllers\SuperAdmin;
 
 use App\Http\Controllers\Controller;
-use App\Mail\SchoolAdminCredentials;
-use App\Models\Payment;
 use App\Models\School;
-use App\Models\Student;
-use App\Models\User;
+use App\Services\AccountProvisioningService;
 use App\Support\Facades\Tenant;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 /**
@@ -34,8 +28,8 @@ class SchoolController extends Controller
         $stats = [
             "total_schools" => $schools->count(),
             "active_schools" => $schools->where("is_active", true)->count(),
-            "total_students" => Student::allSchools()->count(),
-            "total_revenue" => Payment::allSchools()->sum("amount_paid"),
+            "total_students" => \App\Models\Student::allSchools()->count(),
+            "total_revenue" => \App\Models\Payment::allSchools()->sum("amount_paid"),
         ];
 
         return view("superadmin.schools.index", compact("schools", "stats"));
@@ -46,17 +40,18 @@ class SchoolController extends Controller
         return view("superadmin.schools.create");
     }
 
-    public function store(Request $request)
+    public function store(Request $request, AccountProvisioningService $accounts)
     {
         $data = $request->validate([
             "name" => "required|string|max:255",
             "slug" => "required|alpha_dash|lowercase|unique:schools,slug",
+            "plan" => "required|in:trial,basic,premium",
             "email" => "nullable|email",
             "phone" => "nullable|string",
             "address" => "nullable|string",
-            "plan" => "required|in:trial,basic,premium",
             "admin_name" => "required|string|max:255",
             "admin_email" => ["required", "email", Rule::unique("users", "email")],
+            "admin_username" => ["required", "string", "max:50", "alpha_dash"],
         ]);
 
         $school = School::create([
@@ -68,41 +63,20 @@ class SchoolController extends Controller
             "address" => $data["address"] ?? null,
         ]);
 
-        // Nobody types this in, and nobody on our side ever sees it — it's
-        // generated here, emailed directly to the school's admin, and never
-        // stored or logged anywhere in plaintext. They set their own real
-        // password on first login (see EnsurePasswordIsChanged).
-        $temporaryPassword = Str::password(14);
-
         // The school's first admin user is created "as" that school so it
-        // gets school_id stamped automatically.
-        $admin = Tenant::runFor($school->id, function () use ($data, $temporaryPassword) {
-            return User::create([
+        // gets school_id stamped automatically. Password is generated and
+        // emailed, not chosen here — see AccountProvisioningService. The
+        // platform super_admin creating this school never sees it either.
+        Tenant::runFor($school->id, function () use ($data, $school, $accounts) {
+            $accounts->createUserAccount([
                 "name" => $data["admin_name"],
                 "email" => $data["admin_email"],
-                "password" => Hash::make($temporaryPassword),
+                "username" => $data["admin_username"],
                 "role" => "admin",
-                "must_change_password" => true,
-            ]);
+            ], $school);
         });
 
-        $loginUrl = $this->loginUrlFor($school);
-
-        Mail::to($admin->email)->send(new SchoolAdminCredentials($admin, $school, $temporaryPassword, $loginUrl));
-
-        return redirect()->route("superadmin.schools.index")
-            ->with("success", "School onboarded. Login details were emailed to {$admin->email}.");
-    }
-
-    protected function loginUrlFor(School $school): string
-    {
-        $platformDomain = config("school.platform_domain");
-
-        if (! $platformDomain) {
-            return url("/login");
-        }
-
-        return "https://{$school->slug}.{$platformDomain}/login";
+        return redirect()->route("superadmin.schools.index")->with("success", "School onboarded successfully.");
     }
 
     public function edit(School $school)

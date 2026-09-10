@@ -45,6 +45,7 @@ class ReportController extends Controller
             $students = Student::with("user")->where("section_id", $section->id)->get();
 
             $attendance = Attendance::whereIn("student_id", $students->pluck("id"))
+                ->where("session", "morning")
                 ->whereBetween("date", [$from, $to])
                 ->get()
                 ->groupBy("student_id");

@@ -29,8 +29,8 @@
                     <th>Name</th>
                     <th>Guardian</th>
                     <th>Fee Balance</th>
-                    <th>Exam Average</th>
-                    <th></th>
+                    <th>Last Exam Grade</th>
+                    <th>Attendance Rate</th>
                 </tr>
             </thead>
             <tbody>
@@ -46,10 +46,8 @@
                             <span class="text-success">Cleared</span>
                         @endif
                     </td>
-                    <td>{{ $student->exam_average !== null ? $student->exam_average.'%' : '—' }}</td>
-                    <td class="text-end">
-                        <a href="{{ route('admin.students.show', $student) }}" class="btn btn-sm btn-outline-secondary">View Profile</a>
-                    </td>
+                    <td>{{ $student->latestExamResult->grade ?? '—' }}</td>
+                    <td>{{ $student->attendance_rate !== null ? $student->attendance_rate.'%' : '—' }}</td>
                 </tr>
                 @empty
                 <tr><td colspan="6" class="text-center text-muted py-4">No students in this stream yet.</td></tr>

@@ -10,9 +10,14 @@ class Attendance extends Model
 {
     use HasFactory, BelongsToTenant;
 
-    protected $fillable = ["school_id", "student_id", "date", "status", "marked_by", "remarks"];
+    protected $fillable = ["school_id", "student_id", "date", "session", "status", "marked_by", "remarks"];
 
     protected $casts = ["date" => "date"];
+
+    public const SESSIONS = [
+        "morning" => "Morning",
+        "afternoon" => "Afternoon",
+    ];
 
     public function student()
     {

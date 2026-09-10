@@ -48,6 +48,15 @@ return new class extends Migration
         });
     }
 
+    /**
+     * Note: rolling this back can fail with "needed in a foreign key
+     * constraint" if MySQL decided one of these composite indexes is the
+     * only thing currently covering its leading school_id column — this
+     * doesn't affect the normal forward `migrate --force` deploy path at
+     * all, only an explicit `migrate:rollback` of this specific migration.
+     * If that ever comes up, drop the FK constraint first, then the
+     * index, then re-add the constraint (which recreates its own index).
+     */
     public function down(): void
     {
         Schema::table("attendances", function (Blueprint $table) {

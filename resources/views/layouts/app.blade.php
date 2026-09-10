@@ -13,139 +13,156 @@
             /* Taaluma brand — green, gold, white (see taalumasms.vercel.app) */
             --brand-green: #012622;
             --brand-green-dark: #01201D;
+            --brand-green-darker: #010F0D;
             --brand-green-light: #EBEEED;
             --brand-green-mid: #4D6764;
             --brand-gold: #C9972F;
             --brand-gold-dark: #A97C1F;
             --brand-gold-light: #FBF1DC;
             --brand-white: #ffffff;
+            --header-height: 64px;
         }
         * { font-family: 'Poppins', sans-serif; }
         html, body { height: 100%; }
         body {
-            background: linear-gradient(180deg, #f2f8f4 0%, #fbfaf5 100%);
+            background: #f7f8f7;
             position: relative;
             overflow-x: hidden;
         }
+
+        /* Thin, on-brand scrollbars everywhere — replaces the default
+           chunky OS scrollbar that sat awkwardly next to the sidebar. */
+        * { scrollbar-width: thin; scrollbar-color: var(--brand-gold-dark) transparent; }
+        ::-webkit-scrollbar { width: 7px; height: 7px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--brand-gold-dark); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--brand-gold); }
 
         /* Soft floating blobs behind everything — green + gold ambience */
         body::before, body::after {
             content: "";
             position: fixed;
             border-radius: 50%;
-            filter: blur(60px);
+            filter: blur(70px);
             z-index: -1;
             pointer-events: none;
-            opacity: .3;
+            opacity: .12;
         }
         body::before {
             width: 420px; height: 420px;
             top: -120px; right: -100px;
             background: radial-gradient(circle, var(--brand-green-mid), transparent 70%);
-            animation: floatBlob 16s ease-in-out infinite;
         }
         body::after {
             width: 380px; height: 380px;
             bottom: -140px; left: -100px;
             background: radial-gradient(circle, var(--brand-gold), transparent 70%);
-            animation: floatBlob 20s ease-in-out infinite reverse;
-        }
-        @keyframes floatBlob {
-            0%, 100% { transform: translate(0, 0) scale(1); }
-            50% { transform: translate(30px, 40px) scale(1.08); }
         }
 
-        /* Top navbar */
+        /* Top navbar — sticky so it never scrolls out of view, with a
+           calm, static gradient (no distracting shine animation) that
+           eases toward gold at the trailing edge, echoed by the sidebar's
+           top accent strip just below it for a single continuous flow. */
         .navbar {
-            background: linear-gradient(90deg, var(--brand-green-dark), var(--brand-green), var(--brand-green-mid)) !important;
-            background-size: 200% 100%;
-            animation: navShine 12s ease infinite;
-            box-shadow: 0 2px 12px rgba(15, 122, 69, .25);
-            position: relative;
-            z-index: 3;
-            border-bottom: 2px solid var(--brand-gold);
-        }
-        @keyframes navShine {
-            0%, 100% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
+            background: linear-gradient(100deg, var(--brand-green-darker) 0%, var(--brand-green) 55%, var(--brand-green-mid) 100%) !important;
+            box-shadow: 0 2px 16px rgba(1, 15, 13, .35);
+            position: sticky;
+            top: 0;
+            z-index: 1030;
+            height: var(--header-height);
+            border-bottom: 1px solid rgba(201, 151, 47, .55);
         }
         .navbar-brand { font-weight: 700; letter-spacing: .3px; }
         .navbar-brand i { color: var(--brand-gold-light); }
-        .navbar .badge { background: var(--brand-gold) !important; color: #2b2107 !important; }
-        .navbar .btn-outline-light:hover { background: #fff; color: var(--brand-green-dark); }
+        .navbar .badge { background: var(--brand-gold) !important; color: #2b2107 !important; font-weight: 600; letter-spacing: .03em; }
+        .navbar .btn-outline-light { border-color: rgba(255,255,255,.5); }
+        .navbar .btn-outline-light:hover { background: var(--brand-gold); border-color: var(--brand-gold); color: var(--brand-green-darker); }
 
         /* Layout shell */
-        .app-shell { position: relative; }
+        .app-shell { position: relative; align-items: flex-start; }
 
         /* Sidebar — fixed width always, never shrinks, own scroll if content is tall */
         .sidebar {
-            flex: 0 0 230px;
-            max-width: 230px;
-            min-width: 230px;
-            width: 230px;
-            min-height: calc(100vh - 56px);
-            max-height: calc(100vh - 56px);
+            flex: 0 0 246px;
+            max-width: 246px;
+            min-width: 246px;
+            width: 246px;
+            min-height: calc(100vh - var(--header-height));
+            max-height: calc(100vh - var(--header-height));
             overflow-y: auto;
-            background: linear-gradient(180deg, var(--brand-gold), var(--brand-gold-dark));
-            border-right: 1px solid var(--brand-gold-dark);
+            overflow-x: hidden;
+            background: linear-gradient(180deg, var(--brand-gold) 0%, var(--brand-gold-dark) 100%);
             box-shadow: 6px 0 24px -6px rgba(1, 38, 34, .25), 2px 0 6px rgba(1, 38, 34, .12);
             position: sticky;
-            top: 56px;
+            top: var(--header-height);
             z-index: 2;
         }
+        /* Thin accent ribbon at the very top of the sidebar, echoing the
+           navbar's green so the header visually flows straight into the
+           sidebar instead of hitting a hard color edge. */
+        .sidebar::before {
+            content: "";
+            display: block;
+            height: 5px;
+            background: linear-gradient(90deg, var(--brand-green-darker), var(--brand-green), var(--brand-gold));
+        }
+        .sidebar .nav { padding: .85rem .75rem; }
         .main-content {
             flex: 1 1 auto;
             min-width: 0; /* prevents flex item from forcing the sidebar to shrink */
-            background: var(--brand-white);
+            background: transparent;
         }
         .sidebar .nav-link {
-            color: var(--brand-green-dark);
+            color: var(--brand-green-darker);
             font-weight: 500;
-            padding: .65rem 1rem;
-            border-radius: .55rem;
+            font-size: .88rem;
+            padding: .6rem .8rem;
+            border-radius: .6rem;
             transition: all .15s ease-in-out;
             white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
-        .sidebar .nav-link i { color: var(--brand-green-dark); margin-right: .4rem; width: 1.1rem; text-align: center; }
+        .sidebar .nav-link i { color: var(--brand-green-darker); margin-right: .45rem; width: 1.1rem; text-align: center; }
         .sidebar .nav-link:hover {
-            background: rgba(1, 38, 34, .12);
-            color: var(--brand-green-dark);
+            background: rgba(1, 38, 34, .14);
+            color: var(--brand-green-darker);
             transform: translateX(2px);
         }
         .sidebar .nav-link.active {
             background: linear-gradient(90deg, var(--brand-green), var(--brand-green-dark));
             color: var(--brand-gold-light) !important;
-            box-shadow: 0 4px 10px rgba(1, 38, 34, .35);
-            border-left: 3px solid var(--brand-white);
+            box-shadow: 0 4px 12px rgba(1, 38, 34, .4);
         }
         .sidebar .nav-link.active i { color: var(--brand-gold-light); }
         .sidebar .nav-group-label {
-            font-size: .72rem;
+            font-size: .68rem;
             font-weight: 700;
-            letter-spacing: .06em;
+            letter-spacing: .08em;
             text-transform: uppercase;
-            color: var(--brand-green-dark);
-            padding: .9rem 1rem .25rem;
+            color: rgba(1, 38, 34, .65);
+            padding: 1rem .8rem .3rem;
         }
-        .sidebar .collapse .nav-link { font-size: .87rem; color: var(--brand-green-dark); padding: .45rem .85rem; }
-        .sidebar .collapse .nav-link:hover { background: rgba(1, 38, 34, .12); color: var(--brand-green-dark); }
+        .sidebar .collapse .nav-link { font-size: .82rem; color: var(--brand-green-darker); padding: .48rem .8rem; }
+        .sidebar .collapse .nav-link:hover { background: rgba(1, 38, 34, .14); color: var(--brand-green-darker); }
         .sidebar .collapse .nav-link.active { background: linear-gradient(90deg, var(--brand-green), var(--brand-green-dark)); color: var(--brand-gold-light); box-shadow: none; }
-        .sidebar [data-bs-toggle="collapse"] .bi-chevron-down { transition: transform .2s ease; color: var(--brand-green-dark); }
+        .sidebar [data-bs-toggle="collapse"] .bi-chevron-down { transition: transform .2s ease; color: var(--brand-green-darker); flex: 0 0 auto; }
         .sidebar [aria-expanded="true"] .bi-chevron-down { transform: rotate(180deg); }
-        /* Nested sub-menu (e.g. Finance > Accounting) — slightly indented and
+        /* Nested sub-menu (e.g. Finance > Ledger) — slightly indented and
            a touch dimmer so the hierarchy is visually obvious at a glance. */
-        .sidebar .nav-subgroup { margin-left: .5rem; border-left: 2px solid rgba(1, 38, 34, .18); padding-left: .5rem; }
-        .sidebar .nav-subgroup .nav-link { font-size: .82rem; padding: .4rem .7rem; }
+        .sidebar .nav-subgroup { margin-left: .35rem; border-left: 2px solid rgba(1, 38, 34, .2); padding-left: .45rem; }
+        .sidebar .nav-subgroup .nav-link { font-size: .8rem; padding: .42rem .65rem; }
 
-        /* Cards */
-        .stat-card { border: none; border-radius: .9rem; box-shadow: 0 4px 16px rgba(1, 38, 34, .08); border-top: 3px solid var(--brand-gold); transition: transform .15s ease; }
-        .stat-card:hover { transform: translateY(-3px); }
+        /* Cards — quieter shadow, crisper edges, a premium feel */
+        .stat-card { border: none; border-radius: 1rem; box-shadow: 0 6px 20px rgba(1, 38, 34, .07); border-top: 3px solid var(--brand-gold); transition: transform .18s ease, box-shadow .18s ease; }
+        .stat-card:hover { transform: translateY(-3px); box-shadow: 0 10px 26px rgba(1, 38, 34, .12); }
         .stat-card i { font-size: 1.4rem; color: var(--brand-green) !important; }
         .stat-card .text-muted { color: var(--brand-gold-dark) !important; font-weight: 600; }
-        .card { border-radius: .9rem; border: 1px solid #e6f0ea; box-shadow: 0 2px 10px rgba(15, 122, 69, .05); }
-        .card-header { background: var(--brand-green-light); border-bottom: 1px solid #d8ece0; font-weight: 600; color: var(--brand-green-dark); border-radius: .9rem .9rem 0 0 !important; }
+        .card { border-radius: 1rem; border: 1px solid #e9edea; box-shadow: 0 3px 14px rgba(1, 38, 34, .05); }
+        .card-header { background: var(--brand-green-light); border-bottom: 1px solid #dde5e0; font-weight: 600; color: var(--brand-green-dark); border-radius: 1rem 1rem 0 0 !important; }
 
         /* Buttons */
+        .btn { border-radius: .6rem; }
         .btn-primary { background: var(--brand-green); border-color: var(--brand-green); }
         .btn-primary:hover { background: var(--brand-green-dark); border-color: var(--brand-green-dark); }
         .btn-dark { background: var(--brand-green-dark); border-color: var(--brand-green-dark); }
@@ -166,6 +183,7 @@
     @auth
         <div class="d-flex align-items-center gap-3">
             <span class="text-light small">{{ auth()->user()->name }} <span class="badge text-uppercase">{{ auth()->user()->role }}</span></span>
+            <a href="{{ route('account.password.edit') }}" class="btn btn-sm btn-outline-light"><i class="bi bi-key-fill"></i> Password</a>
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
                 <button class="btn btn-sm btn-outline-light">Logout</button>
@@ -190,6 +208,10 @@
                     <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.students.*') ? 'active' : '' }}" href="{{ route('admin.students.index') }}"><i class="bi bi-people"></i> Students</a></li>
                 @endif
 
+                @if($u->hasPermission('view_parents') || $u->hasPermission('create_parent') || $u->hasPermission('delete_parent'))
+                    <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.parents.*') ? 'active' : '' }}" href="{{ route('admin.parents.index') }}"><i class="bi bi-people-fill"></i> Parents/Guardians</a></li>
+                @endif
+
                 @if($u->hasPermission('manage_classes') || $u->hasPermission('manage_activities'))
                     <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.classes.*') || request()->routeIs('admin.sections.*') || request()->routeIs('admin.activities.*') ? 'active' : '' }}" href="{{ route('admin.classes.index') }}"><i class="bi bi-building"></i> Classes</a></li>
                 @endif
@@ -202,7 +224,7 @@
                     $academicsLinks = [
                         ['perm' => 'manage_subjects', 'route' => 'admin.subjects.index', 'routeIs' => 'admin.subjects.*', 'icon' => 'bi-book', 'label' => 'Subjects'],
                         ['perm' => 'manage_timetable', 'route' => 'admin.timetable.index', 'routeIs' => 'admin.timetable.*', 'icon' => 'bi-calendar-week', 'label' => 'Timetable'],
-                        ['perm' => null, 'perms' => ['manage_exams', 'enter_results', 'manage_grading_scales'], 'route' => 'admin.exams.index', 'routeIs' => 'admin.exams.*', 'icon' => 'bi-clipboard-check', 'label' => 'Exams &amp; Results'],
+                        ['perm' => null, 'perms' => ['manage_exams', 'enter_results', 'manage_grading_scales'], 'route' => 'admin.exams.index', 'routeIs' => 'admin.exams.*', 'icon' => 'bi-clipboard-check', 'label' => 'Exams'],
                     ];
                     $visibleAcademicsLinks = collect($academicsLinks)->filter(function ($l) use ($u) {
                         return $l['perm'] ? $u->hasPermission($l['perm']) : collect($l['perms'])->contains(fn ($p) => $u->hasPermission($p));
@@ -227,29 +249,28 @@
                 @php
                     $financeActive = request()->routeIs('admin.fee_types.*')
                         || request()->routeIs('admin.invoices.*')
-                        || request()->routeIs('admin.receipts.*')
                         || request()->routeIs('admin.finance.*')
                         || request()->routeIs('admin.accounting.*');
                     $financeLinks = [
-                        ['perm' => 'manage_accounting', 'route' => 'admin.accounting.overview', 'routeIs' => 'admin.accounting.overview', 'icon' => 'bi-graph-up-arrow', 'label' => 'Finance Overview'],
-                        ['perm' => 'manage_fee_types', 'route' => 'admin.fee_types.index', 'routeIs' => 'admin.fee_types.*', 'icon' => 'bi-cash-coin', 'label' => 'Fee Types'],
-                        ['perm' => 'manage_invoices', 'route' => 'admin.invoices.index', 'routeIs' => 'admin.invoices.*', 'icon' => 'bi-receipt', 'label' => 'Invoices &amp; Payments'],
+                        ['perm' => 'manage_accounting', 'route' => 'admin.accounting.overview', 'routeIs' => 'admin.accounting.overview', 'icon' => 'bi-graph-up-arrow', 'label' => 'Overview'],
+                        ['perm' => 'manage_fee_types', 'route' => 'admin.fee_types.index', 'routeIs' => 'admin.fee_types.*', 'icon' => 'bi-cash-coin', 'label' => 'Fees'],
+                        ['perm' => 'manage_invoices', 'route' => 'admin.invoices.index', 'routeIs' => 'admin.invoices.*', 'icon' => 'bi-receipt', 'label' => 'Invoices'],
+                        ['perm' => 'manage_finance_ledger', 'route' => 'admin.finance.ledger.index', 'routeIs' => 'admin.finance.*', 'icon' => 'bi-bank', 'label' => 'M-Pesa'],
+                        ['perm' => 'manage_accounting', 'route' => 'admin.accounting.chart_of_accounts', 'routeIs' => 'admin.accounting.chart_of_accounts', 'icon' => 'bi-diagram-3', 'label' => 'Accounts'],
+                        ['perm' => 'manage_accounting', 'route' => 'admin.accounting.journal_entries', 'routeIs' => 'admin.accounting.journal_entries', 'icon' => 'bi-journal-text', 'label' => 'Journal'],
+                        ['perm' => 'manage_accounting', 'route' => 'admin.accounting.ledger', 'routeIs' => 'admin.accounting.ledger', 'icon' => 'bi-list-columns-reverse', 'label' => 'Ledger'],
+                        ['perm' => 'manage_accounting', 'route' => 'admin.accounting.trial_balance', 'routeIs' => 'admin.accounting.trial_balance', 'icon' => 'bi-clipboard-check', 'label' => 'Balance'],
                         ['perm' => 'record_payments', 'route' => 'admin.receipts.index', 'routeIs' => 'admin.receipts.*', 'icon' => 'bi-receipt-cutoff', 'label' => 'Receipts'],
-                        ['perm' => 'manage_finance_ledger', 'route' => 'admin.finance.ledger.index', 'routeIs' => 'admin.finance.*', 'icon' => 'bi-bank', 'label' => 'Bank &amp; M-Pesa Ledger'],
-                        ['perm' => 'manage_accounting', 'route' => 'admin.accounting.chart_of_accounts', 'routeIs' => 'admin.accounting.chart_of_accounts', 'icon' => 'bi-diagram-3', 'label' => 'Chart of Accounts'],
-                        ['perm' => 'manage_accounting', 'route' => 'admin.accounting.journal_entries', 'routeIs' => 'admin.accounting.journal_entries', 'icon' => 'bi-journal-text', 'label' => 'Journal Entries'],
-                        ['perm' => 'manage_accounting', 'route' => 'admin.accounting.ledger', 'routeIs' => 'admin.accounting.ledger', 'icon' => 'bi-list-columns-reverse', 'label' => 'General Ledger'],
-                        ['perm' => 'manage_accounting', 'route' => 'admin.accounting.trial_balance', 'routeIs' => 'admin.accounting.trial_balance', 'icon' => 'bi-clipboard-check', 'label' => 'Trial Balance'],
                         ['perm' => 'manage_suppliers', 'route' => 'admin.suppliers.index', 'routeIs' => 'admin.suppliers.*', 'icon' => 'bi-truck', 'label' => 'Suppliers'],
-                        ['perm' => 'manage_suppliers', 'route' => 'admin.suppliers.bills.index', 'routeIs' => 'admin.suppliers.bills.*', 'icon' => 'bi-receipt', 'label' => 'Supplier Bills'],
-                        ['perm' => 'manage_suppliers', 'route' => 'admin.finance.vat_report', 'routeIs' => 'admin.finance.vat_report', 'icon' => 'bi-percent', 'label' => 'VAT Report'],
+                        ['perm' => 'manage_suppliers', 'route' => 'admin.suppliers.bills.index', 'routeIs' => 'admin.suppliers.bills.*', 'icon' => 'bi-file-earmark-text', 'label' => 'Bills'],
+                        ['perm' => 'manage_suppliers', 'route' => 'admin.vat-report.index', 'routeIs' => 'admin.vat-report.*', 'icon' => 'bi-percent', 'label' => 'VAT'],
                     ];
                     $visibleFinanceLinks = collect($financeLinks)->filter(fn ($l) => $u->hasPermission($l['perm']));
                 @endphp
                 @if($visibleFinanceLinks->isNotEmpty())
                 <li class="nav-item">
                     <a class="nav-link d-flex justify-content-between align-items-center {{ $financeActive ? 'active' : '' }}" data-bs-toggle="collapse" href="#financeMenu" role="button" aria-expanded="{{ $financeActive ? 'true' : 'false' }}">
-                        <span><i class="bi bi-cash-stack"></i> Accounting &amp; Finance</span>
+                        <span><i class="bi bi-cash-stack"></i> Finance</span>
                         <i class="bi bi-chevron-down small"></i>
                     </a>
                     <div class="collapse {{ $financeActive ? 'show' : '' }}" id="financeMenu">
@@ -265,7 +286,7 @@
                 @php
                     $inventoryActive = request()->routeIs('admin.inventory.*') || request()->routeIs('admin.textbooks.*');
                     $inventoryLinks = [
-                        ['perm' => 'manage_inventory', 'route' => 'admin.inventory.index', 'routeIs' => 'admin.inventory.*', 'icon' => 'bi-box-seam', 'label' => 'Store &amp; Assets'],
+                        ['perm' => 'manage_inventory', 'route' => 'admin.inventory.index', 'routeIs' => 'admin.inventory.*', 'icon' => 'bi-box-seam', 'label' => 'Store'],
                         ['perm' => 'manage_textbooks', 'route' => 'admin.textbooks.index', 'routeIs' => 'admin.textbooks.*', 'icon' => 'bi-journal-bookmark', 'label' => 'Textbooks'],
                     ];
                     $visibleInventoryLinks = collect($inventoryLinks)->filter(fn ($l) => $u->hasPermission($l['perm']));
@@ -273,7 +294,7 @@
                 @if($visibleInventoryLinks->isNotEmpty())
                 <li class="nav-item">
                     <a class="nav-link d-flex justify-content-between align-items-center {{ $inventoryActive ? 'active' : '' }}" data-bs-toggle="collapse" href="#inventoryMenu" role="button" aria-expanded="{{ $inventoryActive ? 'true' : 'false' }}">
-                        <span><i class="bi bi-box-seam"></i> Inventory &amp; Logistics</span>
+                        <span><i class="bi bi-box-seam"></i> Inventory</span>
                         <i class="bi bi-chevron-down small"></i>
                     </a>
                     <div class="collapse {{ $inventoryActive ? 'show' : '' }}" id="inventoryMenu">
@@ -287,7 +308,7 @@
                 @endif
 
                 @if($u->hasPermission('manage_cbc'))
-                    <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.cbc.*') ? 'active' : '' }}" href="{{ route('admin.cbc.index') }}"><i class="bi bi-award"></i> CBC Curriculum</a></li>
+                    <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.cbc.*') ? 'active' : '' }}" href="{{ route('admin.cbc.index') }}"><i class="bi bi-award"></i> CBC</a></li>
                 @endif
 
                 {{-- Communication: Bulk SMS today, room for email/notices/etc later --}}
@@ -314,21 +335,31 @@
                 </li>
                 @endif
 
-                {{-- Staff & Payroll: employees, payslips, staff attendance grouped together --}}
+                {{-- Staff Management: employees, payroll, attendance, leave, loans, and the
+                     school's location/clock-time policy all grouped together --}}
                 @php
                     $staffActive = request()->routeIs('admin.employees.*')
                         || request()->routeIs('admin.payslips.*')
-                        || request()->routeIs('admin.staff_attendance.*');
+                        || request()->routeIs('admin.staff_attendance.*')
+                        || request()->routeIs('admin.leave_requests.*')
+                        || request()->routeIs('admin.loan_requests.*')
+                        || request()->routeIs('admin.settings.school_profile.*');
                     $staffLinks = [
                         ['perm' => 'manage_employees', 'route' => 'admin.employees.index', 'routeIs' => 'admin.employees.*', 'icon' => 'bi-person-lines-fill', 'label' => 'Employees'],
-                        ['perm' => 'view_staff_attendance', 'route' => 'admin.staff_attendance.index', 'routeIs' => 'admin.staff_attendance.*', 'icon' => 'bi-fingerprint', 'label' => 'Staff Attendance'],
+                        ['perm' => 'generate_payslips', 'route' => 'admin.payslips.index', 'routeIs' => 'admin.payslips.*', 'icon' => 'bi-wallet2', 'label' => 'Payroll'],
+                        ['perm' => 'view_staff_attendance', 'route' => 'admin.staff_attendance.index', 'routeIs' => 'admin.staff_attendance.*', 'icon' => 'bi-fingerprint', 'label' => 'Attendance'],
+                        ['perm' => 'manage_leave_requests', 'route' => 'admin.leave_requests.index', 'routeIs' => 'admin.leave_requests.*', 'icon' => 'bi-calendar-x', 'label' => 'Leave'],
+                        ['perm' => 'manage_loan_requests', 'route' => 'admin.loan_requests.index', 'routeIs' => 'admin.loan_requests.*', 'icon' => 'bi-cash-stack', 'label' => 'Loan Requests'],
+                        ['perm' => 'manage_loans', 'route' => 'admin.loans.index', 'routeIs' => 'admin.loans.*', 'icon' => 'bi-bank2', 'label' => 'Staff Loans'],
+                        ['perm' => 'manage_employees', 'route' => 'admin.deduction-types.index', 'routeIs' => 'admin.deduction-types.*', 'icon' => 'bi-dash-circle', 'label' => 'Deductions'],
+                        ['perm' => 'manage_settings', 'route' => 'admin.settings.school_profile.edit', 'routeIs' => 'admin.settings.school_profile.*', 'icon' => 'bi-geo-alt', 'label' => 'Location'],
                     ];
                     $visibleStaffLinks = collect($staffLinks)->filter(fn ($l) => $u->hasPermission($l['perm']));
                 @endphp
                 @if($visibleStaffLinks->isNotEmpty())
                 <li class="nav-item">
                     <a class="nav-link d-flex justify-content-between align-items-center {{ $staffActive ? 'active' : '' }}" data-bs-toggle="collapse" href="#staffMenu" role="button" aria-expanded="{{ $staffActive ? 'true' : 'false' }}">
-                        <span><i class="bi bi-briefcase-fill"></i> Staff &amp; Payroll</span>
+                        <span><i class="bi bi-briefcase-fill"></i> Staff</span>
                         <i class="bi bi-chevron-down small"></i>
                     </a>
                     <div class="collapse {{ $staffActive ? 'show' : '' }}" id="staffMenu">
@@ -341,23 +372,37 @@
                 </li>
                 @endif
 
-                @if($u->hasPermission('view_parents') || $u->hasPermission('create_parent') || $u->hasPermission('delete_parent'))
-                    <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.parents.*') ? 'active' : '' }}" href="{{ route('admin.parents.index') }}"><i class="bi bi-people-fill"></i> Parents</a></li>
-                @endif
                 @if($u->hasPermission('manage_settings') || $u->hasPermission('manage_rights'))
                     <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}" href="{{ route('admin.settings.index') }}"><i class="bi bi-gear-fill"></i> Settings</a></li>
+                @endif
+                @if(\App\Models\Employee::where('user_id', $u->id)->exists())
+                    <li class="nav-item"><a class="nav-link {{ request()->routeIs('staff.clock.*') ? 'active' : '' }}" href="{{ route('staff.clock.index') }}"><i class="bi bi-fingerprint"></i> Clock In/Out</a></li>
+                    <li class="nav-item"><a class="nav-link {{ request()->routeIs('staff.leave.*') ? 'active' : '' }}" href="{{ route('staff.leave.index') }}"><i class="bi bi-calendar-x"></i> Leave</a></li>
+                    <li class="nav-item"><a class="nav-link {{ request()->routeIs('staff.loans.*') ? 'active' : '' }}" href="{{ route('staff.loans.index') }}"><i class="bi bi-cash-stack"></i> Loans</a></li>
+                    <li class="nav-item"><a class="nav-link {{ request()->routeIs('staff.payslips.*') ? 'active' : '' }}" href="{{ route('staff.payslips.index') }}"><i class="bi bi-wallet2"></i> Payslips</a></li>
                 @endif
             @elseif(auth()->user()->role === 'teacher')
                 <li class="nav-item"><a class="nav-link {{ request()->routeIs('teacher.dashboard') ? 'active' : '' }}" href="{{ route('teacher.dashboard') }}"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
                 <li class="nav-item"><a class="nav-link {{ request()->routeIs('teacher.attendance.*') ? 'active' : '' }}" href="{{ route('teacher.attendance.index') }}"><i class="bi bi-calendar-check"></i> Attendance</a></li>
                 <li class="nav-item"><a class="nav-link {{ request()->routeIs('teacher.clock.*') ? 'active' : '' }}" href="{{ route('teacher.clock.index') }}"><i class="bi bi-fingerprint"></i> Clock In/Out</a></li>
-                <li class="nav-item"><a class="nav-link {{ request()->routeIs('teacher.timetable.*') ? 'active' : '' }}" href="{{ route('teacher.timetable.index') }}"><i class="bi bi-calendar-week"></i> My Timetable</a></li>
-                <li class="nav-item"><a class="nav-link {{ request()->routeIs('teacher.results.*') ? 'active' : '' }}" href="{{ route('teacher.results.index') }}"><i class="bi bi-clipboard-data"></i> Enter Results</a></li>
-                <li class="nav-item"><a class="nav-link {{ request()->routeIs('teacher.cbc.*') ? 'active' : '' }}" href="{{ route('teacher.cbc.index') }}"><i class="bi bi-award"></i> CBC Assessment</a></li>
+                <li class="nav-item"><a class="nav-link {{ request()->routeIs('staff.leave.*') ? 'active' : '' }}" href="{{ route('staff.leave.index') }}"><i class="bi bi-calendar-x"></i> Leave</a></li>
+                <li class="nav-item"><a class="nav-link {{ request()->routeIs('staff.loans.*') ? 'active' : '' }}" href="{{ route('staff.loans.index') }}"><i class="bi bi-cash-stack"></i> Loans</a></li>
+                <li class="nav-item"><a class="nav-link {{ request()->routeIs('staff.payslips.*') ? 'active' : '' }}" href="{{ route('staff.payslips.index') }}"><i class="bi bi-wallet2"></i> Payslips</a></li>
+                <li class="nav-item"><a class="nav-link {{ request()->routeIs('teacher.timetable.*') ? 'active' : '' }}" href="{{ route('teacher.timetable.index') }}"><i class="bi bi-calendar-week"></i> Timetable</a></li>
+                <li class="nav-item"><a class="nav-link {{ request()->routeIs('teacher.results.*') ? 'active' : '' }}" href="{{ route('teacher.results.index') }}"><i class="bi bi-clipboard-data"></i> Results</a></li>
                 <li class="nav-item"><a class="nav-link {{ request()->routeIs('teacher.reports.*') ? 'active' : '' }}" href="{{ route('teacher.reports.index') }}"><i class="bi bi-bar-chart"></i> Reports</a></li>
+                <li class="nav-item"><a class="nav-link {{ request()->routeIs('teacher.subjects.*') ? 'active' : '' }}" href="{{ route('teacher.subjects.index') }}"><i class="bi bi-journal-text"></i> My Subjects</a></li>
+                <li class="nav-item"><a class="nav-link {{ request()->routeIs('teacher.cbc.*') ? 'active' : '' }}" href="{{ route('teacher.cbc.index') }}"><i class="bi bi-award"></i> CBC</a></li>
             @elseif(auth()->user()->role === 'student')
-                <li class="nav-item"><a class="nav-link {{ request()->routeIs('student.dashboard') ? 'active' : '' }}" href="{{ route('student.dashboard') }}"><i class="bi bi-speedometer2"></i> My Dashboard</a></li>
+                <li class="nav-item"><a class="nav-link {{ request()->routeIs('student.dashboard') ? 'active' : '' }}" href="{{ route('student.dashboard') }}"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
+                <li class="nav-item"><a class="nav-link {{ request()->routeIs('student.results.*') ? 'active' : '' }}" href="{{ route('student.results.index') }}"><i class="bi bi-clipboard-data"></i> Results</a></li>
+                <li class="nav-item"><a class="nav-link {{ request()->routeIs('student.performance.*') ? 'active' : '' }}" href="{{ route('student.performance.index') }}"><i class="bi bi-graph-up-arrow"></i> Performance</a></li>
                 <li class="nav-item"><a class="nav-link {{ request()->routeIs('student.cbc_report') ? 'active' : '' }}" href="{{ route('student.cbc_report') }}"><i class="bi bi-award"></i> CBC Report</a></li>
+                <li class="nav-item"><a class="nav-link {{ request()->routeIs('student.fees.*') ? 'active' : '' }}" href="{{ route('student.fees.index') }}"><i class="bi bi-cash-coin"></i> Fees</a></li>
+                <li class="nav-item"><a class="nav-link {{ request()->routeIs('student.class.*') ? 'active' : '' }}" href="{{ route('student.class.index') }}"><i class="bi bi-people"></i> My Class</a></li>
+                <li class="nav-item"><a class="nav-link {{ request()->routeIs('student.teachers.*') ? 'active' : '' }}" href="{{ route('student.teachers.index') }}"><i class="bi bi-person-workspace"></i> Teachers</a></li>
+                <li class="nav-item"><a class="nav-link {{ request()->routeIs('student.activities.*') ? 'active' : '' }}" href="{{ route('student.activities.index') }}"><i class="bi bi-stars"></i> Activities</a></li>
+                <li class="nav-item"><a class="nav-link {{ request()->routeIs('student.library.*') ? 'active' : '' }}" href="{{ route('student.library.index') }}"><i class="bi bi-journal-bookmark"></i> Library</a></li>
             @elseif(auth()->user()->role === 'parent')
                 <li class="nav-item"><a class="nav-link {{ request()->routeIs('parent.dashboard') ? 'active' : '' }}" href="{{ route('parent.dashboard') }}"><i class="bi bi-speedometer2"></i> My Children</a></li>
             @elseif(auth()->user()->role === 'super_admin')
@@ -377,14 +422,13 @@
 
     <div class="main-content p-4">
         @if(session('success'))
-            <div class="alert alert-success alert-dismissible fade show d-flex justify-content-between align-items-center">
-                <span>{{ session('success') }}</span>
-                <div class="d-flex align-items-center gap-2">
-                    @foreach(session('receipt_urls', []) as $i => $url)
-                        <a href="{{ $url }}" class="btn btn-sm btn-success">{{ count(session('receipt_urls')) > 1 ? 'Receipt '.($i + 1) : 'View Receipt' }}</a>
-                    @endforeach
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
+            <div class="alert alert-success alert-dismissible fade show">{{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
+        @if(session('error'))
+            <div class="alert alert-danger alert-dismissible fade show">{{ session('error') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         @endif
         @if($errors->any())
@@ -403,6 +447,69 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+/**
+ * Currency-masked money inputs, site-wide.
+ *
+ * Usage: give any money <input> these two things and nothing else —
+ *   type="text" inputmode="numeric" class="currency-input"
+ *
+ * Typing is right-to-left, cents-first (like a POS terminal): "1" -> KSh 0.01,
+ * "12" -> KSh 0.12, "123" -> KSh 1.23, "1234" -> KSh 12.34, and so on.
+ * On blur, the field also carries data-raw="12.34" — a clean decimal with no
+ * "KSh" prefix or thousands separators — and on form submit every
+ * .currency-input's *value* is swapped to that clean decimal right before
+ * the request goes out, so the field's `name` and any Laravel `numeric`
+ * validation rule keep working completely unchanged. Nothing else in the
+ * form/controller needs to know this masking is happening.
+ */
+(function () {
+    function formatFromDigits(digits) {
+        if (!digits) return { display: '', raw: '' };
+        const cents = parseInt(digits, 10);
+        const raw = (cents / 100).toFixed(2);
+        const parts = raw.split('.');
+        parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        return { display: 'KSh ' + parts.join('.'), raw };
+    }
+
+    document.addEventListener('input', function (e) {
+        if (!e.target.matches('.currency-input')) return;
+        const digits = e.target.value.replace(/\D/g, '');
+        const { display, raw } = formatFromDigits(digits);
+        e.target.value = display;
+        e.target.dataset.raw = raw;
+        // caret always lands at the end — correct for right-to-left cents entry
+        e.target.setSelectionRange(e.target.value.length, e.target.value.length);
+        // .currency-input fields don't fire a native 'input' event listener
+        // in every page's own calculator script until dataset.raw exists —
+        // re-dispatch so page-specific recalculation (e.g. the loan
+        // calculator) picks up the change on the very first keystroke too.
+        e.target.dispatchEvent(new Event('currency:change', { bubbles: true }));
+    });
+
+    // Pre-fill support: if a currency-input already has a numeric value on
+    // page load (e.g. an edit form), format it immediately.
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.currency-input').forEach(function (input) {
+            const digits = (input.value || '').replace(/\D/g, '');
+            if (digits) {
+                const { display, raw } = formatFromDigits(digits);
+                input.value = display;
+                input.dataset.raw = raw;
+            }
+        });
+    });
+
+    // Strip the display formatting back to a plain decimal right before the
+    // form actually submits, so the server only ever sees "1234.56".
+    document.addEventListener('submit', function (e) {
+        e.target.querySelectorAll && e.target.querySelectorAll('.currency-input').forEach(function (input) {
+            input.value = input.dataset.raw || '';
+        });
+    }, true);
+})();
+</script>
 @stack('scripts')
 </body>
 </html>

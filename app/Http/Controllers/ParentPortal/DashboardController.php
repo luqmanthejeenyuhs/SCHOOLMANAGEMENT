@@ -19,6 +19,7 @@ class DashboardController extends Controller
                 $student->fee_balance_total = $invoices->sum(fn ($inv) => $inv->balance());
 
                 $recentAttendance = $student->attendances()
+                    ->where("session", "morning")
                     ->where("date", ">=", now()->subDays(30))
                     ->get();
                 $total = $recentAttendance->count();

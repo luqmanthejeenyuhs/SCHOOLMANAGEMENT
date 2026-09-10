@@ -1,29 +1,30 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    /**
+     * This was a duplicate of 2024_03_05_000001_create_leave_requests_table
+     * — the same feature got built twice (different column choices:
+     * decided_by here vs. reviewed_by/reviewed_at/review_note/days there),
+     * and the earlier one is the one that actually ran and is live.
+     *
+     * Rather than create the table again (which would fail — it already
+     * exists) or delete this file (which would break migration history on
+     * any environment where it may already be tracked), this is left as a
+     * documented no-op. See
+     * 2026_09_03_000001_rename_reviewed_by_to_decided_by_on_leave_requests
+     * for the actual fix that reconciles the live table with the
+     * decided_by column name the real application code uses.
+     */
     public function up(): void
     {
-        Schema::create("leave_requests", function (Blueprint $table) {
-            $table->id();
-            $table->foreignId("school_id")->constrained()->cascadeOnDelete();
-            $table->foreignId("employee_id")->constrained()->cascadeOnDelete();
-            $table->enum("leave_type", ["annual", "sick", "unpaid", "maternity", "paternity", "other"])->default("annual");
-            $table->date("start_date");
-            $table->date("end_date");
-            $table->text("reason")->nullable();
-            $table->enum("status", ["pending", "approved", "rejected"])->default("pending");
-            $table->foreignId("decided_by")->nullable()->constrained("users")->nullOnDelete();
-            $table->timestamps();
-        });
+        //
     }
 
     public function down(): void
     {
-        Schema::dropIfExists("leave_requests");
+        //
     }
 };

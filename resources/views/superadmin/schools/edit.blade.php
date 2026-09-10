@@ -16,12 +16,13 @@
             <input type="text" name="name" class="form-control" value="{{ old('name', $school->name) }}" required>
         </div>
         <div class="mb-3">
-            <label class="form-label">Subdomain</label>
+            <label class="form-label">URL Slug</label>
             <div class="input-group">
+                <span class="input-group-text">/school/</span>
                 <input type="text" name="slug" class="form-control" value="{{ old('slug', $school->slug) }}" pattern="[a-z0-9\-]+" required>
-                <span class="input-group-text">.{{ config('school.platform_domain', 'taalumasms.co.ke') }}</span>
+                <span class="input-group-text">/login</span>
             </div>
-            <div class="form-text text-warning">Changing this changes the school's login URL — let them know before you save.</div>
+            <div class="form-text text-warning">Changing this changes the school's login link — let them know before you save.</div>
         </div>
         <div class="mb-3">
             <label class="form-label">Plan</label>

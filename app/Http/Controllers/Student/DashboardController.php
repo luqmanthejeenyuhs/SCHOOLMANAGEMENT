@@ -17,9 +17,9 @@ class DashboardController extends Controller
         ])->first();
 
         $attendanceSummary = [
-            "present" => $student ? $student->attendances()->where("status", "present")->count() : 0,
-            "absent" => $student ? $student->attendances()->where("status", "absent")->count() : 0,
-            "late" => $student ? $student->attendances()->where("status", "late")->count() : 0,
+            "present" => $student ? $student->attendances()->where("session", "morning")->where("status", "present")->count() : 0,
+            "absent" => $student ? $student->attendances()->where("session", "morning")->where("status", "absent")->count() : 0,
+            "late" => $student ? $student->attendances()->where("session", "morning")->where("status", "late")->count() : 0,
         ];
 
         return view("student.dashboard", compact("student", "attendanceSummary"));

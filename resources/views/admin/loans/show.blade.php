@@ -2,7 +2,7 @@
 @section('title', 'Loan Details')
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <h3 class="mb-0">{{ $loan->employee->name }} — {{ ucfirst($loan->loan_type) }}</h3>
+    <h3 class="mb-0">{{ $loan->employee->name }} — {{ ucfirst($loan->loan_type) }} <span class="badge bg-secondary text-capitalize">{{ $loan->interest_method }} interest</span></h3>
     <a href="{{ route('admin.loans.index') }}" class="btn btn-outline-secondary btn-sm">Back to Loans</a>
 </div>
 
@@ -23,7 +23,7 @@
                 @csrf
                 <div class="mb-2">
                     <label class="form-label small">Amount (balance: KES {{ number_format($loan->balance_remaining, 2) }})</label>
-                    <input type="number" step="0.01" min="0.01" max="{{ $loan->balance_remaining }}" name="amount" class="form-control" required>
+                    <input type="text" inputmode="numeric" name="amount" class="form-control currency-input" placeholder="KSh 0.00" required>
                 </div>
                 <div class="mb-2">
                     <label class="form-label small">Date</label>

@@ -61,13 +61,18 @@ class SectionController extends Controller
         $section->load(["schoolClass", "classTeacher.user"]);
 
         $students = $section->students()
-            ->with(["user", "feeInvoices.payments", "examResults"])
+            ->with(["user", "feeInvoices.payments", "examResults", "latestExamResult", "attendances"])
             ->orderBy("admission_no")
             ->get()
             ->map(function ($student) {
                 $student->fee_balance = $student->feeInvoices->sum(fn ($inv) => $inv->balance());
                 $student->exam_average = $student->examResults->count()
                     ? round($student->examResults->avg(fn ($r) => $r->percentage()), 1)
+                    : null;
+
+                $totalMarked = $student->attendances->count();
+                $student->attendance_rate = $totalMarked
+                    ? round($student->attendances->whereIn("status", ["present", "late"])->count() / $totalMarked * 100, 1)
                     : null;
 
                 return $student;

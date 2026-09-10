@@ -15,7 +15,10 @@ class TimetableController extends Controller
         abort_if(! $teacher, 404);
 
         $slots = TimetableSlot::with(["section.schoolClass", "subject"])
-            ->where("teacher_id", $teacher->id)
+            ->where(function ($q) use ($teacher) {
+                $q->where("teacher_id", $teacher->id)
+                    ->orWhereIn("slot_type", TimetableSlot::SCHOOL_WIDE_TYPES);
+            })
             ->get();
 
         $timeRanges = $slots

@@ -10,22 +10,34 @@ class LeaveRequest extends Model
 {
     use HasFactory, BelongsToTenant;
 
-    protected $fillable = ["school_id", "employee_id", "leave_type", "start_date", "end_date", "reason", "status", "decided_by"];
+    protected $fillable = [
+        "school_id", "employee_id", "leave_type", "start_date", "end_date", "days",
+        "reason", "status", "reviewed_by", "reviewed_at", "review_note",
+    ];
 
-    protected $casts = ["start_date" => "date", "end_date" => "date"];
+    protected $casts = [
+        "start_date" => "date",
+        "end_date" => "date",
+        "reviewed_at" => "datetime",
+    ];
+
+    public const TYPES = [
+        "annual" => "Annual Leave",
+        "sick" => "Sick Leave",
+        "maternity" => "Maternity Leave",
+        "paternity" => "Paternity Leave",
+        "compassionate" => "Compassionate Leave",
+        "unpaid" => "Unpaid Leave",
+        "other" => "Other",
+    ];
 
     public function employee()
     {
         return $this->belongsTo(Employee::class);
     }
 
-    public function decidedBy()
+    public function reviewedBy()
     {
-        return $this->belongsTo(User::class, "decided_by");
-    }
-
-    public function days(): int
-    {
-        return $this->start_date->diffInDays($this->end_date) + 1;
+        return $this->belongsTo(User::class, "reviewed_by");
     }
 }

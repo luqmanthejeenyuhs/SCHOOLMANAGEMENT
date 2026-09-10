@@ -47,13 +47,25 @@
             <label class="form-label small">Date</label>
             <input type="date" name="date" class="form-control" value="{{ $date }}" onchange="this.form.submit()">
         </div>
+        <div class="col-6 col-md-3">
+            <label class="form-label small">Session</label>
+            <select name="session" class="form-select" onchange="this.form.submit()">
+                @foreach(\App\Models\Attendance::SESSIONS as $value => $label)
+                    <option value="{{ $value }}" @selected($session === $value)>{{ $label }}</option>
+                @endforeach
+            </select>
+        </div>
     </form>
 </div>
 
 @if($classId)
+<div class="alert alert-info py-2 mb-3">
+    <i class="bi bi-info-circle"></i> Marking <strong>{{ \App\Models\Attendance::SESSIONS[$session] }}</strong> attendance for {{ \Illuminate\Support\Carbon::parse($date)->format('l, j M Y') }}. A pupil can be marked separately for morning and afternoon — useful if they arrived fine but had to leave partway through the day.
+</div>
 <form method="POST" action="{{ route('teacher.attendance.store') }}" id="attendanceForm">
     @csrf
     <input type="hidden" name="date" value="{{ $date }}">
+    <input type="hidden" name="session" value="{{ $session }}">
 
     @if($students->count())
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-2 gap-2">

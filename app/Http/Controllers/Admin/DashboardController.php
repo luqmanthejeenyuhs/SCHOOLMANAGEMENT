@@ -38,7 +38,12 @@ class DashboardController extends Controller
             "students" => Student::count(),
             "teachers" => Teacher::count(),
             "classes" => SchoolClass::count(),
-            "today_present" => Attendance::whereDate("date", today())->where("status", "present")->count(),
+            // Morning is treated as the canonical "attended today" mark for
+            // rate/summary purposes — a student can now also be marked for
+            // the afternoon separately (see Teacher\AttendanceController),
+            // but that's for catching "came in fine, went home sick after
+            // lunch" cases, not for counting as a second day.
+            "today_present" => Attendance::whereDate("date", today())->where("session", "morning")->where("status", "present")->count(),
             "unpaid_invoices" => FeeInvoice::where("status", "!=", "paid")->count(),
             // A plain date-range comparison (rather than whereMonth/
             // whereYear, which wrap the column in a function and stop
@@ -53,6 +58,7 @@ class DashboardController extends Controller
         // grouped query instead of 14 separate ones.
         $attendanceCounts = Attendance::selectRaw("date, status, COUNT(*) as total")
             ->where("date", ">=", today()->subDays(6))
+            ->where("session", "morning")
             ->groupBy("date", "status")
             ->get()
             ->groupBy(fn ($row) => $row->date->toDateString());

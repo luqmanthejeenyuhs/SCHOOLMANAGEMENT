@@ -33,9 +33,16 @@ class AccountCredentialsMail extends Mailable
 
     public function build()
     {
-        $loginUrl = $this->school
-            ? route("login.school", $this->school)
-            : url("/login");
+        $platformDomain = config("school.platform_domain");
+
+        $loginUrl = match (true) {
+            // Preferred: the school's own subdomain, once PLATFORM_DOMAIN
+            // and DNS/SSL are set up.
+            (bool) ($this->school && $platformDomain) => "https://{$this->school->slug}.{$platformDomain}/login",
+            // Fallback: the path-based branded login, works with zero DNS setup.
+            (bool) $this->school => route("login.school", $this->school),
+            default => url("/login"),
+        };
 
         return $this->subject(($this->school?->name ?? "Taaluma SMS")." — Your account details")
             ->view("emails.account_credentials")

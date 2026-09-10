@@ -29,7 +29,7 @@
             @forelse($loans as $loan)
                 <tr>
                     <td>{{ $loan->employee->name }}</td>
-                    <td class="text-capitalize">{{ $loan->loan_type }}</td>
+                    <td class="text-capitalize">{{ $loan->loan_type }} <span class="badge bg-light text-dark border text-capitalize">{{ $loan->interest_method }}</span></td>
                     <td>KES {{ number_format($loan->principal, 2) }}</td>
                     <td>{{ $loan->interest_rate }}%</td>
                     <td>KES {{ number_format($loan->monthly_installment, 2) }}</td>

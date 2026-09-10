@@ -24,6 +24,11 @@ class AttendanceController extends Controller
         $classId = $request->get("school_class_id");
         $sectionId = $request->get("section_id");
         $date = $request->get("date", now()->toDateString());
+        // Defaults to whichever half of the day it currently is, so a
+        // teacher marking the register right after morning assembly (or
+        // right after lunch) lands on the correct session without having
+        // to think about it — but either can still be picked explicitly.
+        $session = $request->get("session", now()->hour < 12 ? "morning" : "afternoon");
 
         $classSections = $classId ? $sections->where("school_class_id", $classId)->values() : collect();
         $students = collect();
@@ -35,8 +40,8 @@ class AttendanceController extends Controller
         $sectionAllowed = ! $sectionId || $allowedSectionIds->contains((int) $sectionId);
 
         if ($classId && $classes->pluck("id")->contains((int) $classId) && $sectionAllowed) {
-            $students = Student::with(["user", "attendances" => function ($q) use ($date) {
-                $q->whereDate("date", $date);
+            $students = Student::with(["user", "attendances" => function ($q) use ($date, $session) {
+                $q->whereDate("date", $date)->where("session", $session);
             }])
                 ->where("school_class_id", $classId)
                 ->when($sectionId, fn ($q) => $q->where("section_id", $sectionId))
@@ -48,7 +53,7 @@ class AttendanceController extends Controller
             $classId = null;
         }
 
-        return view("teacher.attendance", compact("classes", "classSections", "students", "classId", "sectionId", "date"))
+        return view("teacher.attendance", compact("classes", "classSections", "students", "classId", "sectionId", "date", "session"))
             ->with("sections", $classSections);
     }
 
@@ -59,6 +64,7 @@ class AttendanceController extends Controller
 
         $data = $request->validate([
             "date" => "required|date",
+            "session" => "required|in:morning,afternoon",
             "statuses" => "required|array",
             "statuses.*" => "in:present,absent,late,excused",
             "reasons" => "nullable|array",
@@ -78,7 +84,7 @@ class AttendanceController extends Controller
             $reason = $data["reasons"][$studentId] ?? null;
 
             Attendance::updateOrCreate(
-                ["student_id" => $studentId, "date" => $data["date"]],
+                ["student_id" => $studentId, "date" => $data["date"], "session" => $data["session"]],
                 [
                     "status" => $status,
                     "marked_by" => Auth::id(),
@@ -89,6 +95,6 @@ class AttendanceController extends Controller
             );
         }
 
-        return back()->with("success", "Attendance saved for ".$data["date"]);
+        return back()->with("success", ucfirst($data["session"])." attendance saved for ".$data["date"]);
     }
 }

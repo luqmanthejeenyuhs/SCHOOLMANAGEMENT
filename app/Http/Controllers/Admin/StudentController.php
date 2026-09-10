@@ -94,8 +94,10 @@ class StudentController extends Controller
             ->get()
             ->groupBy(fn ($r) => $r->exam->name ?? "Exam #".$r->exam_id);
 
-        // Attendance
+        // Attendance — morning session only, treated as the canonical
+        // "attended today" mark (see Admin\DashboardController for why).
         $attendance = $student->attendances()
+            ->where("session", "morning")
             ->where("date", ">=", now()->subDays(60))
             ->orderByDesc("date")
             ->get();

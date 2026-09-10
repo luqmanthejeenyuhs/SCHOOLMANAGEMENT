@@ -13,7 +13,7 @@
     @endif
     @if(auth()->user()->hasPermission('manage_employees'))
     <li class="nav-item">
-        <a class="nav-link {{ request()->routeIs('admin.leave-requests.*') ? 'active' : '' }}" href="{{ route('admin.leave-requests.index') }}">
+        <a class="nav-link {{ request()->routeIs('admin.leave_requests.*') ? 'active' : '' }}" href="{{ route('admin.leave_requests.index') }}">
             <i class="bi bi-calendar-x"></i> Leave Requests
         </a>
     </li>

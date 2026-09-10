@@ -65,19 +65,19 @@
             </div>
             <div class="col-md-4">
                 <label class="form-label">Basic Salary (KES)</label>
-                <input type="number" step="0.01" name="basic_salary" class="form-control" value="{{ old('basic_salary', $employee->basic_salary) }}" required>
+                <input type="text" inputmode="numeric" name="basic_salary" class="form-control currency-input" value="{{ old('basic_salary', $employee->basic_salary) }}" required>
             </div>
             <div class="col-md-4">
                 <label class="form-label">House Allowance (KES)</label>
-                <input type="number" step="0.01" name="house_allowance" class="form-control" value="{{ old('house_allowance', $employee->house_allowance) }}">
+                <input type="text" inputmode="numeric" name="house_allowance" class="form-control currency-input" value="{{ old('house_allowance', $employee->house_allowance) }}">
             </div>
             <div class="col-md-4">
                 <label class="form-label">Transport Allowance (KES)</label>
-                <input type="number" step="0.01" name="transport_allowance" class="form-control" value="{{ old('transport_allowance', $employee->transport_allowance) }}">
+                <input type="text" inputmode="numeric" name="transport_allowance" class="form-control currency-input" value="{{ old('transport_allowance', $employee->transport_allowance) }}">
             </div>
             <div class="col-md-4">
                 <label class="form-label">Other Allowances (KES)</label>
-                <input type="number" step="0.01" name="other_allowances" class="form-control" value="{{ old('other_allowances', $employee->other_allowances) }}">
+                <input type="text" inputmode="numeric" name="other_allowances" class="form-control currency-input" value="{{ old('other_allowances', $employee->other_allowances) }}">
             </div>
         </div>
         <div class="mt-4">
