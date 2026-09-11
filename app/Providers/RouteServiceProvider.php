@@ -46,7 +46,7 @@ class RouteServiceProvider extends ServiceProvider
         }
 
         return match ($user->role) {
-            "super_admin" => "/superadmin/schools",
+            "super_admin" => "/superadmin/dashboard",
             "admin" => "/admin/dashboard",
             "teacher" => "/teacher/dashboard",
             "student" => "/student/dashboard",

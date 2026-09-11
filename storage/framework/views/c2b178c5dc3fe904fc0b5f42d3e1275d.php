@@ -179,7 +179,7 @@
 </head>
 <body>
 <nav class="navbar navbar-dark px-3">
-    <span class="navbar-brand"><i class="bi bi-mortarboard-fill"></i> Taaluma SMS</span>
+<span class="navbar-brand"><img src="<?php echo e(asset('taaluma-logo.png')); ?>" alt="Taaluma" style="height:28px;width:28px;object-fit:contain;vertical-align:-6px;margin-right:.35rem;"> Taaluma SMS</span>
     <?php if(auth()->guard()->check()): ?>
         <div class="d-flex align-items-center gap-3">
             <span class="text-light small"><?php echo e(auth()->user()->name); ?> <span class="badge text-uppercase"><?php echo e(auth()->user()->role); ?></span></span>
@@ -405,7 +405,12 @@
             <?php elseif(auth()->user()->role === 'parent'): ?>
                 <li class="nav-item"><a class="nav-link <?php echo e(request()->routeIs('parent.dashboard') ? 'active' : ''); ?>" href="<?php echo e(route('parent.dashboard')); ?>"><i class="bi bi-speedometer2"></i> My Children</a></li>
             <?php elseif(auth()->user()->role === 'super_admin'): ?>
+                <li class="nav-item"><a class="nav-link <?php echo e(request()->routeIs('superadmin.dashboard') ? 'active' : ''); ?>" href="<?php echo e(route('superadmin.dashboard')); ?>"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
                 <li class="nav-item"><a class="nav-link <?php echo e(request()->routeIs('superadmin.schools.*') ? 'active' : ''); ?>" href="<?php echo e(route('superadmin.schools.index')); ?>"><i class="bi bi-buildings"></i> Schools</a></li>
+                <li class="nav-item"><a class="nav-link <?php echo e(request()->routeIs('superadmin.billing.*') ? 'active' : ''); ?>" href="<?php echo e(route('superadmin.billing.index')); ?>"><i class="bi bi-receipt"></i> Billing</a></li>
+                <li class="nav-item"><a class="nav-link <?php echo e(request()->routeIs('superadmin.users.*') ? 'active' : ''); ?>" href="<?php echo e(route('superadmin.users.index')); ?>"><i class="bi bi-people"></i> User Lookup</a></li>
+                <li class="nav-item"><a class="nav-link <?php echo e(request()->routeIs('superadmin.audit_logs.*') ? 'active' : ''); ?>" href="<?php echo e(route('superadmin.audit_logs.index')); ?>"><i class="bi bi-clock-history"></i> Audit Trail</a></li>
+                <li class="nav-item"><a class="nav-link <?php echo e(request()->routeIs('superadmin.announcements.*') ? 'active' : ''); ?>" href="<?php echo e(route('superadmin.announcements.index')); ?>"><i class="bi bi-megaphone"></i> Announcements</a></li>
                 <?php if(session('impersonating_school_id')): ?>
                     <li class="nav-item">
                         <form method="POST" action="<?php echo e(route('superadmin.stop-impersonating')); ?>">
@@ -441,6 +446,22 @@
                 </ul>
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
+        <?php endif; ?>
+
+        <?php if(auth()->user()->role !== 'super_admin'): ?>
+            <?php
+                $activeAnnouncements = \App\Models\Announcement::where('is_active', true)
+                    ->get()
+                    ->filter(fn($a) => $a->isForSchool(auth()->user()->school_id))
+                    ->reject(fn($a) => in_array($a->id, session('dismissed_announcements', [])));
+            ?>
+            <?php $__currentLoopData = $activeAnnouncements; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $announcement): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                <div class="alert alert-<?php echo e($announcement->level === 'warning' ? 'warning' : ($announcement->level === 'success' ? 'success' : 'info')); ?> alert-dismissible fade show">
+                    <strong><?php echo e($announcement->title); ?></strong> — <?php echo e($announcement->body); ?>
+
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" onclick="fetch('<?php echo e(route('announcements.dismiss', $announcement)); ?>', {method:'POST', headers:{'X-CSRF-TOKEN':'<?php echo e(csrf_token()); ?>'}})"></button>
+                </div>
+            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
         <?php endif; ?>
 
         <?php echo $__env->yieldContent('content'); ?>

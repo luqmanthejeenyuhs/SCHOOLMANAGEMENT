@@ -113,10 +113,17 @@ class LoginController extends Controller
 
     public function logout(Request $request)
     {
+        // Capture the school's login slug BEFORE logging out — once
+        // Auth::logout() runs, Auth::user() is gone, so this has to happen
+        // first. Falls back to the generic /login only for a super_admin
+        // (no school_id) or if something's gone wrong resolving it.
+        $user = Auth::user();
+        $slug = $user?->school_id ? School::find($user->school_id)?->slug : null;
+
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect("/login");
+        return redirect($slug ? route("login.school", $slug) : route("login"));
     }
 }

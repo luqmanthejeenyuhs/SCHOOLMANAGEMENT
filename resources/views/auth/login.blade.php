@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login — {{ $school->name ?? 'Taaluma SMS' }}</title>
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('favicon-16x16.png') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('apple-touch-icon.png') }}">
+    <link rel="manifest" href="{{ asset('site.webmanifest') }}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -92,12 +97,12 @@
                 @if($school->logo_path)
                     <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($school->logo_path) }}" alt="{{ $school->name }} logo" class="school-logo">
                 @else
-                    <span class="brand-mark"><i class="bi bi-mortarboard-fill"></i></span>
+                    <img src="{{ asset('taaluma-logo.png') }}" alt="Taaluma" class="school-logo">
                 @endif
                 <h5>{{ $school->name }}</h5>
                 <small class="subtitle">Sign in to your account</small>
             @else
-                <span class="brand-mark"><i class="bi bi-mortarboard-fill"></i></span>
+                <img src="{{ asset('taaluma-logo.png') }}" alt="Taaluma" class="school-logo">
                 <h5>Taaluma SMS</h5>
                 <small class="subtitle">Sign in to continue</small>
             @endif

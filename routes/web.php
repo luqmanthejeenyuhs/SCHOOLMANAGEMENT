@@ -73,6 +73,13 @@ Route::middleware('auth')->group(function () {
     // Self-service password change — every signed-in user (any role) can
     // change their own password here without an admin seeing the new value.
     Route::get('/account/password', [\App\Http\Controllers\Auth\PasswordController::class, 'edit'])->name('account.password.edit');
+    Route::post('/announcements/{announcement}/dismiss', function (\App\Models\Announcement $announcement) {
+        $dismissed = session('dismissed_announcements', []);
+        $dismissed[] = $announcement->id;
+        session(['dismissed_announcements' => array_unique($dismissed)]);
+
+        return response()->noContent();
+    })->name('announcements.dismiss');
     Route::put('/account/password', [\App\Http\Controllers\Auth\PasswordController::class, 'update'])->name('account.password.update');
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -446,4 +453,22 @@ Route::middleware(['auth', 'super_admin'])
             ->name('schools.impersonate');
         Route::post('stop-impersonating', [\App\Http\Controllers\SuperAdmin\ImpersonationController::class, 'stop'])
             ->name('stop-impersonating');
+
+        Route::get('/dashboard', [\App\Http\Controllers\SuperAdmin\DashboardController::class, 'index'])->name('dashboard');
+
+        Route::get('billing', [\App\Http\Controllers\SuperAdmin\BillingController::class, 'index'])->name('billing.index');
+        Route::get('billing/create', [\App\Http\Controllers\SuperAdmin\BillingController::class, 'create'])->name('billing.create');
+        Route::post('billing', [\App\Http\Controllers\SuperAdmin\BillingController::class, 'store'])->name('billing.store');
+        Route::post('billing/{invoice}/mark-paid', [\App\Http\Controllers\SuperAdmin\BillingController::class, 'markPaid'])->name('billing.mark-paid');
+        Route::delete('billing/{invoice}', [\App\Http\Controllers\SuperAdmin\BillingController::class, 'destroy'])->name('billing.destroy');
+
+        Route::get('audit-logs', [\App\Http\Controllers\SuperAdmin\AuditLogController::class, 'index'])->name('audit_logs.index');
+
+        Route::get('users', [\App\Http\Controllers\SuperAdmin\UserLookupController::class, 'index'])->name('users.index');
+
+        Route::get('announcements', [\App\Http\Controllers\SuperAdmin\AnnouncementController::class, 'index'])->name('announcements.index');
+        Route::get('announcements/create', [\App\Http\Controllers\SuperAdmin\AnnouncementController::class, 'create'])->name('announcements.create');
+        Route::post('announcements', [\App\Http\Controllers\SuperAdmin\AnnouncementController::class, 'store'])->name('announcements.store');
+        Route::post('announcements/{announcement}/toggle-active', [\App\Http\Controllers\SuperAdmin\AnnouncementController::class, 'toggleActive'])->name('announcements.toggle-active');
+        Route::delete('announcements/{announcement}', [\App\Http\Controllers\SuperAdmin\AnnouncementController::class, 'destroy'])->name('announcements.destroy');
     });
