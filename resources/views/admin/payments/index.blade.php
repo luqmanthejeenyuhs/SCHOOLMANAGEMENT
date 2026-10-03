@@ -3,48 +3,9 @@
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
     <h3 class="mb-0">Invoices &amp; Payments</h3>
-    <button type="button" class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#bulkInvoiceModal">
-        <i class="bi bi-lightning-charge"></i> Bulk Generate (Term Billing)
+    <button type="button" class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#generateInvoiceModal">
+        <i class="bi bi-cash-coin"></i> Generate Invoice
     </button>
-</div>
-
-<div class="card p-3 mb-4">
-    <h6>Generate Single Invoice</h6>
-    <form method="POST" action="{{ route('admin.invoices.store') }}" class="row g-2 align-items-end">
-        @csrf
-        <div class="col-md-3">
-            <label class="form-label small">Student</label>
-            <select name="student_id" class="form-select" required>
-                <option value="">Select student</option>
-                @foreach($students as $student)
-                    <option value="{{ $student->id }}">{{ $student->user->name }} ({{ $student->admission_no }})</option>
-                @endforeach
-            </select>
-        </div>
-        <div class="col-md-3">
-            <label class="form-label small">Fee Type</label>
-            <select name="fee_type_id" id="feeTypeSelect" class="form-select" required>
-                <option value="">Select fee type</option>
-                @foreach($feeTypes as $feeType)
-                    <option value="{{ $feeType->id }}" data-amount="{{ $feeType->amount }}">{{ $feeType->name }}</option>
-                @endforeach
-            </select>
-        </div>
-        <div class="col-md-2">
-            <label class="form-label small">Amount</label>
-            <div class="input-group">
-                <span class="input-group-text">KSh</span>
-                <input type="text" inputmode="numeric" name="amount" id="amountInput" class="form-control currency-input" required>
-            </div>
-        </div>
-        <div class="col-md-2">
-            <label class="form-label small">Due Date</label>
-            <input type="date" name="due_date" class="form-control">
-        </div>
-        <div class="col-md-2">
-            <button class="btn btn-dark w-100">Generate</button>
-        </div>
-    </form>
 </div>
 
 <div class="card">
@@ -76,7 +37,7 @@
                         <div class="modal fade" id="mpesaModal{{ $invoice->id }}" tabindex="-1">
                             <div class="modal-dialog modal-dialog-centered">
                                 <div class="modal-content">
-                                    <form method="POST" action="{{ route('admin.invoices.mpesa_push', $invoice) }}">
+                                    <form method="POST" action="{{ route('admin.invoices.mpesa_push', ['invoice' => $invoice]) }}">
                                         @csrf
                                         <div class="modal-header"><h6 class="modal-title">Send M-Pesa STK Push — {{ $invoice->student->user->name }}</h6></div>
                                         <div class="modal-body">
@@ -96,7 +57,7 @@
                         <div class="modal fade" id="payModal{{ $invoice->id }}" tabindex="-1">
                             <div class="modal-dialog modal-dialog-centered">
                                 <div class="modal-content">
-                                    <form method="POST" action="{{ route('admin.invoices.payments.store', $invoice) }}">
+                                    <form method="POST" action="{{ route('admin.invoices.payments.store', ['invoice' => $invoice]) }}">
                                         @csrf
                                         <div class="modal-header"><h6 class="modal-title">Record Payment — {{ $invoice->student->user->name }}</h6></div>
                                         <div class="modal-body">
@@ -122,8 +83,16 @@
 
                                             {{-- Only shown for Bank Transfer --}}
                                             <div class="mb-2 payment-method-fields d-none" data-method-fields="bank">
-                                                <label class="form-label small">Bank Name</label>
-                                                <input type="text" name="bank_name" class="form-control" placeholder="e.g. KCB, Equity, Co-operative">
+                                                <label class="form-label small">Bank</label>
+                                                <select name="bank_name" class="form-select">
+                                                    <option value="">Select bank</option>
+                                                    @foreach($banks as $bank)
+                                                        <option value="{{ $bank->name }}">{{ $bank->name }}</option>
+                                                    @endforeach
+                                                </select>
+                                                @if($banks->isEmpty())
+                                                    <div class="form-text">No banks added yet — add one under Finance &gt; Banks.</div>
+                                                @endif
                                             </div>
 
                                             {{-- Shown for Bank Transfer, M-Pesa, and Card — label changes per method --}}
@@ -152,53 +121,130 @@
 </div>
 <div class="mt-3">{{ $invoices->links() }}</div>
 
-<!-- Bulk Generate Invoices Modal (automated term billing) -->
-<div class="modal fade" id="bulkInvoiceModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
+<!-- Generate Invoice Modal: Single or Bulk -->
+<div class="modal fade" id="generateInvoiceModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <form method="POST" action="{{ route('admin.invoices.bulk_store') }}">
-                @csrf
-                <div class="modal-header">
-                    <h5 class="modal-title"><i class="bi bi-lightning-charge"></i> Bulk Generate Invoices</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-cash-coin"></i> Generate Invoice</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <ul class="nav nav-tabs mb-3">
+                    <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#singlePane" type="button">Single Student</button></li>
+                    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#bulkPane" type="button">Bulk (Whole Class / Category / School)</button></li>
+                </ul>
+
+                <div class="tab-content">
+                    {{-- SINGLE --}}
+                    <div class="tab-pane fade show active" id="singlePane">
+                        <form method="POST" action="{{ route('admin.invoices.store') }}">
+                            @csrf
+                            <div class="row g-2">
+                                <div class="col-md-6">
+                                    <label class="form-label small">Filter by Grade (optional)</label>
+                                    <select id="singleGradeFilter" class="form-select">
+                                        <option value="">All grades</option>
+                                        @foreach($classes as $class)
+                                            <option value="{{ $class->id }}">{{ $class->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small">Search Student</label>
+                                    <input type="text" id="singleStudentSearch" class="form-control" placeholder="Type a name or admission no...">
+                                </div>
+                                <div class="col-md-12">
+                                    <label class="form-label small">Student</label>
+                                    <select name="student_id" id="singleStudentSelect" class="form-select" size="6" required>
+                                        @foreach($students as $student)
+                                            <option value="{{ $student->id }}" data-class-id="{{ $student->school_class_id }}" data-search="{{ strtolower($student->user->name.' '.$student->admission_no) }}">
+                                                {{ $student->user->name }} ({{ $student->admission_no }}) — {{ $student->schoolClass->name ?? 'No class' }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small">Fee Type</label>
+                                    <select name="fee_type_id" id="feeTypeSelect" class="form-select" required>
+                                        <option value="">Select fee type</option>
+                                        @foreach($feeTypes as $feeType)
+                                            <option value="{{ $feeType->id }}" data-amount="{{ $feeType->amount }}">
+                                                {{ $feeType->name }}{{ $feeType->feeCategory ? ' — '.$feeType->feeCategory->name : '' }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label small">Amount</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">KSh</span>
+                                        <input type="text" inputmode="numeric" name="amount" id="amountInput" class="form-control currency-input" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label small">Due Date</label>
+                                    <input type="date" name="due_date" class="form-control">
+                                </div>
+                            </div>
+                            <button class="btn btn-dark w-100 mt-3">Generate Invoice</button>
+                        </form>
+                    </div>
+
+                    {{-- BULK --}}
+                    <div class="tab-pane fade" id="bulkPane">
+                        <form method="POST" action="{{ route('admin.invoices.bulk_store') }}">
+                            @csrf
+                            <p class="text-muted small">Students who already have this exact invoice are skipped automatically, so it's safe to re-run.</p>
+                            <div class="mb-2">
+                                <label class="form-label small">Fee Type</label>
+                                <select name="fee_type_id" class="form-select" required>
+                                    <option value="">Select fee type</option>
+                                    @foreach($feeTypes as $feeType)
+                                        <option value="{{ $feeType->id }}">
+                                            {{ $feeType->name }}{{ $feeType->feeCategory ? ' — '.$feeType->feeCategory->name : '' }} — KES {{ number_format($feeType->amount, 2) }} ({{ $feeType->frequency }})
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label small">Apply to</label>
+                                <select name="scope" id="bulkScope" class="form-select" required>
+                                    <option value="all">All students in the school</option>
+                                    <option value="category">A fee category (e.g. Lower Primary)</option>
+                                    <option value="class">A specific class only</option>
+                                </select>
+                            </div>
+                            <div class="mb-2" id="bulkCategoryWrap" style="display:none;">
+                                <label class="form-label small">Category</label>
+                                <select name="fee_category_id" class="form-select">
+                                    <option value="">Select category</option>
+                                    @foreach($feeCategories as $category)
+                                        <option value="{{ $category->id }}">{{ $category->name }}</option>
+                                    @endforeach
+                                </select>
+                                @if($feeCategories->isEmpty())
+                                    <div class="form-text">No fee categories set up yet — add one under Finance &gt; Fee Categories.</div>
+                                @endif
+                            </div>
+                            <div class="mb-2" id="bulkClassWrap" style="display:none;">
+                                <label class="form-label small">Class</label>
+                                <select name="school_class_id" class="form-select">
+                                    <option value="">Select class</option>
+                                    @foreach($classes as $class)
+                                        <option value="{{ $class->id }}">{{ $class->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label small">Due Date</label>
+                                <input type="date" name="due_date" class="form-control">
+                            </div>
+                            <button class="btn btn-dark w-100 mt-2">Generate Invoices</button>
+                        </form>
+                    </div>
                 </div>
-                <div class="modal-body">
-                    <p class="text-muted small">Apply a fee (e.g. Term 2 Tuition) to a whole class or the entire school at once, instead of one student at a time. Students who already have this exact invoice are skipped automatically, so it's safe to re-run.</p>
-                    <div class="mb-2">
-                        <label class="form-label">Fee Type</label>
-                        <select name="fee_type_id" class="form-select" required>
-                            <option value="">Select fee type</option>
-                            @foreach($feeTypes as $feeType)
-                                <option value="{{ $feeType->id }}">{{ $feeType->name }} — KES {{ number_format($feeType->amount, 2) }} ({{ $feeType->frequency }})</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="mb-2">
-                        <label class="form-label">Apply to</label>
-                        <select name="scope" id="bulkScope" class="form-select" required>
-                            <option value="all">All students in the school</option>
-                            <option value="class">A specific class only</option>
-                        </select>
-                    </div>
-                    <div class="mb-2" id="bulkClassWrap" style="display:none;">
-                        <label class="form-label">Class</label>
-                        <select name="school_class_id" class="form-select">
-                            <option value="">Select class</option>
-                            @foreach($classes as $class)
-                                <option value="{{ $class->id }}">{{ $class->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="mb-2">
-                        <label class="form-label">Due Date</label>
-                        <input type="date" name="due_date" class="form-control">
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button class="btn btn-dark">Generate Invoices</button>
-                </div>
-            </form>
+            </div>
         </div>
     </div>
 </div>
@@ -216,9 +262,28 @@ document.getElementById('feeTypeSelect').addEventListener('change', function () 
         amountInput.dataset.raw = '';
     }
 });
+
 document.getElementById('bulkScope').addEventListener('change', function () {
+    document.getElementById('bulkCategoryWrap').style.display = this.value === 'category' ? 'block' : 'none';
     document.getElementById('bulkClassWrap').style.display = this.value === 'class' ? 'block' : 'none';
 });
+
+// Single-invoice student picker: grade filter + text search, both narrowing
+// the same <select> so you can either browse by grade or just type a name
+// — no page reload, everything's already loaded in the option list.
+function filterSingleStudentList() {
+    const gradeId = document.getElementById('singleGradeFilter').value;
+    const search = document.getElementById('singleStudentSearch').value.trim().toLowerCase();
+    const options = document.getElementById('singleStudentSelect').options;
+
+    for (const opt of options) {
+        const matchesGrade = !gradeId || opt.dataset.classId === gradeId;
+        const matchesSearch = !search || opt.dataset.search.includes(search);
+        opt.hidden = !(matchesGrade && matchesSearch);
+    }
+}
+document.getElementById('singleGradeFilter').addEventListener('change', filterSingleStudentList);
+document.getElementById('singleStudentSearch').addEventListener('keyup', filterSingleStudentList);
 
 // Record Payment modal: there's one of these per invoice row, so this uses
 // delegated listeners scoped to the closest form rather than hardcoded IDs
@@ -239,8 +304,8 @@ document.addEventListener('change', function (e) {
         const methods = el.dataset.methodFields.split(',');
         const show = methods.includes(method);
         el.classList.toggle('d-none', !show);
-        el.querySelectorAll('input').forEach(function (input) {
-            input.required = show && el.dataset.methodFields === 'bank'; // only Bank Name is strictly required
+        el.querySelectorAll('input, select').forEach(function (input) {
+            input.required = show && el.dataset.methodFields === 'bank'; // only Bank is strictly required
         });
     });
 

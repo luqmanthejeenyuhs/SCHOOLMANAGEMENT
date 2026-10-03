@@ -35,7 +35,7 @@
         <div class="row g-3">
             @forelse($sections as $section)
                 <div class="col-md-6">
-                    <a href="{{ route('admin.sections.show', $section) }}" class="text-decoration-none text-reset">
+                    <a href="{{ route('admin.sections.show', ['section' => $section]) }}" class="text-decoration-none text-reset">
                         <div class="card p-3 h-100">
                             <div class="d-flex justify-content-between align-items-start">
                                 <div>

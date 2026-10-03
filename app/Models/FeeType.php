@@ -10,7 +10,12 @@ class FeeType extends Model
 {
     use HasFactory, BelongsToTenant;
 
-    protected $fillable = ["school_id", "name", "amount", "frequency"];
+    protected $fillable = ["school_id", "name", "amount", "frequency", "fee_category_id"];
+
+    public function feeCategory()
+    {
+        return $this->belongsTo(FeeCategory::class);
+    }
 
     public function invoices()
     {

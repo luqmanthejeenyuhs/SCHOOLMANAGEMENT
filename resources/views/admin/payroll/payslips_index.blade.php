@@ -17,7 +17,7 @@
                     <td>KES {{ number_format($payslip->gross_pay, 2) }}</td>
                     <td>KES {{ number_format($payslip->total_deductions, 2) }}</td>
                     <td class="fw-bold">KES {{ number_format($payslip->net_pay, 2) }}</td>
-                    <td class="text-end"><a href="{{ route('admin.payslips.show', $payslip) }}" class="btn btn-sm btn-outline-primary">View</a></td>
+                    <td class="text-end"><a href="{{ route('admin.payslips.show', ['payslip' => $payslip]) }}" class="btn btn-sm btn-outline-primary">View</a></td>
                 </tr>
             @empty
                 <tr><td colspan="6" class="text-center text-muted py-4">No payslips generated yet.</td></tr>

@@ -47,7 +47,7 @@
                         <div class="modal fade" id="bankReconcile{{ $tx->id }}" tabindex="-1">
                             <div class="modal-dialog">
                                 <div class="modal-content">
-                                    <form method="POST" action="{{ route('admin.finance.ledger.bank.reconcile', $tx) }}">
+                                    <form method="POST" action="{{ route('admin.finance.ledger.bank.reconcile', ['bankTransaction' => $tx]) }}">
                                         @csrf
                                         <div class="modal-header"><h6 class="modal-title">Reconcile KES {{ number_format($tx->amount,2) }} — {{ $tx->bank_reference }}</h6></div>
                                         <div class="modal-body">
@@ -102,7 +102,7 @@
                         <div class="modal fade" id="mpesaReconcile{{ $tx->id }}" tabindex="-1">
                             <div class="modal-dialog">
                                 <div class="modal-content">
-                                    <form method="POST" action="{{ route('admin.finance.ledger.mpesa.reconcile', $tx) }}">
+                                    <form method="POST" action="{{ route('admin.finance.ledger.mpesa.reconcile', ['mpesaC2bTransaction' => $tx]) }}">
                                         @csrf
                                         <div class="modal-header"><h6 class="modal-title">Reconcile KES {{ number_format($tx->amount,2) }} — {{ $tx->transaction_id }}</h6></div>
                                         <div class="modal-body">

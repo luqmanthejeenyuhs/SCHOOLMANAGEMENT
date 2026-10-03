@@ -35,7 +35,7 @@
                     @endif
                 </td>
                 <td class="text-end">
-                    <a href="{{ route('admin.settings.rights.edit', $user) }}" class="btn btn-sm btn-outline-dark">
+                    <a href="{{ route('admin.settings.rights.edit', ['user' => $user]) }}" class="btn btn-sm btn-outline-dark">
                         <i class="bi bi-sliders"></i> Manage
                     </a>
                 </td>

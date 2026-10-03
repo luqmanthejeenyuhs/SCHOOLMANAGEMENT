@@ -3,7 +3,7 @@
 @section('content')
 <h3 class="mb-3">Edit Student</h3>
 <div class="card p-4" style="max-width:800px;">
-    <form method="POST" action="{{ route('admin.students.update', $student) }}">
+    <form method="POST" action="{{ route('admin.students.update', ['student' => $student]) }}">
         @csrf @method('PUT')
         <div class="row g-3">
             <div class="col-md-6">

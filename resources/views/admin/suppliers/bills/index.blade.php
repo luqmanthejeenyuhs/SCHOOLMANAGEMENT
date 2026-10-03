@@ -47,7 +47,7 @@
                         @elseif($bill->status === 'partially_paid')<span class="badge bg-warning text-dark">Partial</span>
                         @else<span class="badge bg-danger">Unpaid</span>@endif
                     </td>
-                    <td><a href="{{ route('admin.suppliers.bills.show', $bill) }}" class="btn btn-sm btn-outline-primary">View</a></td>
+                    <td><a href="{{ route('admin.suppliers.bills.show', ['bill' => $bill]) }}" class="btn btn-sm btn-outline-primary">View</a></td>
                 </tr>
             @empty
                 <tr><td colspan="8" class="text-center text-muted py-4">No bills recorded yet.</td></tr>

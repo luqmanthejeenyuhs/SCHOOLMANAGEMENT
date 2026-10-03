@@ -24,7 +24,7 @@
             @forelse($parent->children as $child)
                 <tr>
                     <td>{{ $child->admission_no }}</td>
-                    <td><a href="{{ route('admin.students.show', $child) }}">{{ $child->user->name }}</a></td>
+                    <td><a href="{{ route('admin.students.show', ['student' => $child]) }}">{{ $child->user->name }}</a></td>
                     <td>{{ $child->schoolClass->name ?? '—' }}</td>
                     <td>{{ $child->section->name ?? '—' }}</td>
                     <td>{{ $child->pivot->relationship ?? '—' }}</td>

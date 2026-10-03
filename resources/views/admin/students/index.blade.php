@@ -14,15 +14,15 @@
             <tbody>
                 @forelse($students as $student)
                 <tr>
-                    <td><a href="{{ route('admin.students.show', $student) }}" class="fw-semibold">{{ $student->admission_no }}</a></td>
+                    <td><a href="{{ route('admin.students.show', ['student' => $student]) }}" class="fw-semibold">{{ $student->admission_no }}</a></td>
                     <td>{{ $student->user->name }}</td>
                     <td>{{ $student->schoolClass->name ?? '—' }}</td>
                     <td>{{ $student->section->name ?? '—' }}</td>
                     <td>{{ $student->guardian_name ?? '—' }}</td>
                     <td class="text-end">
-                        <a href="{{ route('admin.students.show', $student) }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-eye"></i></a>
-                        <a href="{{ route('admin.students.edit', $student) }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i></a>
-                        <form action="{{ route('admin.students.destroy', $student) }}" method="POST" class="d-inline" onsubmit="return confirm('Remove this student?');">
+                        <a href="{{ route('admin.students.show', ['student' => $student]) }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-eye"></i></a>
+                        <a href="{{ route('admin.students.edit', ['student' => $student]) }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i></a>
+                        <form action="{{ route('admin.students.destroy', ['student' => $student]) }}" method="POST" class="d-inline" onsubmit="return confirm('Remove this student?');">
                             @csrf @method('DELETE')
                             <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
                         </form>

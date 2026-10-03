@@ -78,7 +78,7 @@
                     <tbody>
                         @forelse($students as $student)
                         <tr>
-                            <td><a href="{{ route('teacher.students.show', $student) }}" class="fw-semibold">{{ $student->admission_no }}</a></td>
+                            <td><a href="{{ route('teacher.students.show', ['student' => $student]) }}" class="fw-semibold">{{ $student->admission_no }}</a></td>
                             <td>{{ $student->user->name }}</td>
                             <td>{{ $student->latestExamResult->grade ?? '—' }}</td>
                             <td>{{ $student->attendance_rate !== null ? $student->attendance_rate.'%' : '—' }}</td>

@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Bank;
+use App\Models\FeeCategory;
 use App\Models\FeeInvoice;
 use App\Models\FeeType;
 use App\Models\SchoolClass;
@@ -21,11 +23,13 @@ class FeeInvoiceController extends Controller
     public function index()
     {
         $invoices = FeeInvoice::with(["student.user", "feeType", "payments"])->latest()->paginate(15);
-        $students = Student::with("user")->get();
-        $feeTypes = FeeType::all();
-        $classes = SchoolClass::all();
+        $students = Student::with(["user", "schoolClass"])->get();
+        $feeTypes = FeeType::with("feeCategory")->get();
+        $classes = SchoolClass::with("feeCategory")->get();
+        $feeCategories = FeeCategory::orderBy("name")->get();
+        $banks = Bank::orderBy("name")->get();
 
-        return view("admin.payments.index", compact("invoices", "students", "feeTypes", "classes"));
+        return view("admin.payments.index", compact("invoices", "students", "feeTypes", "classes", "feeCategories", "banks"));
     }
 
     public function store(Request $request)
@@ -47,11 +51,16 @@ class FeeInvoiceController extends Controller
     {
         $data = $request->validate([
             "fee_type_id" => ["required", Rule::exists("fee_types", "id")->where("school_id", Tenant::id())],
-            "scope" => "required|in:all,class",
+            "scope" => "required|in:all,class,category",
             "school_class_id" => [
                 "nullable",
                 "required_if:scope,class",
                 Rule::exists("school_classes", "id")->where("school_id", Tenant::id()),
+            ],
+            "fee_category_id" => [
+                "nullable",
+                "required_if:scope,category",
+                Rule::exists("fee_categories", "id")->where("school_id", Tenant::id()),
             ],
             "due_date" => "nullable|date",
         ]);
@@ -60,6 +69,10 @@ class FeeInvoiceController extends Controller
 
         $students = Student::query()
             ->when($data["scope"] === "class", fn ($q) => $q->where("school_class_id", $data["school_class_id"]))
+            ->when($data["scope"] === "category", fn ($q) => $q->whereHas(
+                "schoolClass",
+                fn ($q2) => $q2->where("fee_category_id", $data["fee_category_id"])
+            ))
             ->get();
 
         $created = 0;

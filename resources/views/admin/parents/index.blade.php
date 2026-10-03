@@ -15,13 +15,13 @@
             <tbody>
             @forelse($parents as $parent)
                 <tr>
-                    <td><a href="{{ route('admin.parents.show', $parent) }}" class="fw-semibold text-decoration-none">{{ $parent->name }}</a></td>
+                    <td><a href="{{ route('admin.parents.show', ['parent' => $parent]) }}" class="fw-semibold text-decoration-none">{{ $parent->name }}</a></td>
                     <td>{{ $parent->email }}</td>
                     <td>{{ $parent->phone ?? '—' }}</td>
                     <td>{{ $parent->children_count }}</td>
                     <td class="text-end">
-                        <a href="{{ route('admin.parents.show', $parent) }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye"></i></a>
-                        <form action="{{ route('admin.parents.destroy', $parent) }}" method="POST" class="d-inline" onsubmit="return confirm('Remove this parent account?');">
+                        <a href="{{ route('admin.parents.show', ['parent' => $parent]) }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye"></i></a>
+                        <form action="{{ route('admin.parents.destroy', ['parent' => $parent]) }}" method="POST" class="d-inline" onsubmit="return confirm('Remove this parent account?');">
                             @csrf @method('DELETE')
                             <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
                         </form>

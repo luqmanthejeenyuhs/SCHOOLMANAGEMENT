@@ -27,8 +27,8 @@
                         @if($supplier->is_active)<span class="badge bg-success">Active</span>@else<span class="badge bg-secondary">Inactive</span>@endif
                     </td>
                     <td class="text-end">
-                        <a href="{{ route('admin.suppliers.show', $supplier) }}" class="btn btn-sm btn-outline-primary">View</a>
-                        <a href="{{ route('admin.suppliers.edit', $supplier) }}" class="btn btn-sm btn-outline-dark">Edit</a>
+                        <a href="{{ route('admin.suppliers.show', ['supplier' => $supplier]) }}" class="btn btn-sm btn-outline-primary">View</a>
+                        <a href="{{ route('admin.suppliers.edit', ['supplier' => $supplier]) }}" class="btn btn-sm btn-outline-dark">Edit</a>
                     </td>
                 </tr>
             @empty

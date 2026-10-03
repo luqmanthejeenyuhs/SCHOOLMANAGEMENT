@@ -19,7 +19,7 @@
         <div class="card p-3 h-100">
             <h6>Record Manual Repayment</h6>
             <p class="text-muted small">For a repayment made outside payroll — e.g. the employee pays cash directly. Regular installments deduct automatically from their payslip each month.</p>
-            <form method="POST" action="{{ route('admin.loans.repayments.store', $loan) }}">
+            <form method="POST" action="{{ route('admin.loans.repayments.store', ['loan' => $loan]) }}">
                 @csrf
                 <div class="mb-2">
                     <label class="form-label small">Amount (balance: KES {{ number_format($loan->balance_remaining, 2) }})</label>
@@ -45,7 +45,7 @@
         <div class="card p-3 h-100">
             <h6>Write Off</h6>
             <p class="text-muted small">Marks the remaining balance as unrecoverable (e.g. the employee has left and won't repay). This does not reverse the original disbursement in your ledger.</p>
-            <form method="POST" action="{{ route('admin.loans.write-off', $loan) }}" onsubmit="return confirm('Write off the remaining KES {{ number_format($loan->balance_remaining, 2) }} balance? This cannot be undone.');">
+            <form method="POST" action="{{ route('admin.loans.write-off', ['loan' => $loan]) }}" onsubmit="return confirm('Write off the remaining KES {{ number_format($loan->balance_remaining, 2) }} balance? This cannot be undone.');">
                 @csrf
                 <button class="btn btn-outline-danger">Write Off Remaining Balance</button>
             </form>

@@ -24,11 +24,11 @@
                 <td>{{ $a->is_active ? 'Active' : 'Hidden' }}</td>
                 <td class="small text-muted">{{ $a->created_at->format('d M Y') }}</td>
                 <td class="d-flex gap-1">
-                    <form method="POST" action="{{ route('superadmin.announcements.toggle-active', $a) }}">
+                    <form method="POST" action="{{ route('superadmin.announcements.toggle-active', ['announcement' => $a]) }}">
                         @csrf
                         <button class="btn btn-sm btn-outline-secondary">{{ $a->is_active ? 'Hide' : 'Reactivate' }}</button>
                     </form>
-                    <form method="POST" action="{{ route('superadmin.announcements.destroy', $a) }}" onsubmit="return confirm('Delete this announcement?');">
+                    <form method="POST" action="{{ route('superadmin.announcements.destroy', ['announcement' => $a]) }}" onsubmit="return confirm('Delete this announcement?');">
                         @csrf @method('DELETE')
                         <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
                     </form>

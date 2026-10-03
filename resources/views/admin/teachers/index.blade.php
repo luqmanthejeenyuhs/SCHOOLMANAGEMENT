@@ -32,15 +32,15 @@
             <tbody>
                 @forelse($teachers as $teacher)
                 <tr>
-                    <td><a href="{{ route('admin.teachers.show', $teacher) }}" class="fw-semibold text-decoration-none">{{ $teacher->employee_id }}</a></td>
-                    <td><a href="{{ route('admin.teachers.show', $teacher) }}" class="text-decoration-none">{{ $teacher->user->name }}</a></td>
+                    <td><a href="{{ route('admin.teachers.show', ['teacher' => $teacher]) }}" class="fw-semibold text-decoration-none">{{ $teacher->employee_id }}</a></td>
+                    <td><a href="{{ route('admin.teachers.show', ['teacher' => $teacher]) }}" class="text-decoration-none">{{ $teacher->user->name }}</a></td>
                     <td>{{ $teacher->user->email }}</td>
                     <td>{{ $teacher->qualification ?? '—' }}</td>
                     <td>{{ $teacher->joining_date?->format('d M Y') ?? '—' }}</td>
                     <td class="text-end">
-                        <a href="{{ route('admin.teachers.show', $teacher) }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye"></i></a>
-                        <a href="{{ route('admin.teachers.edit', $teacher) }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i></a>
-                        <form action="{{ route('admin.teachers.destroy', $teacher) }}" method="POST" class="d-inline" onsubmit="return confirm('Remove this teacher?');">
+                        <a href="{{ route('admin.teachers.show', ['teacher' => $teacher]) }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye"></i></a>
+                        <a href="{{ route('admin.teachers.edit', ['teacher' => $teacher]) }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i></a>
+                        <form action="{{ route('admin.teachers.destroy', ['teacher' => $teacher]) }}" method="POST" class="d-inline" onsubmit="return confirm('Remove this teacher?');">
                             @csrf @method('DELETE')
                             <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
                         </form>

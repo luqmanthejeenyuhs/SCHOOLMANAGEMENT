@@ -123,7 +123,7 @@
     <h6 class="border-bottom pb-1 mt-4 no-print">Portfolio Evidence</h6>
     <ul class="small text-muted no-print">
         @forelse($portfolioItems as $item)
-            <li>{{ $item->title }} ({{ $item->typeLabel() }}) — <a href="{{ route('admin.cbc.portfolio.download', $item) }}">download</a></li>
+            <li>{{ $item->title }} ({{ $item->typeLabel() }}) — <a href="{{ route('admin.cbc.portfolio.download', ['item' => $item]) }}">download</a></li>
         @empty
             <li>No portfolio evidence uploaded for this term.</li>
         @endforelse

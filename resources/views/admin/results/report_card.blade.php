@@ -22,7 +22,7 @@
 <body>
 
 <div class="no-print text-center py-3">
-    <a href="{{ route('admin.exams.results', $exam) }}" class="btn btn-outline-secondary btn-sm">&larr; Back to Results</a>
+    <a href="{{ route('admin.exams.results', ['exam' => $exam]) }}" class="btn btn-outline-secondary btn-sm">&larr; Back to Results</a>
     <button onclick="window.print()" class="btn btn-outline-dark btn-sm"><i class="bi bi-printer"></i> Print</button>
     <a href="{{ route('admin.exams.report_card.pdf', [$exam, $student]) }}" class="btn btn-dark btn-sm"><i class="bi bi-file-earmark-pdf"></i> Download PDF</a>
 </div>
@@ -84,7 +84,7 @@
     </div>
 
     <div class="no-print">
-        <form method="POST" action="{{ route('admin.exams.comment.store', [$exam, $student]) }}">
+        <form method="POST" action="{{ route('admin.exams.comment.store', ['exam' => $exam, 'student' => $student]) }}">
             @csrf
             <div class="mb-2">
                 <label class="form-label small">Class Teacher's Comment</label>

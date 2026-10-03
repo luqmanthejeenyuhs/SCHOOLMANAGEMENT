@@ -85,7 +85,7 @@
                             <td>KES {{ number_format($item->unit_price, 2) }}</td>
                             <td>{{ $item->quantity_in_stock }} @if($item->isLowStock())<i class="bi bi-exclamation-triangle-fill text-warning" title="Low stock"></i>@endif</td>
                             <td class="text-end">
-                                <form action="{{ route('admin.inventory.destroy', $item) }}" method="POST" onsubmit="return confirm('Delete this item?');">
+                                <form action="{{ route('admin.inventory.destroy', ['item' => $item]) }}" method="POST" onsubmit="return confirm('Delete this item?');">
                                     @csrf @method('DELETE')
                                     <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
                                 </form>

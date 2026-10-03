@@ -29,7 +29,7 @@
             </span>
         </div>
     </div>
-    <a href="{{ route('admin.students.edit', $student) }}" class="btn btn-outline-secondary"><i class="bi bi-pencil"></i> Edit</a>
+    <a href="{{ route('admin.students.edit', ['student' => $student]) }}" class="btn btn-outline-secondary"><i class="bi bi-pencil"></i> Edit</a>
 </div>
 
 <div class="row g-3 mb-4">
@@ -168,7 +168,7 @@
                         <div class="fw-semibold">{{ $examName }}</div>
                         @php $firstExam = $results->first()->exam; @endphp
                         @if($firstExam)
-                            <a href="{{ route('admin.exams.report_card', [$firstExam, $student]) }}" class="btn btn-sm btn-outline-primary">Full Report Card</a>
+                            <a href="{{ route('admin.exams.report_card', ['exam' => $firstExam, 'student' => $student]) }}" class="btn btn-sm btn-outline-primary">Full Report Card</a>
                         @endif
                     </div>
                     <table class="table table-sm mb-0">
@@ -256,7 +256,7 @@
             <div class="modal fade" id="mpesaModal{{ $invoice->id }}" tabindex="-1">
                 <div class="modal-dialog">
                     <div class="modal-content">
-                        <form method="POST" action="{{ route('admin.invoices.mpesa_push', $invoice) }}">
+                        <form method="POST" action="{{ route('admin.invoices.mpesa_push', ['invoice' => $invoice]) }}">
                             @csrf
                             <div class="modal-header"><h6 class="modal-title">Send M-Pesa STK Push — Invoice #{{ $invoice->id }}</h6></div>
                             <div class="modal-body">
@@ -276,7 +276,7 @@
             <div class="modal fade" id="payModal{{ $invoice->id }}" tabindex="-1">
                 <div class="modal-dialog">
                     <div class="modal-content">
-                        <form method="POST" action="{{ route('admin.invoices.payments.store', $invoice) }}">
+                        <form method="POST" action="{{ route('admin.invoices.payments.store', ['invoice' => $invoice]) }}">
                             @csrf
                             <div class="modal-header"><h6 class="modal-title">Record Payment — Invoice #{{ $invoice->id }}</h6></div>
                             <div class="modal-body">
@@ -345,7 +345,7 @@
         <div class="card p-3">
             <div class="d-flex justify-content-between align-items-center mb-2">
                 <h6 class="mb-0">Competency-Based Assessment</h6>
-                <a href="{{ route('admin.cbc.report', $student) }}" class="btn btn-sm btn-outline-primary">Full CBC Report</a>
+                <a href="{{ route('admin.cbc.report', ['student' => $student]) }}" class="btn btn-sm btn-outline-primary">Full CBC Report</a>
             </div>
             @if($cbcRecords->isEmpty())
                 <p class="text-muted mb-0">No CBC competency records yet.</p>

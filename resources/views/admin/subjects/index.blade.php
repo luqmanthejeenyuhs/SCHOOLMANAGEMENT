@@ -13,10 +13,10 @@
         @forelse($subjects as $subject)
             <tr>
                 <td>{{ $subject->schoolClass->name }}</td>
-                <td><a href="{{ route('admin.subjects.show', $subject) }}" class="text-decoration-none fw-semibold">{{ $subject->name }}</a></td>
+                <td><a href="{{ route('admin.subjects.show', ['subject' => $subject]) }}" class="text-decoration-none fw-semibold">{{ $subject->name }}</a></td>
                 <td>{{ $subject->code ?? '—' }}</td>
                 <td class="text-end">
-                    <form action="{{ route('admin.subjects.destroy', $subject) }}" method="POST" onsubmit="return confirm('Delete this subject?');">
+                    <form action="{{ route('admin.subjects.destroy', ['subject' => $subject]) }}" method="POST" onsubmit="return confirm('Delete this subject?');">
                         @csrf @method('DELETE')
                         <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
                     </form>

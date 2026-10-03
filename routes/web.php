@@ -65,14 +65,44 @@ Route::middleware('guest')->group(function () {
     // own staff/students/parents (e.g. /school/greenwood/login).
     Route::get('/school/{school:slug}/login', [LoginController::class, 'showLoginForm'])->name('login.school');
     Route::post('/school/{school:slug}/login', [LoginController::class, 'login']);
+
+    // Forgot password — mirrors the login routes exactly: generic (super
+    // admin) and per-school branded/scoped versions.
+    Route::get('/forgot-password', [\App\Http\Controllers\Auth\ForgotPasswordController::class, 'show'])->name('password.request');
+    Route::post('/forgot-password', [\App\Http\Controllers\Auth\ForgotPasswordController::class, 'send'])->name('password.email');
+    Route::get('/school/{school:slug}/forgot-password', [\App\Http\Controllers\Auth\ForgotPasswordController::class, 'show'])->name('password.request.school');
+    Route::post('/school/{school:slug}/forgot-password', [\App\Http\Controllers\Auth\ForgotPasswordController::class, 'send'])->name('password.email.school');
+
+    // The link from the reset email — token identifies the request,
+    // username/school (query string) identify who it's for. Not
+    // school-slug-prefixed like the above since the token itself is
+    // already the unguessable part; no need for a second branded route.
+    Route::get('/reset-password/{token}', [\App\Http\Controllers\Auth\ResetPasswordController::class, 'show'])->name('password.reset.form');
+    Route::post('/reset-password', [\App\Http\Controllers\Auth\ResetPasswordController::class, 'update'])->name('password.reset.update');
 });
 
 Route::post('/logout', [LoginController::class, 'logout'])->middleware('auth')->name('logout');
 
 Route::middleware('auth')->group(function () {
-    // Self-service password change — every signed-in user (any role) can
-    // change their own password here without an admin seeing the new value.
+    // Self-service password change stays unprefixed (no school slug) —
+    // EnsurePasswordIsChanged (global, see Kernel.php's 'web' group)
+    // redirects here by route name with no parameters whenever someone
+    // still has a system-generated password, before any school context
+    // is necessarily known. Keeping this route outside the {school:slug}
+    // group below avoids that redirect ever needing a slug it doesn't have.
     Route::get('/account/password', [\App\Http\Controllers\Auth\PasswordController::class, 'edit'])->name('account.password.edit');
+    Route::put('/account/password', [\App\Http\Controllers\Auth\PasswordController::class, 'update'])->name('account.password.update');
+});
+
+// Every authenticated route below lives under /{school}/... (e.g.
+// /sunrise/admin/dashboard) so the URL itself always shows which school
+// you're in. See EnsureSchoolSlugMatchesUser — it validates the slug
+// against the signed-in user and, via URL::defaults(), makes every
+// existing route('admin.xxx', ...) call below automatically include it
+// with no changes needed at each call site.
+Route::prefix('{school:slug}')->middleware(['auth', 'school.slug'])->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
     Route::post('/announcements/{announcement}/dismiss', function (\App\Models\Announcement $announcement) {
         $dismissed = session('dismissed_announcements', []);
         $dismissed[] = $announcement->id;
@@ -80,9 +110,6 @@ Route::middleware('auth')->group(function () {
 
         return response()->noContent();
     })->name('announcements.dismiss');
-    Route::put('/account/password', [\App\Http\Controllers\Auth\PasswordController::class, 'update'])->name('account.password.update');
-
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // Self clock-in, open to anyone with a linked Employee record —
     // teachers already have /teacher/clock; this is the same controller so
@@ -211,6 +238,15 @@ Route::middleware('auth')->group(function () {
             Route::get('fee-types', [FeeTypeController::class, 'index'])->name('fee_types.index');
             Route::post('fee-types', [FeeTypeController::class, 'store'])->name('fee_types.store');
             Route::delete('fee-types/{feeType}', [FeeTypeController::class, 'destroy'])->name('fee_types.destroy');
+
+            Route::get('fee-categories', [\App\Http\Controllers\Admin\FeeCategoryController::class, 'index'])->name('fee_categories.index');
+            Route::post('fee-categories', [\App\Http\Controllers\Admin\FeeCategoryController::class, 'store'])->name('fee_categories.store');
+            Route::put('fee-categories/{feeCategory}', [\App\Http\Controllers\Admin\FeeCategoryController::class, 'update'])->name('fee_categories.update');
+            Route::delete('fee-categories/{feeCategory}', [\App\Http\Controllers\Admin\FeeCategoryController::class, 'destroy'])->name('fee_categories.destroy');
+
+            Route::get('banks', [\App\Http\Controllers\Admin\BankController::class, 'index'])->name('banks.index');
+            Route::post('banks', [\App\Http\Controllers\Admin\BankController::class, 'store'])->name('banks.store');
+            Route::delete('banks/{bank}', [\App\Http\Controllers\Admin\BankController::class, 'destroy'])->name('banks.destroy');
         });
 
         Route::middleware('permission:manage_invoices')->group(function () {

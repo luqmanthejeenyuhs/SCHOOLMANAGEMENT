@@ -8,7 +8,7 @@
         <h3 class="mb-0 mt-1">{{ $teacher->user->name }}</h3>
         <span class="text-muted">Employee ID: <strong>{{ $teacher->employee_id }}</strong></span>
     </div>
-    <a href="{{ route('admin.teachers.edit', $teacher) }}" class="btn btn-outline-secondary"><i class="bi bi-pencil"></i> Edit</a>
+    <a href="{{ route('admin.teachers.edit', ['teacher' => $teacher]) }}" class="btn btn-outline-secondary"><i class="bi bi-pencil"></i> Edit</a>
 </div>
 
 <ul class="nav nav-tabs mb-3" id="teacherTabs" role="tablist">
@@ -118,11 +118,11 @@
                             <td>{{ $document->label() }}</td>
                             <td class="text-muted small">{{ $document->original_name }}</td>
                             <td class="text-end">
-                                <a href="{{ route('admin.teachers.documents.download', [$teacher, $document]) }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-download"></i> Download</a>
+                                <a href="{{ route('admin.teachers.documents.download', ['teacher' => $teacher, 'document' => $document]) }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-download"></i> Download</a>
                             </td>
                         </tr>
                         @empty
-                        <tr><td colspan="3" class="text-center text-muted py-4">No documents uploaded yet. <a href="{{ route('admin.teachers.edit', $teacher) }}">Add some</a>.</td></tr>
+                        <tr><td colspan="3" class="text-center text-muted py-4">No documents uploaded yet. <a href="{{ route('admin.teachers.edit', ['teacher' => $teacher]) }}">Add some</a>.</td></tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -145,7 +145,7 @@
                             <td>{{ $a->schoolClass->name ?? '—' }}</td>
                             <td>{{ $a->section->name ?? 'All sections' }}</td>
                             <td class="text-end">
-                                <form action="{{ route('admin.teachers.assignments.destroy', [$teacher, $a]) }}" method="POST" onsubmit="return confirm('Remove this assignment?');">
+                                <form action="{{ route('admin.teachers.assignments.destroy', ['teacher' => $teacher, 'assignment' => $a]) }}" method="POST" onsubmit="return confirm('Remove this assignment?');">
                                     @csrf @method('DELETE')
                                     <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
                                 </form>
@@ -161,7 +161,7 @@
 
         <div class="card p-3">
             <h6 class="text-uppercase text-muted small mb-3">Assign a Subject</h6>
-            <form method="POST" action="{{ route('admin.teachers.assignments.store', $teacher) }}" class="row g-2 align-items-end">
+            <form method="POST" action="{{ route('admin.teachers.assignments.store', ['teacher' => $teacher]) }}" class="row g-2 align-items-end">
                 @csrf
                 <div class="col-md-4">
                     <label class="form-label small">Class</label>
@@ -287,7 +287,7 @@
                             <td>{{ number_format($slip->gross_pay, 2) }}</td>
                             <td>{{ number_format($slip->total_deductions, 2) }}</td>
                             <td class="fw-semibold">{{ number_format($slip->net_pay, 2) }}</td>
-                            <td class="text-end"><a href="{{ route('admin.payslips.show', $slip) }}" class="btn btn-sm btn-outline-primary">View</a></td>
+                            <td class="text-end"><a href="{{ route('admin.payslips.show', ['payslip' => $slip]) }}" class="btn btn-sm btn-outline-primary">View</a></td>
                         </tr>
                         @empty
                         <tr><td colspan="5" class="text-center text-muted py-4">No payslips generated yet.</td></tr>

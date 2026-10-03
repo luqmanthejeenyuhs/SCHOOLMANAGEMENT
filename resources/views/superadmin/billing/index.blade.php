@@ -64,7 +64,7 @@
                 <td class="small text-muted">{{ $inv->note }}</td>
                 <td>
                     @if($inv->status !== 'paid')
-                        <form method="POST" action="{{ route('superadmin.billing.mark-paid', $inv) }}" class="d-flex gap-1">
+                        <form method="POST" action="{{ route('superadmin.billing.mark-paid', ['invoice' => $inv]) }}" class="d-flex gap-1">
                             @csrf
                             <select name="paid_method" class="form-select form-select-sm" required>
                                 <option value="">Method…</option>

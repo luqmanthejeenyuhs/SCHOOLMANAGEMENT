@@ -51,7 +51,7 @@
                         <td>{{ $scale->points ?? '—' }}</td>
                         <td>{{ $scale->remark ?? '—' }}</td>
                         <td class="text-end">
-                            <form action="{{ route('admin.grading_scales.destroy', $scale) }}" method="POST" onsubmit="return confirm('Delete this grade band?');">
+                            <form action="{{ route('admin.grading_scales.destroy', ['gradingScale' => $scale]) }}" method="POST" onsubmit="return confirm('Delete this grade band?');">
                                 @csrf @method('DELETE')
                                 <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
                             </form>

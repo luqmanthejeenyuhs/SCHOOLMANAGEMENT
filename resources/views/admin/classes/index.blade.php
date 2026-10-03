@@ -33,15 +33,15 @@
             <tr>
                 <td><a href="{{ route('admin.classes.show', $section->schoolClass) }}" class="text-decoration-none">{{ $section->schoolClass->name }}</a></td>
                 <td>
-                    <a href="{{ route('admin.sections.show', $section) }}" class="fw-semibold text-decoration-none">
+                    <a href="{{ route('admin.sections.show', ['section' => $section]) }}" class="fw-semibold text-decoration-none">
                         {{ $section->schoolClass->name }} {{ $section->name }}
                     </a>
                 </td>
                 <td>{{ $section->classTeacher->user->name ?? '—' }}</td>
                 <td>{{ $section->students_count }}</td>
                 <td class="text-end">
-                    <a href="{{ route('admin.sections.show', $section) }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-eye"></i></a>
-                    <form action="{{ route('admin.sections.destroy', $section) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this stream?');">
+                    <a href="{{ route('admin.sections.show', ['section' => $section]) }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-eye"></i></a>
+                    <form action="{{ route('admin.sections.destroy', ['section' => $section]) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this stream?');">
                         @csrf @method('DELETE')
                         <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
                     </form>
@@ -60,10 +60,10 @@
     <div class="d-flex flex-wrap gap-2">
         @foreach($classes as $class)
             <div class="d-flex align-items-center border rounded-pill ps-3 pe-1 py-1">
-                <a href="{{ route('admin.classes.show', $class) }}" class="text-decoration-none me-2">
+                <a href="{{ route('admin.classes.show', ['class' => $class]) }}" class="text-decoration-none me-2">
                     {{ $class->name }} <span class="badge bg-secondary">{{ $class->students_count }}</span>
                 </a>
-                <form action="{{ route('admin.classes.destroy', $class) }}" method="POST" onsubmit="return confirm('Delete this class?');">
+                <form action="{{ route('admin.classes.destroy', ['class' => $class]) }}" method="POST" onsubmit="return confirm('Delete this class?');">
                     @csrf @method('DELETE')
                     <button class="btn btn-sm btn-outline-danger border-0"><i class="bi bi-trash"></i></button>
                 </form>

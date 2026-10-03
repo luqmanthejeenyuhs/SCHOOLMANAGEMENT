@@ -10,7 +10,12 @@ class SchoolClass extends Model
 {
     use HasFactory, BelongsToTenant;
 
-    protected $fillable = ["school_id", "name"];
+    protected $fillable = ["school_id", "name", "fee_category_id"];
+
+    public function feeCategory()
+    {
+        return $this->belongsTo(FeeCategory::class);
+    }
 
     public function sections()
     {

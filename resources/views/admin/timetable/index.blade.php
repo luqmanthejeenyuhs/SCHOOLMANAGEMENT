@@ -65,7 +65,7 @@
                                             <div class="text-muted small">{{ $slot->teacher->user->name }}</div>
                                         @endif
                                         @if($slot->room)<div class="text-muted small">{{ $slot->room }}</div>@endif
-                                        <form action="{{ route('admin.timetable.destroy', $slot) }}" method="POST" onsubmit="return confirm('Remove this from the timetable?');" class="mt-1">
+                                        <form action="{{ route('admin.timetable.destroy', ['timetableSlot' => $slot]) }}" method="POST" onsubmit="return confirm('Remove this from the timetable?');" class="mt-1">
                                             @csrf @method('DELETE')
                                             <button class="btn btn-sm btn-outline-danger py-0 px-1"><i class="bi bi-trash"></i></button>
                                         </form>

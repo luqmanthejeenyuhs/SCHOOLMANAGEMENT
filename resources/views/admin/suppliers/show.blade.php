@@ -5,7 +5,7 @@
     <h3 class="mb-0">{{ $supplier->name }}</h3>
     <div class="d-flex gap-2">
         <a href="{{ route('admin.suppliers.bills.create') }}?supplier_id={{ $supplier->id }}" class="btn btn-dark"><i class="bi bi-plus-lg"></i> New Bill</a>
-        <a href="{{ route('admin.suppliers.edit', $supplier) }}" class="btn btn-outline-dark">Edit</a>
+        <a href="{{ route('admin.suppliers.edit', ['supplier' => $supplier]) }}" class="btn btn-outline-dark">Edit</a>
     </div>
 </div>
 
@@ -48,7 +48,7 @@
                         @elseif($bill->status === 'partially_paid')<span class="badge bg-warning text-dark">Partial</span>
                         @else<span class="badge bg-danger">Unpaid</span>@endif
                     </td>
-                    <td><a href="{{ route('admin.suppliers.bills.show', $bill) }}" class="btn btn-sm btn-outline-primary">View</a></td>
+                    <td><a href="{{ route('admin.suppliers.bills.show', ['bill' => $bill]) }}" class="btn btn-sm btn-outline-primary">View</a></td>
                 </tr>
             @empty
                 <tr><td colspan="7" class="text-center text-muted py-3">No bills yet.</td></tr>

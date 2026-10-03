@@ -30,7 +30,7 @@
                         <i class="bi bi-info-circle"></i> This user is a <strong>super admin</strong> and automatically has every right in the system. Rights checkboxes only apply to regular accounts (admin, teacher, student, parent) that aren't marked as super admin.
                     </div>
                 @else
-                    <form method="POST" action="{{ route('admin.settings.rights.update', $user) }}">
+                    <form method="POST" action="{{ route('admin.settings.rights.update', ['user' => $user]) }}">
                         @csrf
                         @method('PUT')
 
@@ -79,7 +79,7 @@
         <div class="card">
             <div class="card-header"><i class="bi bi-key"></i> Reset Password</div>
             <div class="card-body">
-                <form method="POST" action="{{ route('admin.settings.rights.reset_password', $user) }}">
+                <form method="POST" action="{{ route('admin.settings.rights.reset_password', ['user' => $user]) }}">
                     @csrf
                     <p class="small text-muted">A new temporary password is generated automatically and emailed straight to {{ $user->name }} at {{ $user->email }} — you won't see it. They can change it themselves afterwards from the Password button in the top bar.</p>
                     <button type="submit" class="btn btn-outline-dark w-100" onclick="return confirm('Reset the password for {{ $user->name }}? A new temporary password will be emailed to them.');">

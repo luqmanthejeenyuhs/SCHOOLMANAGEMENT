@@ -22,6 +22,16 @@
                         <option value="one_time">One-time</option>
                     </select>
                 </div>
+                <div class="mb-2">
+                    <label class="form-label small">Fee Category (optional)</label>
+                    <select name="fee_category_id" class="form-select">
+                        <option value="">School-wide (no category)</option>
+                        @foreach($categories as $category)
+                            <option value="{{ $category->id }}">{{ $category->name }}</option>
+                        @endforeach
+                    </select>
+                    <div class="form-text">Leave blank if this fee applies the same to every grade. Pick a category (e.g. "Lower Primary") to give just that group its own amount — see <a href="{{ route('admin.fee_categories.index') }}">Fee Categories</a>.</div>
+                </div>
                 <button class="btn btn-dark w-100">Add Fee Type</button>
             </form>
         </div>
@@ -29,22 +39,23 @@
     <div class="col-md-7">
         <div class="card">
             <table class="table mb-0 align-middle">
-                <thead class="table-light"><tr><th>Name</th><th>Amount</th><th>Frequency</th><th></th></tr></thead>
+                <thead class="table-light"><tr><th>Name</th><th>Amount</th><th>Frequency</th><th>Category</th><th></th></tr></thead>
                 <tbody>
                 @forelse($feeTypes as $feeType)
                     <tr>
                         <td>{{ $feeType->name }}</td>
                         <td>KES {{ number_format($feeType->amount, 2) }}</td>
                         <td>{{ ucfirst(str_replace('_',' ', $feeType->frequency)) }}</td>
+                        <td>{{ $feeType->feeCategory->name ?? '—' }}</td>
                         <td class="text-end">
-                            <form action="{{ route('admin.fee_types.destroy', $feeType) }}" method="POST" onsubmit="return confirm('Delete this fee type?');">
+                            <form action="{{ route('admin.fee_types.destroy', ['feeType' => $feeType]) }}" method="POST" onsubmit="return confirm('Delete this fee type?');">
                                 @csrf @method('DELETE')
                                 <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
                             </form>
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="4" class="text-center text-muted py-3">No fee types yet.</td></tr>
+                    <tr><td colspan="5" class="text-center text-muted py-3">No fee types yet.</td></tr>
                 @endforelse
                 </tbody>
             </table>

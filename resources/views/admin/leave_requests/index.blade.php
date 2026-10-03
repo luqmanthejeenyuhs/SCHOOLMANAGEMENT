@@ -43,7 +43,7 @@
                 </td>
                 <td class="text-end">
                     @if($r->status === 'pending')
-                        <form method="POST" action="{{ route('admin.leave_requests.approve', $r) }}" class="d-inline">
+                        <form method="POST" action="{{ route('admin.leave_requests.approve', ['leaveRequest' => $r]) }}" class="d-inline">
                             @csrf
                             <button class="btn btn-sm btn-outline-success">Approve</button>
                         </form>
@@ -56,7 +56,7 @@
             <div class="modal fade" id="reject-{{ $r->id }}" tabindex="-1">
                 <div class="modal-dialog">
                     <div class="modal-content">
-                        <form method="POST" action="{{ route('admin.leave_requests.reject', $r) }}">
+                        <form method="POST" action="{{ route('admin.leave_requests.reject', ['leaveRequest' => $r]) }}">
                             @csrf
                             <div class="modal-header">
                                 <h6 class="modal-title">Reject leave request — {{ $r->employee->name ?? 'N/A' }}</h6>

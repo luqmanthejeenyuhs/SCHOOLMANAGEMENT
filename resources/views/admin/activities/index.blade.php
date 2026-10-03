@@ -30,7 +30,7 @@
         <tbody>
         @forelse($activities as $activity)
             <tr>
-                <td><a href="{{ route('admin.activities.show', $activity) }}" class="fw-semibold text-decoration-none">{{ $activity->name }}</a></td>
+                <td><a href="{{ route('admin.activities.show', ['activity' => $activity]) }}" class="fw-semibold text-decoration-none">{{ $activity->name }}</a></td>
                 <td>{{ $activity->patron->user->name ?? '—' }}</td>
                 <td>
                     @if($activity->day_of_week)
@@ -51,8 +51,8 @@
                     @endif
                 </td>
                 <td class="text-end">
-                    <a href="{{ route('admin.activities.show', $activity) }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-eye"></i></a>
-                    <form action="{{ route('admin.activities.destroy', $activity) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this activity?');">
+                    <a href="{{ route('admin.activities.show', ['activity' => $activity]) }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-eye"></i></a>
+                    <form action="{{ route('admin.activities.destroy', ['activity' => $activity]) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this activity?');">
                         @csrf @method('DELETE')
                         <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
                     </form>

@@ -2,12 +2,12 @@
 @section('title', 'Edit Teacher')
 @section('content')
 <div class="mb-3">
-    <a href="{{ route('admin.teachers.show', $teacher) }}" class="text-decoration-none small text-muted"><i class="bi bi-arrow-left"></i> Back to Profile</a>
+    <a href="{{ route('admin.teachers.show', ['teacher' => $teacher]) }}" class="text-decoration-none small text-muted"><i class="bi bi-arrow-left"></i> Back to Profile</a>
     <h3 class="mb-0 mt-1">Edit Teacher</h3>
 </div>
 
 <div class="card p-4" style="max-width:900px;">
-    <form method="POST" action="{{ route('admin.teachers.update', $teacher) }}" enctype="multipart/form-data">
+    <form method="POST" action="{{ route('admin.teachers.update', ['teacher' => $teacher]) }}" enctype="multipart/form-data">
         @csrf @method('PUT')
 
         <h6 class="text-uppercase text-muted small mb-3">Personal Details</h6>
@@ -81,8 +81,8 @@
                 <li class="list-group-item d-flex justify-content-between align-items-center">
                     <span><i class="bi bi-file-earmark-text"></i> {{ $document->label() }} — <span class="text-muted small">{{ $document->original_name }}</span></span>
                     <span>
-                        <a href="{{ route('admin.teachers.documents.download', [$teacher, $document]) }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-download"></i></a>
-                        <form action="{{ route('admin.teachers.documents.destroy', [$teacher, $document]) }}" method="POST" class="d-inline" onsubmit="return confirm('Remove this document?');">
+                        <a href="{{ route('admin.teachers.documents.download', ['teacher' => $teacher, 'document' => $document]) }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-download"></i></a>
+                        <form action="{{ route('admin.teachers.documents.destroy', ['teacher' => $teacher, 'document' => $document]) }}" method="POST" class="d-inline" onsubmit="return confirm('Remove this document?');">
                             @csrf @method('DELETE')
                             <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
                         </form>
@@ -115,7 +115,7 @@
 
         <div class="mt-4">
             <button class="btn btn-dark">Update Teacher</button>
-            <a href="{{ route('admin.teachers.show', $teacher) }}" class="btn btn-outline-secondary">Cancel</a>
+            <a href="{{ route('admin.teachers.show', ['teacher' => $teacher]) }}" class="btn btn-outline-secondary">Cancel</a>
         </div>
     </form>
 </div>

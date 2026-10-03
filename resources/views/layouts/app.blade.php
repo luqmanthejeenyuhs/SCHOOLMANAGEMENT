@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Taaluma SMS')</title>
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('favicon-16x16.png') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('apple-touch-icon.png') }}">
+    <link rel="manifest" href="{{ asset('site.webmanifest') }}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -179,7 +184,7 @@
 </head>
 <body>
 <nav class="navbar navbar-dark px-3">
-<span class="navbar-brand"><img src="{{ asset('taaluma-logo.png') }}" alt="Taaluma" style="height:28px;width:28px;object-fit:contain;vertical-align:-6px;margin-right:.35rem;"> Taaluma SMS</span>
+    <span class="navbar-brand"><img src="{{ asset('taaluma-logo.png') }}" alt="Taaluma" style="height:28px;width:28px;object-fit:contain;vertical-align:-6px;margin-right:.35rem;"> Taaluma SMS</span>
     @auth
         <div class="d-flex align-items-center gap-3">
             <span class="text-light small">{{ auth()->user()->name }} <span class="badge text-uppercase">{{ auth()->user()->role }}</span></span>
@@ -248,12 +253,16 @@
 
                 @php
                     $financeActive = request()->routeIs('admin.fee_types.*')
+                        || request()->routeIs('admin.fee_categories.*')
+                        || request()->routeIs('admin.banks.*')
                         || request()->routeIs('admin.invoices.*')
                         || request()->routeIs('admin.finance.*')
                         || request()->routeIs('admin.accounting.*');
                     $financeLinks = [
                         ['perm' => 'manage_accounting', 'route' => 'admin.accounting.overview', 'routeIs' => 'admin.accounting.overview', 'icon' => 'bi-graph-up-arrow', 'label' => 'Overview'],
                         ['perm' => 'manage_fee_types', 'route' => 'admin.fee_types.index', 'routeIs' => 'admin.fee_types.*', 'icon' => 'bi-cash-coin', 'label' => 'Fees'],
+                        ['perm' => 'manage_fee_types', 'route' => 'admin.fee_categories.index', 'routeIs' => 'admin.fee_categories.*', 'icon' => 'bi-collection', 'label' => 'Fee Categories'],
+                        ['perm' => 'manage_fee_types', 'route' => 'admin.banks.index', 'routeIs' => 'admin.banks.*', 'icon' => 'bi-bank2', 'label' => 'Banks'],
                         ['perm' => 'manage_invoices', 'route' => 'admin.invoices.index', 'routeIs' => 'admin.invoices.*', 'icon' => 'bi-receipt', 'label' => 'Invoices'],
                         ['perm' => 'manage_finance_ledger', 'route' => 'admin.finance.ledger.index', 'routeIs' => 'admin.finance.*', 'icon' => 'bi-bank', 'label' => 'M-Pesa'],
                         ['perm' => 'manage_accounting', 'route' => 'admin.accounting.chart_of_accounts', 'routeIs' => 'admin.accounting.chart_of_accounts', 'icon' => 'bi-diagram-3', 'label' => 'Accounts'],
@@ -406,12 +415,7 @@
             @elseif(auth()->user()->role === 'parent')
                 <li class="nav-item"><a class="nav-link {{ request()->routeIs('parent.dashboard') ? 'active' : '' }}" href="{{ route('parent.dashboard') }}"><i class="bi bi-speedometer2"></i> My Children</a></li>
             @elseif(auth()->user()->role === 'super_admin')
-                <li class="nav-item"><a class="nav-link {{ request()->routeIs('superadmin.dashboard') ? 'active' : '' }}" href="{{ route('superadmin.dashboard') }}"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
                 <li class="nav-item"><a class="nav-link {{ request()->routeIs('superadmin.schools.*') ? 'active' : '' }}" href="{{ route('superadmin.schools.index') }}"><i class="bi bi-buildings"></i> Schools</a></li>
-                <li class="nav-item"><a class="nav-link {{ request()->routeIs('superadmin.billing.*') ? 'active' : '' }}" href="{{ route('superadmin.billing.index') }}"><i class="bi bi-receipt"></i> Billing</a></li>
-                <li class="nav-item"><a class="nav-link {{ request()->routeIs('superadmin.users.*') ? 'active' : '' }}" href="{{ route('superadmin.users.index') }}"><i class="bi bi-people"></i> User Lookup</a></li>
-                <li class="nav-item"><a class="nav-link {{ request()->routeIs('superadmin.audit_logs.*') ? 'active' : '' }}" href="{{ route('superadmin.audit_logs.index') }}"><i class="bi bi-clock-history"></i> Audit Trail</a></li>
-                <li class="nav-item"><a class="nav-link {{ request()->routeIs('superadmin.announcements.*') ? 'active' : '' }}" href="{{ route('superadmin.announcements.index') }}"><i class="bi bi-megaphone"></i> Announcements</a></li>
                 @if(session('impersonating_school_id'))
                     <li class="nav-item">
                         <form method="POST" action="{{ route('superadmin.stop-impersonating') }}">
@@ -445,21 +449,6 @@
                 </ul>
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
-        @endif
-
-        @if(auth()->user()->role !== 'super_admin')
-            @php
-                $activeAnnouncements = \App\Models\Announcement::where('is_active', true)
-                    ->get()
-                    ->filter(fn($a) => $a->isForSchool(auth()->user()->school_id))
-                    ->reject(fn($a) => in_array($a->id, session('dismissed_announcements', [])));
-            @endphp
-            @foreach($activeAnnouncements as $announcement)
-                <div class="alert alert-{{ $announcement->level === 'warning' ? 'warning' : ($announcement->level === 'success' ? 'success' : 'info') }} alert-dismissible fade show">
-                    <strong>{{ $announcement->title }}</strong> — {{ $announcement->body }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" onclick="fetch('{{ route('announcements.dismiss', $announcement) }}', {method:'POST', headers:{'X-CSRF-TOKEN':'{{ csrf_token() }}'}})"></button>
-                </div>
-            @endforeach
         @endif
 
         @yield('content')

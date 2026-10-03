@@ -43,9 +43,9 @@
                     <td>KES {{ number_format($employee->basic_salary, 2) }}</td>
                     <td>KES {{ number_format($employee->grossPay(), 2) }}</td>
                     <td class="text-end">
-                        <a href="{{ route('admin.employees.edit', $employee) }}" class="btn btn-sm btn-outline-dark"><i class="bi bi-pencil"></i> Edit</a>
+                        <a href="{{ route('admin.employees.edit', ['employee' => $employee]) }}" class="btn btn-sm btn-outline-dark"><i class="bi bi-pencil"></i> Edit</a>
                         <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#payslipModal{{ $employee->id }}">Generate Payslip</button>
-                        <form action="{{ route('admin.employees.destroy', $employee) }}" method="POST" class="d-inline" onsubmit="return confirm('Remove this employee?');">
+                        <form action="{{ route('admin.employees.destroy', ['employee' => $employee]) }}" method="POST" class="d-inline" onsubmit="return confirm('Remove this employee?');">
                             @csrf @method('DELETE')
                             <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
                         </form>
@@ -53,7 +53,7 @@
                         <div class="modal fade" id="payslipModal{{ $employee->id }}" tabindex="-1">
                             <div class="modal-dialog">
                                 <div class="modal-content">
-                                    <form method="POST" action="{{ route('admin.payslips.generate', $employee) }}">
+                                    <form method="POST" action="{{ route('admin.payslips.generate', ['employee' => $employee]) }}">
                                         @csrf
                                         <div class="modal-header"><h6 class="modal-title">Generate Payslip — {{ $employee->name }}</h6></div>
                                         <div class="modal-body row g-2">

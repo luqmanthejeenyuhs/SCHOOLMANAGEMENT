@@ -6,7 +6,7 @@
 <div class="row g-3">
     @forelse($sections as $section)
         <div class="col-md-6 col-lg-4">
-            <a href="{{ route('teacher.classes.show', $section) }}" class="text-decoration-none text-dark">
+            <a href="{{ route('teacher.classes.show', ['class' => $section]) }}" class="text-decoration-none text-dark">
                 <div class="card h-100 p-3 {{ $section->is_class_teacher ? 'border-warning border-2' : '' }}">
                     @if($section->is_class_teacher)
                         <span class="badge bg-warning text-dark mb-2 align-self-start"><i class="bi bi-star-fill"></i> Class Teacher</span>

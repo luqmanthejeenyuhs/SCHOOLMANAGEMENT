@@ -66,7 +66,7 @@
             <div class="modal fade" id="edit-{{ $record->id }}" tabindex="-1">
                 <div class="modal-dialog">
                     <div class="modal-content">
-                        <form method="POST" action="{{ route('admin.staff_attendance.update', $record) }}">
+                        <form method="POST" action="{{ route('admin.staff_attendance.update', ['staffAttendance' => $record]) }}">
                             @csrf @method('PUT')
                             <div class="modal-header">
                                 <h6 class="modal-title">Edit — {{ $record->employee->name ?? 'N/A' }} ({{ $record->date->format('d M Y') }})</h6>

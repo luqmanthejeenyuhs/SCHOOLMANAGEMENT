@@ -41,7 +41,7 @@
     <div class="col-md-4">
         <div class="card p-3">
             <h6>Sign Up a Student</h6>
-            <form method="POST" action="{{ route('admin.activities.students.store', $activity) }}">
+            <form method="POST" action="{{ route('admin.activities.students.store', ['activity' => $activity]) }}">
                 @csrf
                 <select name="student_id" class="form-select mb-2" required>
                     <option value="">Select student</option>
@@ -66,7 +66,7 @@
                         <td>{{ $student->user->name }}</td>
                         <td>{{ $student->pivot->signed_up_at ? \Carbon\Carbon::parse($student->pivot->signed_up_at)->format('d M Y') : '—' }}</td>
                         <td class="text-end">
-                            <form action="{{ route('admin.activities.students.destroy', [$activity, $student]) }}" method="POST" onsubmit="return confirm('Remove this student from the activity?');">
+                            <form action="{{ route('admin.activities.students.destroy', ['activity' => $activity, 'student' => $student]) }}" method="POST" onsubmit="return confirm('Remove this student from the activity?');">
                                 @csrf @method('DELETE')
                                 <button class="btn btn-sm btn-outline-danger"><i class="bi bi-x-lg"></i></button>
                             </form>

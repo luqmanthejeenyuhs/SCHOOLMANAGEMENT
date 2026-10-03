@@ -7,7 +7,7 @@
     <div class="alert alert-danger"><ul class="mb-0">@foreach($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul></div>
 @endif
 
-<form method="POST" action="{{ route('admin.suppliers.update', $supplier) }}">
+<form method="POST" action="{{ route('admin.suppliers.update', ['supplier' => $supplier]) }}">
     @csrf
     @method('PUT')
     <div class="card p-4" style="max-width:700px;">

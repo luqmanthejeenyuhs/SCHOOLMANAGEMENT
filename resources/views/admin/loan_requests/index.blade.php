@@ -41,13 +41,13 @@
                 </td>
                 <td class="text-end">
                     @if($r->status === 'pending')
-                        <form method="POST" action="{{ route('admin.loan_requests.approve', $r) }}" class="d-inline">
+                        <form method="POST" action="{{ route('admin.loan_requests.approve', ['loanRequest' => $r]) }}" class="d-inline">
                             @csrf
                             <button class="btn btn-sm btn-outline-success">Approve</button>
                         </form>
                         <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#reject-{{ $r->id }}">Reject</button>
                     @elseif($r->status === 'approved')
-                        <form method="POST" action="{{ route('admin.loan_requests.disburse', $r) }}" class="d-inline" onsubmit="return confirm('Confirm the money has actually been paid out?')">
+                        <form method="POST" action="{{ route('admin.loan_requests.disburse', ['loanRequest' => $r]) }}" class="d-inline" onsubmit="return confirm('Confirm the money has actually been paid out?')">
                             @csrf
                             <button class="btn btn-sm btn-dark">Mark Disbursed</button>
                         </form>
@@ -59,7 +59,7 @@
             <div class="modal fade" id="reject-{{ $r->id }}" tabindex="-1">
                 <div class="modal-dialog">
                     <div class="modal-content">
-                        <form method="POST" action="{{ route('admin.loan_requests.reject', $r) }}">
+                        <form method="POST" action="{{ route('admin.loan_requests.reject', ['loanRequest' => $r]) }}">
                             @csrf
                             <div class="modal-header">
                                 <h6 class="modal-title">Reject request — {{ $r->employee->name ?? 'N/A' }}</h6>

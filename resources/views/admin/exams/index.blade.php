@@ -20,8 +20,8 @@
                 <td>{{ $exam->term ?? '—' }}</td>
                 <td>{{ $exam->exam_date?->format('d M Y') ?? '—' }}</td>
                 <td class="text-end">
-                    <a href="{{ route('admin.exams.results', $exam) }}" class="btn btn-sm btn-outline-primary">View Results</a>
-                    <form action="{{ route('admin.exams.destroy', $exam) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this exam?');">
+                    <a href="{{ route('admin.exams.results', ['exam' => $exam]) }}" class="btn btn-sm btn-outline-primary">View Results</a>
+                    <form action="{{ route('admin.exams.destroy', ['exam' => $exam]) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this exam?');">
                         @csrf @method('DELETE')
                         <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
                     </form>

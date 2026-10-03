@@ -23,7 +23,7 @@
     <div class="col-md-6">
         <div class="card p-3 h-100">
             <h6>Record Payment</h6>
-            <form method="POST" action="{{ route('admin.suppliers.bills.payments.store', $bill) }}">
+            <form method="POST" action="{{ route('admin.suppliers.bills.payments.store', ['bill' => $bill]) }}">
                 @csrf
                 <div class="mb-2">
                     <label class="form-label small">Amount (balance: KES {{ number_format($bill->balance(), 2) }})</label>
@@ -54,7 +54,7 @@
         <div class="card p-3 h-100">
             <h6>Issue Credit Note</h6>
             <p class="text-muted small">Use this for returned goods, an overcharge, or any reduction to what's owed — not for recording a payment.</p>
-            <form method="POST" action="{{ route('admin.suppliers.bills.credit-notes.store', $bill) }}">
+            <form method="POST" action="{{ route('admin.suppliers.bills.credit-notes.store', ['bill' => $bill]) }}">
                 @csrf
                 <div class="mb-2">
                     <label class="form-label small">Amount (max: KES {{ number_format($bill->balance(), 2) }})</label>

@@ -51,7 +51,7 @@
                     <div class="modal fade" id="profileModal{{ $student->id }}" tabindex="-1">
                         <div class="modal-dialog">
                             <div class="modal-content">
-                                <form method="POST" action="{{ route('admin.cbc.profile.update', $student) }}">
+                                <form method="POST" action="{{ route('admin.cbc.profile.update', ['student' => $student]) }}">
                                     @csrf @method('PUT')
                                     <div class="modal-header">
                                         <h5 class="modal-title">{{ $student->user->name }} — Learner Profile</h5>
@@ -121,7 +121,7 @@
                 <div id="la{{ $la->id }}" class="accordion-collapse collapse" data-bs-parent="#learningAreasAccordion">
                     <div class="accordion-body">
                         <div class="text-end mb-2">
-                            <form action="{{ route('admin.cbc.learning_areas.destroy', $la) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this learning area and all its strands?');">
+                            <form action="{{ route('admin.cbc.learning_areas.destroy', ['learningArea' => $la]) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this learning area and all its strands?');">
                                 @csrf @method('DELETE')
                                 <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i> Delete Learning Area</button>
                             </form>
@@ -130,7 +130,7 @@
                             <div class="border rounded p-2 mb-2">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <strong class="small">{{ $strand->name }}</strong>
-                                    <form action="{{ route('admin.cbc.strands.destroy', $strand) }}" method="POST" onsubmit="return confirm('Delete this strand?');">
+                                    <form action="{{ route('admin.cbc.strands.destroy', ['strand' => $strand]) }}" method="POST" onsubmit="return confirm('Delete this strand?');">
                                         @csrf @method('DELETE')
                                         <button class="btn btn-sm btn-link text-danger p-0"><i class="bi bi-x-circle"></i></button>
                                     </form>
@@ -139,7 +139,7 @@
                                     @forelse($strand->subStrands as $sub)
                                         <li class="d-flex justify-content-between" style="max-width:320px;">
                                             {{ $sub->name }}
-                                            <form action="{{ route('admin.cbc.sub_strands.destroy', $sub) }}" method="POST" onsubmit="return confirm('Delete this sub-strand?');" class="d-inline">
+                                            <form action="{{ route('admin.cbc.sub_strands.destroy', ['subStrand' => $sub]) }}" method="POST" onsubmit="return confirm('Delete this sub-strand?');" class="d-inline">
                                                 @csrf @method('DELETE')
                                                 <button class="btn btn-sm btn-link text-danger p-0"><i class="bi bi-x-circle"></i></button>
                                             </form>
@@ -229,8 +229,8 @@
                         <td class="text-muted small">{{ $item->subStrand->name ?? '—' }}</td>
                         <td>{{ $item->term ?? '—' }}</td>
                         <td class="text-end">
-                            <a href="{{ route('admin.cbc.portfolio.download', $item) }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-download"></i></a>
-                            <form action="{{ route('admin.cbc.portfolio.destroy', $item) }}" method="POST" class="d-inline" onsubmit="return confirm('Remove this portfolio item?');">
+                            <a href="{{ route('admin.cbc.portfolio.download', ['item' => $item]) }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-download"></i></a>
+                            <form action="{{ route('admin.cbc.portfolio.destroy', ['item' => $item]) }}" method="POST" class="d-inline" onsubmit="return confirm('Remove this portfolio item?');">
                                 @csrf @method('DELETE')
                                 <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
                             </form>

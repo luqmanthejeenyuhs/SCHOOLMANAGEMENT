@@ -39,7 +39,7 @@
                         @elseif($loan->status === 'completed')<span class="badge bg-success">Completed</span>
                         @else<span class="badge bg-secondary">Written Off</span>@endif
                     </td>
-                    <td><a href="{{ route('admin.loans.show', $loan) }}" class="btn btn-sm btn-outline-primary">View</a></td>
+                    <td><a href="{{ route('admin.loans.show', ['loan' => $loan]) }}" class="btn btn-sm btn-outline-primary">View</a></td>
                 </tr>
             @empty
                 <tr><td colspan="8" class="text-center text-muted py-4">No loans or advances recorded yet.</td></tr>

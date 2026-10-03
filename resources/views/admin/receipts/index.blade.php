@@ -30,7 +30,7 @@
                     <td class="text-capitalize">{{ str_replace('_', ' ', $receipt->payment->method) }}</td>
                     <td>{{ $receipt->payment->payment_date->format('d M Y') }}</td>
                     <td class="text-end">
-                        <a href="{{ route('admin.receipts.show', $receipt) }}" class="btn btn-sm btn-outline-primary">View</a>
+                        <a href="{{ route('admin.receipts.show', ['receipt' => $receipt]) }}" class="btn btn-sm btn-outline-primary">View</a>
                     </td>
                 </tr>
             @empty
