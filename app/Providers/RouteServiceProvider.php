@@ -20,6 +20,12 @@ class RouteServiceProvider extends ServiceProvider
             return Limit::perMinute(10)->by($request->ip());
         });
 
+        // /{school}/dashboard is registered before the super admin routes, so
+        // a request for /superadmin/dashboard matches it with school =
+        // "superadmin", finds no such school, and returns 404. This stops the
+        // {school} segment from ever matching the word "superadmin".
+        Route::pattern("school", "(?!superadmin/)[^/]+");
+
         $this->routes(function () {
             Route::middleware("web")
                 ->group(base_path("routes/web.php"));
