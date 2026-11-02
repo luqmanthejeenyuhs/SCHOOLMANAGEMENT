@@ -13,6 +13,9 @@
         <h3 class="mb-0">{{ $class->name }}</h3>
         <span class="text-muted">{{ $class->students_count }} student{{ $class->students_count == 1 ? '' : 's' }} across {{ $sections->count() }} stream{{ $sections->count() == 1 ? '' : 's' }}</span>
     </div>
+    @if(auth()->user()->hasPermission('send_sms'))
+        <a href="{{ route('admin.guardian_reports.index', ['class' => $class->id]) }}" class="btn btn-outline-dark"><i class="bi bi-envelope-paper"></i> Send reports to parents</a>
+    @endif
 </div>
 
 <div class="row g-4">

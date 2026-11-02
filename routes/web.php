@@ -100,7 +100,12 @@ Route::middleware('auth')->group(function () {
 // against the signed-in user and, via URL::defaults(), makes every
 // existing route('admin.xxx', ...) call below automatically include it
 // with no changes needed at each call site.
-Route::prefix('{school:slug}')->middleware(['auth', 'school.slug'])->group(function () {
+// NOTE: deliberately '{school}' and NOT '{school:slug}'. A binding field on
+// the prefix makes Laravel read the wrong attribute (->slug) off any model
+// passed positionally to route(), e.g. route('admin.classes.show', $class),
+// producing "Missing required parameter". EnsureSchoolSlugMatchesUser does
+// the slug lookup itself, and drops the param before the controller runs.
+Route::prefix('{school}')->middleware(['auth', 'school.slug'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::post('/announcements/{announcement}/dismiss', function (\App\Models\Announcement $announcement) {
@@ -290,6 +295,11 @@ Route::prefix('{school:slug}')->middleware(['auth', 'school.slug'])->group(funct
         Route::middleware('permission:send_sms')->group(function () {
             Route::get('sms', [SmsController::class, 'index'])->name('sms.index');
             Route::post('sms', [SmsController::class, 'send'])->name('sms.send');
+
+            // Parent reports: attendance / results / fee balance to guardians
+            Route::get('guardian-reports', [\App\Http\Controllers\Admin\GuardianReportController::class, 'index'])->name('guardian_reports.index');
+            Route::post('guardian-reports/preview', [\App\Http\Controllers\Admin\GuardianReportController::class, 'preview'])->name('guardian_reports.preview');
+            Route::post('guardian-reports', [\App\Http\Controllers\Admin\GuardianReportController::class, 'send'])->name('guardian_reports.send');
         });
 
         // Payroll: staff + payslips

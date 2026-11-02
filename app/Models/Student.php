@@ -37,6 +37,18 @@ class Student extends Model
         return $this->belongsTo(Section::class);
     }
 
+    /**
+     * Parent/guardian portal accounts linked to this student (parent_student
+     * pivot). Separate from the plain guardian_name/guardian_phone columns,
+     * which are kept as a fallback contact for guardians with no account.
+     */
+    public function guardians()
+    {
+        return $this->belongsToMany(User::class, "parent_student", "student_id", "parent_id")
+            ->withPivot("relationship")
+            ->withTimestamps();
+    }
+
     public function attendances()
     {
         return $this->hasMany(Attendance::class);

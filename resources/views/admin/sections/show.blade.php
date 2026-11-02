@@ -17,7 +17,12 @@
             &middot; Class Teacher: {{ $section->classTeacher->user->name ?? 'Not assigned' }}
         </span>
     </div>
-    <a href="{{ route('admin.students.create') }}" class="btn btn-dark"><i class="bi bi-plus-lg"></i> Admit Student</a>
+    <div class="d-flex gap-2 flex-wrap">
+        @if(auth()->user()->hasPermission('send_sms'))
+            <a href="{{ route('admin.guardian_reports.index', ['section' => $section->id]) }}" class="btn btn-outline-dark"><i class="bi bi-envelope-paper"></i> Send reports to parents</a>
+        @endif
+        <a href="{{ route('admin.students.create') }}" class="btn btn-dark"><i class="bi bi-plus-lg"></i> Admit Student</a>
+    </div>
 </div>
 
 <ul class="nav nav-tabs mb-3" role="tablist">

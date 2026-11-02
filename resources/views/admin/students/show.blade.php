@@ -29,7 +29,12 @@
             </span>
         </div>
     </div>
-    <a href="{{ route('admin.students.edit', ['student' => $student]) }}" class="btn btn-outline-secondary"><i class="bi bi-pencil"></i> Edit</a>
+    <div class="d-flex gap-2 flex-wrap">
+        @if(auth()->user()->hasPermission('send_sms'))
+            <a href="{{ route('admin.guardian_reports.index', ['student' => $student->id]) }}" class="btn btn-outline-dark"><i class="bi bi-envelope-paper"></i> Send report to guardian</a>
+        @endif
+        <a href="{{ route('admin.students.edit', ['student' => $student]) }}" class="btn btn-outline-secondary"><i class="bi bi-pencil"></i> Edit</a>
+    </div>
 </div>
 
 <div class="row g-3 mb-4">

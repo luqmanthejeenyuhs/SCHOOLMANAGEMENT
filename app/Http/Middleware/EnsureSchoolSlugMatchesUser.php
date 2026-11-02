@@ -57,6 +57,13 @@ class EnsureSchoolSlugMatchesUser
 
         URL::defaults(['school' => $school->slug]);
 
+        // The {school} prefix segment is only used above and for URL
+        // generation. Drop it from the route's parameter bag, otherwise
+        // Laravel passes it to the controller as the FIRST positional
+        // argument and e.g. show(Student $student) receives "greenwood"
+        // (a string) instead of the Student model -> TypeError.
+        $request->route()->forgetParameter('school');
+
         return $next($request);
     }
 }

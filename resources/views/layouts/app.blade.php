@@ -322,9 +322,10 @@
 
                 {{-- Communication: Bulk SMS today, room for email/notices/etc later --}}
                 @php
-                    $commsActive = request()->routeIs('admin.sms.*');
+                    $commsActive = request()->routeIs('admin.sms.*') || request()->routeIs('admin.guardian_reports.*');
                     $commsLinks = [
                         ['perm' => 'send_sms', 'route' => 'admin.sms.index', 'routeIs' => 'admin.sms.*', 'icon' => 'bi-chat-dots', 'label' => 'Bulk SMS'],
+                        ['perm' => 'send_sms', 'route' => 'admin.guardian_reports.index', 'routeIs' => 'admin.guardian_reports.*', 'icon' => 'bi-envelope-paper', 'label' => 'Parent Reports'],
                     ];
                     $visibleCommsLinks = collect($commsLinks)->filter(fn ($l) => $u->hasPermission($l['perm']));
                 @endphp
